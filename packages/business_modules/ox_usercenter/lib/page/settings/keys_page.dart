@@ -98,7 +98,7 @@ class _KeysPageState extends State<KeysPage> {
                             CustomItemModel(
                               title: Localized.text('ox_login.private_key'),
                               subtitleWidget: isLoading 
-                                ? CLText('Loading...', maxLines: 2)
+                                ? CLText(Localized.text('ox_common.loading'), maxLines: 2)
                                 : CLText(
                                     isShowPriv ? encodedPrivkey
                                         : List.filled(encodedPrivkey.length, '*').join(),

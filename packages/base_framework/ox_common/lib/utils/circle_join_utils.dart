@@ -296,7 +296,7 @@ class CircleJoinUtils {
     for (final circle in circles) {
       if (circle.type == CircleType.relay && circle.relayUrl == relayUrl) {
         return _CircleExistsResult.exists(
-          Localized.text('ox_common.circle_already_exists').replaceFirst('{relay}', relayUrl)
+          Localized.text('ox_common.circle_already_exists').replaceFirst(r'${relay}', relayUrl)
         );
       }
     }
@@ -434,7 +434,7 @@ class CircleJoinUtils {
       context: context,
       title: Localized.text('ox_common.network_warning_title'),
       content: Localized.text('ox_common.network_warning_message')
-          .replaceFirst('{relay}', relayUrl),
+          .replaceFirst(r'${relay}', relayUrl),
       actions: [
         CLAlertAction<bool>(
           label: Localized.text('ox_common.cancel'),

@@ -86,7 +86,7 @@ extension ScanAnalysisHandlerEx on ScanUtils {
         }
       } catch (e) {
         LogUtil.e('Error handling invite link from scan: $e');
-        CommonToast.instance.show(context, 'Invalid invite link');
+        CommonToast.instance.show(context, Localized.text('ox_common.invalid_invite_link'));
       }
     },
   );
@@ -106,7 +106,7 @@ extension ScanAnalysisHandlerEx on ScanUtils {
       // Check if relay is provided
       if (relay == null || relay.isEmpty) {
         OXLoading.dismiss();
-        CommonToast.instance.show(context, 'Invalid invite link: missing relay');
+        CommonToast.instance.show(context, Localized.text('ox_common.invalid_invite_link_missing_relay'));
         return;
       }
 
@@ -117,7 +117,7 @@ extension ScanAnalysisHandlerEx on ScanUtils {
       
       if (account == null) {
         OXLoading.dismiss();
-        CommonToast.instance.show(context, 'No account logged in');
+        CommonToast.instance.show(context, Localized.text('ox_common.no_account_logged_in'));
         return;
       }
 
@@ -182,7 +182,7 @@ extension ScanAnalysisHandlerEx on ScanUtils {
       await _processInviteLink(context, keypackage, pubkey, eventid, relayUrl);
     } catch (e) {
       OXLoading.dismiss();
-      CommonToast.instance.show(context, 'Failed to process invite link 111');
+              CommonToast.instance.show(context, Localized.text('ox_common.failed_to_process_invite_link'));
     }
   }
 
@@ -241,27 +241,27 @@ extension ScanAnalysisHandlerEx on ScanUtils {
           await _navigateToUserDetailFromScan(context, senderPubkey);
           await KeyPackageManager.recordScannedKeyPackageId(senderPubkey, keyPackageId);
         } else {
-          CommonToast.instance.show(context, 'Successfully processed invite link');
+          CommonToast.instance.show(context, Localized.text('ox_common.successfully_processed_invite_link'));
         }
       } else {
-        CommonToast.instance.show(context, 'Failed to process invite link 333');
+        CommonToast.instance.show(context, Localized.text('ox_common.failed_to_process_invite_link'));
       }
     } catch (e) {
       // Hide loading on error
       OXLoading.dismiss();
-      CommonToast.instance.show(context, 'Failed to process invite link 222');
+              CommonToast.instance.show(context, Localized.text('ox_common.failed_to_process_invite_link'));
     }
   }
 
   static Future<bool> _showSwitchCircleDialogFromScan(BuildContext context, Circle targetCircle, String pubkey) async {
     final result = await CLAlertDialog.show<bool>(
       context: context,
-      title: 'Switch Circle',
-      content: 'This user is from circle "${targetCircle.name}" (${targetCircle.relayUrl}). Would you like to switch to this circle to chat with them?',
+      title: Localized.text('ox_common.switch_circle'),
+      content: Localized.text('ox_common.switch_circle_dialog_content').replaceAll(r'${name}', targetCircle.name).replaceAll(r'${relayUrl}', targetCircle.relayUrl),
       actions: [
         CLAlertAction.cancel(),
         CLAlertAction<bool>(
-          label: 'Switch Circle',
+          label: Localized.text('ox_common.switch_circle'),
           value: true,
           isDefaultAction: true,
         ),
@@ -281,7 +281,7 @@ extension ScanAnalysisHandlerEx on ScanUtils {
     OXLoading.dismiss();
 
     if (failure != null) {
-      _showErrorDialogFromScan(context, 'Failed to switch circle: ${failure.message}');
+              _showErrorDialogFromScan(context, Localized.text('ox_common.failed_to_switch_circle').replaceAll(r'${message}', failure.message));
       return false;
     }
 
@@ -293,12 +293,12 @@ extension ScanAnalysisHandlerEx on ScanUtils {
 
     final result = await CLAlertDialog.show<bool>(
       context: context,
-      title: 'Join Circle',
-      content: 'This user is from circle "$primaryRelay". Would you like to join this circle to chat with them?',
+      title: Localized.text('ox_common.join_circle'),
+      content: Localized.text('ox_common.join_circle_dialog_content').replaceAll(r'${relay}', primaryRelay),
       actions: [
         CLAlertAction.cancel(),
         CLAlertAction<bool>(
-          label: 'Join Circle',
+          label: Localized.text('ox_common.join_circle'),
           value: true,
           isDefaultAction: true,
         ),
@@ -323,7 +323,7 @@ extension ScanAnalysisHandlerEx on ScanUtils {
     OXLoading.dismiss();
 
     if (failure != null) {
-      _showErrorDialogFromScan(context, 'Failed to join circle: ${failure.message}');
+              _showErrorDialogFromScan(context, Localized.text('ox_common.failed_to_join_circle').replaceAll(r'${message}', failure.message));
       return false;
     }
 
@@ -334,7 +334,7 @@ extension ScanAnalysisHandlerEx on ScanUtils {
     // Get user info
     UserDBISAR? user = await Account.sharedInstance.getUserInfo(pubkey);
     if (user == null) {
-      _showErrorDialogFromScan(context, 'User not found');
+      _showErrorDialogFromScan(context, Localized.text('ox_common.user_not_found'));
       return;
     }
 
@@ -347,11 +347,11 @@ extension ScanAnalysisHandlerEx on ScanUtils {
   static void _showErrorDialogFromScan(BuildContext context, String message) {
     CLAlertDialog.show(
       context: context,
-      title: 'Error',
+      title: Localized.text('ox_common.error'),
       content: message,
       actions: [
         CLAlertAction(
-          label: 'OK',
+          label: Localized.text('ox_common.ok'),
           isDefaultAction: true,
         ),
       ],
@@ -420,7 +420,7 @@ extension ScanAnalysisHandlerEx on ScanUtils {
       try {
         final failedHandle = () {
           OXLoading.dismiss();
-          CommonToast.instance.show(context, 'User not found');
+          CommonToast.instance.show(context, Localized.text('ox_common.user_not_found'));
         };
 
         final data = Account.decodeProfile(str);
@@ -451,7 +451,7 @@ extension ScanAnalysisHandlerEx on ScanUtils {
       } catch (e) {
         OXLoading.dismiss();
         LogUtil.e('Error handling user scan: $e');
-        CommonToast.instance.show(context, 'Failed to process user scan');
+        CommonToast.instance.show(context, Localized.text('ox_common.failed_to_process_user_scan'));
       }
     },
   );
@@ -491,7 +491,7 @@ extension ScanAnalysisHandlerEx on ScanUtils {
       } catch (e) {
         OXLoading.dismiss();
         LogUtil.e('Error handling group scan: $e');
-        CommonToast.instance.show(context, 'Failed to process group scan');
+        CommonToast.instance.show(context, Localized.text('ox_common.failed_to_process_group_scan'));
       }
     },
   );
@@ -518,7 +518,7 @@ extension ScanAnalysisHandlerEx on ScanUtils {
         
         final result = await CLAlertDialog.show<bool>(
           context: context,
-          title: 'scan_find_nwc_hint'.commonLocalized(),
+          title: Localized.text('ox_common.connect_to_wallet'),
           content: '${nwc?.relays[0]}\n${nwc?.lud16}',
           actions: [
             CLAlertAction.cancel(),
@@ -544,17 +544,17 @@ extension ScanAnalysisHandlerEx on ScanUtils {
             // Hide loading
             OXLoading.dismiss();
             
-            CommonToast.instance.show(context, 'Success');
+            CommonToast.instance.show(context, Localized.text('ox_common.success'));
           } catch (e) {
             OXLoading.dismiss();
             LogUtil.e('Error processing NWC: $e');
-            CommonToast.instance.show(context, 'Failed to process NWC');
+            CommonToast.instance.show(context, Localized.text('ox_common.failed_to_process_nwc'));
           }
         }
       } catch (e) {
         OXLoading.dismiss();
         LogUtil.e('Error handling NWC scan: $e');
-        CommonToast.instance.show(context, 'Failed to process NWC scan');
+        CommonToast.instance.show(context, Localized.text('ox_common.failed_to_process_nwc_scan'));
       }
     },
   );

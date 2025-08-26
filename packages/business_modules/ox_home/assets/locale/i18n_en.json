@@ -12,5 +12,13 @@
   "join_circle_description": "To add a Circle, enter a relay address or invitation link.",
   "join_circle_input_label": "relay address or invitation link",
   "add": "Add",
-  "what_is_circle": "What is a Circle?"
+  "what_is_circle": "What is a Circle?",
+  "invalid_nprofile_format": "Invalid nprofile format",
+  "invalid_pubkey": "Invalid pubkey",
+  "failed_to_process_nprofile": "Failed to process nprofile: ${error}",
+  "join_circle_dialog_title": "Join Circle",
+  "join_circle_dialog_content": "This user is from circle \"${relayName}\". Would you like to join this circle to chat with them?",
+  "failed_to_join_circle": "Failed to join circle: ${message}",
+  "error_joining_circle": "Error joining circle: ${error}",
+  "user_not_found": "User not found"
 }

@@ -294,7 +294,7 @@ class _CommonImageGalleryState extends State<CommonImageGallery>
               return null; // Use the completed image
             case LoadState.failed:
               return Center(
-                child: Text('Load failed'),
+                child: Text(Localized.text('ox_common.download_fail')),
               );
           }
         },

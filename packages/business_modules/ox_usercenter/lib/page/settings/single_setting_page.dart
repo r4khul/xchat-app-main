@@ -50,7 +50,7 @@ class SingleSettingPageState extends State<SingleSettingPage> {
         actions: [
           if (!PlatformStyle.isUseMaterial)
             CLButton.text(
-              text: 'Save',
+              text: Localized.text('ox_common.save'),
               onTap: () => widget.saveAction(context, controller.text),
             ),
         ],

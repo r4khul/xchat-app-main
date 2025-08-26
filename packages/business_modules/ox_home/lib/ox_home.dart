@@ -9,6 +9,7 @@ import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/login/login_models.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_module_service/ox_module_service.dart';
+import 'package:ox_localizable/ox_localizable.dart';
 
 
 class OxChatHome extends OXFlutterModule {
@@ -78,7 +79,7 @@ class OxChatHome extends OXFlutterModule {
       final data = Account.decodeProfile(nprofileString);
 
       if (data == null || data.isEmpty) {
-        _showErrorDialog(context, 'Invalid nprofile format');
+        _showErrorDialog(context, Localized.text('ox_home.invalid_nprofile_format'));
         return;
       }
 
@@ -86,7 +87,7 @@ class OxChatHome extends OXFlutterModule {
       final relays = (data['relays'] as List<dynamic>?)?.cast<String>() ?? [];
 
       if (pubkey.isEmpty) {
-        _showErrorDialog(context, 'Invalid pubkey');
+        _showErrorDialog(context, Localized.text('ox_home.invalid_pubkey'));
         return;
       }
 
@@ -117,7 +118,7 @@ class OxChatHome extends OXFlutterModule {
         await _navigateToUserDetail(context, pubkey);
       }
     } catch (e) {
-      _showErrorDialog(context, 'Failed to process nprofile: $e');
+      _showErrorDialog(context, Localized.text('ox_home.failed_to_process_nprofile').replaceAll(r'${error}', e.toString()));
     }
   }
 
@@ -128,13 +129,13 @@ class OxChatHome extends OXFlutterModule {
 
     final result = await CLAlertDialog.show<bool>(
       context: context,
-      title: 'Join Circle',
+      title: Localized.text('ox_home.join_circle_dialog_title'),
       content:
-          'This user is from circle "$relayName". Would you like to join this circle to chat with them?',
+          Localized.text('ox_home.join_circle_dialog_content').replaceAll(r'${relayName}', relayName),
       actions: [
         CLAlertAction.cancel(),
         CLAlertAction<bool>(
-          label: 'Join Circle',
+          label: Localized.text('ox_common.join_circle'),
           value: true,
           isDefaultAction: true,
         ),
@@ -175,12 +176,12 @@ class OxChatHome extends OXFlutterModule {
         // Navigate to user detail page
         await _navigateToUserDetail(context, pubkey);
       } else {
-        _showErrorDialog(context, 'Failed to join circle: ${failure.message}');
+        _showErrorDialog(context, Localized.text('ox_home.failed_to_join_circle').replaceAll(r'${message}', failure.message));
       }
     } catch (e) {
       // Hide loading
       Navigator.of(context).pop();
-      _showErrorDialog(context, 'Error joining circle: $e');
+              _showErrorDialog(context, Localized.text('ox_home.error_joining_circle').replaceAll(r'${error}', e.toString()));
     }
   }
 
@@ -189,7 +190,7 @@ class OxChatHome extends OXFlutterModule {
     // Get user info
     UserDBISAR? user = await Account.sharedInstance.getUserInfo(pubkey);
     if (user == null) {
-      _showErrorDialog(context, 'User not found');
+      _showErrorDialog(context, Localized.text('ox_common.user_not_found'));
       return;
     }
 
@@ -202,11 +203,11 @@ class OxChatHome extends OXFlutterModule {
   void _showErrorDialog(BuildContext context, String message) {
     CLAlertDialog.show(
       context: context,
-      title: 'Error',
+      title: Localized.text('ox_common.error'),
       content: message,
       actions: [
         CLAlertAction(
-          label: 'OK',
+          label: Localized.text('ox_common.ok'),
           isDefaultAction: true,
         ),
       ],

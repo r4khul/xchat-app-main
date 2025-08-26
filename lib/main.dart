@@ -119,7 +119,7 @@ class MainState extends State<MainApp>
             content: SingleChildScrollView(child: Text(entry.stack.toString())),
             actions: <Widget>[
               TextButton(
-                child: Text('OK'),
+                child: Text(Localized.text('ox_common.ok')),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
