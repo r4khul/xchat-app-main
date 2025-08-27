@@ -39,7 +39,7 @@ class OXNavigator extends Navigator {
     if (context == null) return ;
 
     // Remove the current focus
-    FocusScope.of(context).requestFocus(FocusNode());
+    FocusScope.of(context).unfocus();
 
     if (canPop(context)) {
       Navigator.pop(context, result);
@@ -55,7 +55,7 @@ class OXNavigator extends Navigator {
   /// Flutter stack
   static void popToRoot<T extends Object>(BuildContext context) {
     // Remove the current focus
-    FocusScope.of(context).requestFocus(FocusNode());
+    FocusScope.of(context).unfocus();
 
     final navigator = Navigator.of(context, rootNavigator: true);
     if (navigator.canPop()) {
@@ -77,7 +77,7 @@ class OXNavigator extends Navigator {
       return true;
     }());
     // Remove the current focus
-    FocusScope.of(context).requestFocus(FocusNode());
+    FocusScope.of(context).unfocus();
     bool isFindPage = false;
     int prepage = 0;
     Navigator.popUntil(context, (Route<dynamic> route) {
@@ -106,15 +106,13 @@ class OXNavigator extends Navigator {
 
   static void close(BuildContext context) {
     // Remove the current focus
-    FocusScope.of(context).requestFocus(FocusNode());
+    FocusScope.of(context).unfocus();
     SystemNavigator.pop();
   }
 
   @optionalTypeArgs
   static Future<T?> _push<T extends Object?>(
       BuildContext context, Route<T> route) {
-    // // Remove the current focus
-    // FocusScope.of(context).requestFocus(FocusNode());
     _pushPreHandle(context);
     return Navigator.push<T>(context, route);
   }

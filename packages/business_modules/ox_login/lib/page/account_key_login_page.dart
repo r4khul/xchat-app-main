@@ -159,7 +159,7 @@ class _AccountKeyLoginPageState extends State<AccountKeyLoginPage> with LoginMan
   void _loginWithKey() async {
     if (_isLoggingIn || _accountKeyInput.isEmpty) return;
 
-    FocusScope.of(context).requestFocus(FocusNode());
+    FocusScope.of(context).unfocus();
     setState(() {
       _isLoggingIn = true;
     });
