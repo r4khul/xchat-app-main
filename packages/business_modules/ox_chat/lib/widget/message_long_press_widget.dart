@@ -4,6 +4,7 @@ import 'package:ox_chat/model/constant.dart';
 import 'package:ox_chat/utils/custom_message_utils.dart';
 import 'package:ox_chat/utils/general_handler/chat_general_handler.dart';
 import 'package:ox_common/business_interface/ox_chat/custom_message_type.dart';
+import 'package:ox_common/utils/string_utils.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import 'package:super_context_menu/super_context_menu.dart';
 
@@ -16,8 +17,19 @@ class MessageLongPressMenu {
     final List<MenuElement> menuItems = [];
     
     // Copy action for text messages and image sending messages
-    if (message is types.TextMessage || 
-        (message is types.CustomMessage && message.customType == CustomMessageType.imageSending)) {
+    final isImageMsgCanCopy = () {
+      if (message is! types.CustomMessage || message.customType != CustomMessageType.imageSending)
+        return false;
+
+      final imageUri = ImageSendingMessageEx(message).url;
+      final path = ImageSendingMessageEx(message).path;
+      final actualImageUri = path.isNotEmpty ? path : imageUri;
+      if (actualImageUri.isEmpty || actualImageUri.isRemoteURL) return false;
+
+      return true;
+    }();
+
+    if (message is types.TextMessage || isImageMsgCanCopy) {
       menuItems.add(
         MenuAction(
           title: Localized.text('ox_chat.message_menu_copy'),

@@ -26,6 +26,7 @@ import 'package:ox_common/upload/upload_utils.dart';
 import 'package:ox_common/utils/aes_encrypt_utils.dart';
 import 'package:ox_common/utils/clipboard.dart';
 import 'package:ox_common/utils/encode_utils.dart';
+import 'package:ox_common/utils/file_encryption_utils.dart';
 import 'package:ox_common/utils/file_utils.dart';
 import 'package:ox_common/utils/image_picker_utils.dart';
 import 'package:ox_common/utils/list_extension.dart';
@@ -528,7 +529,39 @@ extension ChatMenuHandlerEx on ChatGeneralHandler {
   void _copyMenuItemPressHandler(BuildContext context, types.Message message) async {
     if (message is types.TextMessage) {
       TookKit.copyKey(context, message.text, '');
+    } else if (message is types.CustomMessage && message.customType == CustomMessageType.imageSending) {
+      await _copyImageToClipboardFromMessage(message);
     }
+  }
+
+  /// Copy image to clipboard from message by getting binary data
+  Future<void> _copyImageToClipboardFromMessage(types.CustomMessage message) async {
+    final imageUri = ImageSendingMessageEx(message).url;
+    final path = ImageSendingMessageEx(message).path;
+    final decryptKey = ImageSendingMessageEx(message).encryptedKey;
+    final decryptNonce = ImageSendingMessageEx(message).encryptedNonce;
+    
+    // Determine the actual image source
+    final actualImageUri = path.isNotEmpty ? path : imageUri;
+    if (actualImageUri.isEmpty || actualImageUri.isRemoteURL) return;
+
+    Uint8List imageData;
+    if (actualImageUri.isImageBase64) {
+      imageData = await Base64ImageProvider.decodeBase64ToBytes(actualImageUri);
+    } else {
+      final imageFile = File(actualImageUri);
+      if (decryptKey != null) {
+        imageData = await FileEncryptionUtils.decryptFileInMemory(
+          imageFile,
+          decryptKey,
+          decryptNonce,
+        );
+      } else {
+        imageData = await imageFile.readAsBytes();
+      }
+    }
+
+    await OXClipboard.copyImageToClipboardFromBytes(imageData);
   }
 
   /// Handles the press event for the "Delete" button in a menu item.
