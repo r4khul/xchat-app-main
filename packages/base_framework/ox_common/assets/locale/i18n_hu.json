@@ -120,5 +120,12 @@
   "connect_to_wallet": "[connect_to_wallet]",
   "success": "[success]",
   "failed_to_process_nwc": "[failed_to_process_nwc]",
-  "failed_to_process_nwc_scan": "[failed_to_process_nwc_scan]"
+  "failed_to_process_nwc_scan": "[failed_to_process_nwc_scan]",
+  "monday": "Hétfő",
+  "tuesday": "Kedd",
+  "wednesday": "Szerda",
+  "thursday": "Csütörtök",
+  "friday": "Péntek",
+  "saturday": "Szombat",
+  "sunday": "Vasárnap"
 }

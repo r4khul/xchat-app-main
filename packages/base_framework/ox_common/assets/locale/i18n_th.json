@@ -120,5 +120,12 @@
   "connect_to_wallet": "เชื่อมต่อกับกระเป๋าเงินนี้?",
   "success": "สำเร็จ",
   "failed_to_process_nwc": "ล้มเหลวในการประมวลผล NWC",
-  "failed_to_process_nwc_scan": "ล้มเหลวในการประมวลผลการสแกน NWC"
+  "failed_to_process_nwc_scan": "ล้มเหลวในการประมวลผลการสแกน NWC",
+  "monday": "จันทร์",
+  "tuesday": "อังคาร",
+  "wednesday": "พุธ",
+  "thursday": "พฤหัสบดี",
+  "friday": "ศุกร์",
+  "saturday": "เสาร์",
+  "sunday": "อาทิตย์"
 }

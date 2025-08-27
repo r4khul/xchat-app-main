@@ -120,5 +120,12 @@
   "connect_to_wallet": "连接到此钱包？",
   "success": "成功",
   "failed_to_process_nwc": "处理 NWC 失败",
-  "failed_to_process_nwc_scan": "处理 NWC 扫描失败"
+  "failed_to_process_nwc_scan": "处理 NWC 扫描失败",
+  "monday": "星期一",
+  "tuesday": "星期二",
+  "wednesday": "星期三",
+  "thursday": "星期四",
+  "friday": "星期五",
+  "saturday": "星期六",
+  "sunday": "星期日"
 }

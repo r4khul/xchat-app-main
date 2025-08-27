@@ -120,5 +120,12 @@
   "connect_to_wallet": "このウォレットに接続しますか？",
   "success": "成功",
   "failed_to_process_nwc": "NWCの処理に失敗しました",
-  "failed_to_process_nwc_scan": "NWCスキャンの処理に失敗しました"
+  "failed_to_process_nwc_scan": "NWCスキャンの処理に失敗しました",
+  "monday": "月曜日",
+  "tuesday": "火曜日",
+  "wednesday": "水曜日",
+  "thursday": "木曜日",
+  "friday": "金曜日",
+  "saturday": "土曜日",
+  "sunday": "日曜日"
 }

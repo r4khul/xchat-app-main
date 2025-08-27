@@ -120,5 +120,12 @@
   "connect_to_wallet": "이 지갑에 연결하시겠습니까?",
   "success": "성공",
   "failed_to_process_nwc": "NWC 처리 실패",
-  "failed_to_process_nwc_scan": "NWC 스캔 처리 실패"
+  "failed_to_process_nwc_scan": "NWC 스캔 처리 실패",
+  "monday": "월요일",
+  "tuesday": "화요일",
+  "wednesday": "수요일",
+  "thursday": "목요일",
+  "friday": "금요일",
+  "saturday": "토요일",
+  "sunday": "일요일"
 }

@@ -120,5 +120,12 @@
   "connect_to_wallet": "الاتصال بهذه المحفظة؟",
   "success": "نجح",
   "failed_to_process_nwc": "فشل في معالجة NWC",
-  "failed_to_process_nwc_scan": "فشل في معالجة مسح NWC"
+  "failed_to_process_nwc_scan": "فشل في معالجة مسح NWC",
+  "monday": "الاثنين",
+  "tuesday": "الثلاثاء",
+  "wednesday": "الأربعاء",
+  "thursday": "الخميس",
+  "friday": "الجمعة",
+  "saturday": "السبت",
+  "sunday": "الأحد"
 }

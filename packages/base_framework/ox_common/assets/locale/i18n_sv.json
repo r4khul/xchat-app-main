@@ -120,5 +120,12 @@
   "connect_to_wallet": "Anslut till denna plånbok?",
   "success": "Framgång",
   "failed_to_process_nwc": "Misslyckades att bearbeta NWC",
-  "failed_to_process_nwc_scan": "Misslyckades att bearbeta NWC-scanning"
+  "failed_to_process_nwc_scan": "Misslyckades att bearbeta NWC-scanning",
+  "monday": "Måndag",
+  "tuesday": "Tisdag",
+  "wednesday": "Onsdag",
+  "thursday": "Torsdag",
+  "friday": "Fredag",
+  "saturday": "Lördag",
+  "sunday": "Söndag"
 }

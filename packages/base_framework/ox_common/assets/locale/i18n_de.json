@@ -120,5 +120,12 @@
   "connect_to_wallet": "Mit diesem Wallet verbinden?",
   "success": "Erfolg",
   "failed_to_process_nwc": "NWC konnte nicht verarbeitet werden",
-  "failed_to_process_nwc_scan": "NWC-Scan konnte nicht verarbeitet werden"
+  "failed_to_process_nwc_scan": "NWC-Scan konnte nicht verarbeitet werden",
+  "monday": "Montag",
+  "tuesday": "Dienstag",
+  "wednesday": "Mittwoch",
+  "thursday": "Donnerstag",
+  "friday": "Freitag",
+  "saturday": "Samstag",
+  "sunday": "Sonntag"
 }

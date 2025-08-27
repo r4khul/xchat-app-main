@@ -120,5 +120,12 @@
   "connect_to_wallet": "[connect_to_wallet]",
   "success": "[success]",
   "failed_to_process_nwc": "[failed_to_process_nwc]",
-  "failed_to_process_nwc_scan": "[failed_to_process_nwc_scan]"
+  "failed_to_process_nwc_scan": "[failed_to_process_nwc_scan]",
+  "monday": "Δευτέρα",
+  "tuesday": "Τρίτη",
+  "wednesday": "Τετάρτη",
+  "thursday": "Πέμπτη",
+  "friday": "Παρασκευή",
+  "saturday": "Σάββατο",
+  "sunday": "Κυριακή"
 }

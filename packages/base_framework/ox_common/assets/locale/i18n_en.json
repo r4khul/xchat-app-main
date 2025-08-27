@@ -120,5 +120,12 @@
   "connect_to_wallet": "Connect to this wallet?",
   "success": "Success",
   "failed_to_process_nwc": "Failed to process NWC",
-  "failed_to_process_nwc_scan": "Failed to process NWC scan"
+  "failed_to_process_nwc_scan": "Failed to process NWC scan",
+  "monday": "Monday",
+  "tuesday": "Tuesday",
+  "wednesday": "Wednesday",
+  "thursday": "Thursday",
+  "friday": "Friday",
+  "saturday": "Saturday",
+  "sunday": "Sunday"
 }

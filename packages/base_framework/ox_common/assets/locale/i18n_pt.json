@@ -120,5 +120,12 @@
   "connect_to_wallet": "Conectar a esta carteira?",
   "success": "Sucesso",
   "failed_to_process_nwc": "Falha ao processar NWC",
-  "failed_to_process_nwc_scan": "Falha ao processar scan NWC"
+  "failed_to_process_nwc_scan": "Falha ao processar scan NWC",
+  "monday": "Segunda-feira",
+  "tuesday": "Terça-feira",
+  "wednesday": "Quarta-feira",
+  "thursday": "Quinta-feira",
+  "friday": "Sexta-feira",
+  "saturday": "Sábado",
+  "sunday": "Domingo"
 }

@@ -120,5 +120,12 @@
   "connect_to_wallet": "Bu cüzdana bağlan?",
   "success": "Başarılı",
   "failed_to_process_nwc": "NWC işlenemedi",
-  "failed_to_process_nwc_scan": "NWC taraması işlenemedi"
+  "failed_to_process_nwc_scan": "NWC taraması işlenemedi",
+  "monday": "Pazartesi",
+  "tuesday": "Salı",
+  "wednesday": "Çarşamba",
+  "thursday": "Perşembe",
+  "friday": "Cuma",
+  "saturday": "Cumartesi",
+  "sunday": "Pazar"
 }

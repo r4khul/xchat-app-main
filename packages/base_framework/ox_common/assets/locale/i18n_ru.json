@@ -120,5 +120,12 @@
   "connect_to_wallet": "Подключиться к этому кошельку?",
   "success": "Успех",
   "failed_to_process_nwc": "Не удалось обработать NWC",
-  "failed_to_process_nwc_scan": "Не удалось обработать сканирование NWC"
+  "failed_to_process_nwc_scan": "Не удалось обработать сканирование NWC",
+  "monday": "Понедельник",
+  "tuesday": "Вторник",
+  "wednesday": "Среда",
+  "thursday": "Четверг",
+  "friday": "Пятница",
+  "saturday": "Суббота",
+  "sunday": "Воскресенье"
 }

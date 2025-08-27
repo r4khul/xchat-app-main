@@ -120,5 +120,12 @@
   "connect_to_wallet": "Se connecter à ce portefeuille ?",
   "success": "Succès",
   "failed_to_process_nwc": "Échec du traitement NWC",
-  "failed_to_process_nwc_scan": "Échec du traitement du scan NWC"
+  "failed_to_process_nwc_scan": "Échec du traitement du scan NWC",
+  "monday": "Lundi",
+  "tuesday": "Mardi",
+  "wednesday": "Mercredi",
+  "thursday": "Jeudi",
+  "friday": "Vendredi",
+  "saturday": "Samedi",
+  "sunday": "Dimanche"
 }

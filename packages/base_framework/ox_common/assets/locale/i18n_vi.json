@@ -120,5 +120,12 @@
   "connect_to_wallet": "Kết nối với ví này?",
   "success": "Thành công",
   "failed_to_process_nwc": "Xử lý NWC thất bại",
-  "failed_to_process_nwc_scan": "Xử lý quét NWC thất bại"
+  "failed_to_process_nwc_scan": "Xử lý quét NWC thất bại",
+  "monday": "Thứ Hai",
+  "tuesday": "Thứ Ba",
+  "wednesday": "Thứ Tư",
+  "thursday": "Thứ Năm",
+  "friday": "Thứ Sáu",
+  "saturday": "Thứ Bảy",
+  "sunday": "Chủ Nhật"
 }
