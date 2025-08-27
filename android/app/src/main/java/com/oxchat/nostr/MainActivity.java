@@ -70,9 +70,9 @@ public class MainActivity extends FlutterFragmentActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        getOpenData(getIntent());
         // Only process deep links if there's actual data
         Intent currentIntent = getIntent();
+        if (currentIntent != null && currentIntent.getData() != null) {
             getOpenData(currentIntent);
             handleIntent(currentIntent);
         }
