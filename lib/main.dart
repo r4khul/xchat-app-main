@@ -235,7 +235,7 @@ class MainState extends State<MainApp>
     switch (state) {
       case AppLifecycleState.resumed:
         PromptToneManager.sharedInstance.isAppPaused = false;
-        if (LoginManager.instance.isLoginCircle)
+        if (!LoginManager.instance.isLoginCircle) return;
         SchemeHelper.tryHandlerForOpenAppScheme();
         keepHeartBeat();
         // For handling notification permission being granted
@@ -243,7 +243,7 @@ class MainState extends State<MainApp>
         break;
       case AppLifecycleState.paused:
         PromptToneManager.sharedInstance.isAppPaused = true;
-        if (LoginManager.instance.isLoginCircle)
+        if (!LoginManager.instance.isLoginCircle) return;
         lastUserInteractionTime = DateTime.now().millisecondsSinceEpoch;
         break;
       default:
