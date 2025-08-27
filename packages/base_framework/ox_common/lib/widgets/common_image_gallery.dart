@@ -526,9 +526,9 @@ class _CommonImageGalleryState extends State<CommonImageGallery>
     unawaited(OXLoading.dismiss());
 
     if (result != null) {
-              unawaited(CommonToast.instance.show(context, Localized.text('ox_common.str_saved_to_album')));
-      } else {
-        unawaited(CommonToast.instance.show(context, Localized.text('ox_common.str_save_failed')));
+      unawaited(CommonToast.instance.show(context, Localized.text('ox_common.str_saved_to_album')));
+    } else {
+      unawaited(CommonToast.instance.show(context, Localized.text('ox_common.str_save_failed')));
     }
   }
 
