@@ -3,6 +3,7 @@
   "send_message": "إرسال رسالة",
   "delete": "حذف",
   "message_menu_copy": "نسخ",
+  "message_menu_save": "حفظ الصورة",
   "message_menu_delete": "حذف",
   "message_menu_report": "تبليغ",
   "report_reason_title": "ماذا تريد التبليغ عنه؟",

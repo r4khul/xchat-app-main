@@ -7,22 +7,21 @@ import 'package:extended_image/extended_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/ox_common.dart';
 import 'package:ox_common/utils/adapt.dart';
-import 'package:ox_common/utils/file_encryption_utils.dart';
+import 'package:ox_common/utils/image_save_utils.dart';
 import 'package:ox_common/utils/scan_utils.dart';
 import 'package:ox_common/utils/string_utils.dart';
 import 'package:ox_common/widgets/common_image.dart';
+import 'package:ox_common/widgets/common_loading.dart';
+import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:screenshot/screenshot.dart';
 
 import '../utils/theme_color.dart';
-import 'common_loading.dart';
-import 'common_toast.dart';
 
 typedef DoubleClickAnimationListener = void Function();
 
@@ -451,83 +450,17 @@ class _CommonImageGalleryState extends State<CommonImageGallery>
     final decryptKey = widget.imageList[pageIndex].decryptedKey;
     final decryptNonce = widget.imageList[pageIndex].decryptedNonce;
     final fileName = imageUri.split('/').lastOrNull?.split('?').firstOrNull ?? '';
-    final isGIF = fileName.contains('.gif');
-    final isEncryptedFile = decryptKey != null;
 
-    unawaited(OXLoading.show());
+    // Use ImageSaveUtils to save the image
+    final success = await ImageSaveUtils.saveImageToGallery(
+      imageUri: imageUri,
+      decryptKey: decryptKey,
+      decryptNonce: decryptNonce,
+      context: context,
+      fileName: fileName,
+    );
 
-    var result;
-    if (imageUri.isRemoteURL) {
-      // Remote image
-      final imageManager = await CLCacheManager.getCircleCacheManager(CacheFileType.image);
-      try {
-        File imageFile = await imageManager.getSingleFile(imageUri)
-            .timeout(const Duration(seconds: 30), onTimeout: () {
-          throw Exception('time out');
-        });
-
-        switch ((isGIF, isEncryptedFile)) {
-          case (true, false):
-            result = await ImageGallerySaverPlus.saveFile(
-              imageFile.path,
-              isReturnPathOfIOS: true,
-            );
-            break;
-
-          case (true, true):
-            final decryptedFile = await FileEncryptionUtils.decryptFile(
-              encryptedFile: imageFile,
-              decryptKey: decryptKey!,
-              decryptNonce: decryptNonce,
-            );
-            result = await ImageGallerySaverPlus.saveFile(
-              decryptedFile.path,
-              isReturnPathOfIOS: true,
-            );
-            decryptedFile.delete();
-            break;
-
-          case (false, false):
-            final imageData = await imageFile.readAsBytes();
-            result = await ImageGallerySaverPlus.saveImage(Uint8List.fromList(imageData));
-            break;
-
-          case (false, true):
-            final imageData = await FileEncryptionUtils.decryptFileInMemory(
-              imageFile,
-              decryptKey!,
-              decryptNonce,
-            );
-            result = await ImageGallerySaverPlus.saveImage(Uint8List.fromList(imageData));
-            break;
-        }
-      } catch (e) {
-        unawaited(CommonToast.instance.show(context, e.toString()));
-      }
-    } else if (imageUri.isImageBase64) {
-      final imageData = await Base64ImageProvider.decodeBase64ToBytes(imageUri);
-      result = await ImageGallerySaverPlus.saveImage(imageData, quality: 100);
-    } else {
-      // Local image
-      final imageFile = File(imageUri);
-      if (decryptKey != null) {
-        final decryptData = await FileEncryptionUtils.decryptFileInMemory(
-          imageFile,
-          decryptKey,
-          decryptNonce,
-        );
-        result = await ImageGallerySaverPlus.saveImage(decryptData);
-      } else {
-        final imageData = await imageFile.readAsBytes();
-        result = await ImageGallerySaverPlus.saveImage(imageData);
-      }
-    }
-
-    unawaited(OXLoading.dismiss());
-
-    if (result != null) {
-      unawaited(CommonToast.instance.show(context, Localized.text('ox_common.str_saved_to_album')));
-    } else {
+    if (!success) {
       unawaited(CommonToast.instance.show(context, Localized.text('ox_common.str_save_failed')));
     }
   }

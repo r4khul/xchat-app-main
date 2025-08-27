@@ -3,6 +3,7 @@
   "send_message": "發送訊息",
   "delete": "刪除",
   "message_menu_copy": "複製",
+  "message_menu_save": "儲存圖片",
   "message_menu_delete": "刪除",
   "message_menu_report": "舉報",
   "report_reason_title": "您想舉報什麼？",

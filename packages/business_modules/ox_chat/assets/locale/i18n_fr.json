@@ -3,6 +3,7 @@
   "send_message": "Envoyer un message",
   "delete": "Supprimer",
   "message_menu_copy": "Copier",
+  "message_menu_save": "Sauvegarder l'image",
   "message_menu_delete": "Supprimer",
   "message_menu_report": "Signaler",
   "report_reason_title": "QUE VOULEZ-VOUS SIGNALER ?",

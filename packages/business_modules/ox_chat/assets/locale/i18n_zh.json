@@ -3,6 +3,7 @@
   "send_message": "发送消息",
   "delete": "删除",
   "message_menu_copy": "复制",
+  "message_menu_save": "保存图片",
   "message_menu_delete": "删除",
   "message_menu_report": "举报",
   "report_reason_title": "您想举报什么？",

@@ -3,6 +3,7 @@
   "send_message": "메시지 보내기",
   "delete": "삭제",
   "message_menu_copy": "복사",
+  "message_menu_save": "이미지 저장",
   "message_menu_delete": "삭제",
   "message_menu_report": "신고",
   "report_reason_title": "무엇을 신고하시겠습니까?",

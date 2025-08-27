@@ -3,6 +3,7 @@
   "send_message": "ส่งข้อความ",
   "delete": "ลบ",
   "message_menu_copy": "คัดลอก",
+  "message_menu_save": "บันทึกรูปภาพ",
   "message_menu_delete": "ลบ",
   "message_menu_report": "รายงาน",
   "report_reason_title": "คุณต้องการรายงานอะไร?",

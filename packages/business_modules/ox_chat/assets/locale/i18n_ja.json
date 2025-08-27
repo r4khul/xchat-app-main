@@ -3,6 +3,7 @@
   "send_message": "メッセージを送信",
   "delete": "削除",
   "message_menu_copy": "コピー",
+  "message_menu_save": "画像を保存",
   "message_menu_delete": "削除",
   "message_menu_report": "通報",
   "report_reason_title": "何を通報しますか？",

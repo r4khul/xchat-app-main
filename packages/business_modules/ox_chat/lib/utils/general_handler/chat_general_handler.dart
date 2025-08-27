@@ -65,6 +65,7 @@ import 'package:nostr_core_dart/nostr.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:ox_usercenter/page/settings/file_server_page.dart';
 import 'package:ox_common/utils/file_server_helper.dart';
+import 'package:ox_common/utils/image_save_utils.dart';
 
 import '../../manager/chat_data_manager_models.dart';
 import 'chat_highlight_message_handler.dart';
@@ -508,6 +509,9 @@ extension ChatMenuHandlerEx on ChatGeneralHandler {
       case MessageLongPressEventType.copy:
         _copyMenuItemPressHandler(context, message);
         break;
+      case MessageLongPressEventType.save:
+        _saveMenuItemPressHandler(context, message);
+        break;
       case MessageLongPressEventType.delete:
         _deleteMenuItemPressHandler(context, message);
         break;
@@ -562,6 +566,31 @@ extension ChatMenuHandlerEx on ChatGeneralHandler {
     }
 
     await OXClipboard.copyImageToClipboardFromBytes(imageData);
+  }
+
+  /// Handles the press event for the "Save" button in a menu item.
+  void _saveMenuItemPressHandler(BuildContext context, types.Message message) async {
+    if (message is types.CustomMessage && message.customType == CustomMessageType.imageSending) {
+      final imageUri = ImageSendingMessageEx(message).url;
+      final path = ImageSendingMessageEx(message).path;
+      final decryptKey = ImageSendingMessageEx(message).encryptedKey;
+      final decryptNonce = ImageSendingMessageEx(message).encryptedNonce;
+      
+      final actualImageUri = path.isNotEmpty ? path : imageUri;
+      if (actualImageUri.isEmpty) return;
+
+      final success = await ImageSaveUtils.saveImageToGallery(
+        imageUri: actualImageUri,
+        decryptKey: decryptKey,
+        decryptNonce: decryptNonce,
+        context: context,
+        fileName: message.id,
+      );
+
+      if (!success) {
+        CommonToast.instance.show(context, 'Failed to save image');
+      }
+    }
   }
 
   /// Handles the press event for the "Delete" button in a menu item.
