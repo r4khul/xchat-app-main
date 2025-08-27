@@ -9,6 +9,7 @@
 #   2. 0xchat-core            → upgrade/isar4 (fixed)
 #   3. nostr-dart             → main  (flag: -n <branch>)
 #   4. nostr-mls-package      → main  (flag: -l <branch>)
+#   5. bitchat-flutter-plugin → master (flag: -b <branch>)
 # =============================================================================
 
 set -euo pipefail
@@ -17,12 +18,14 @@ main_path="$(pwd)"
 core_path="${main_path}/packages/0xchat-core"
 nostr_dart_path="${main_path}/packages/nostr-dart"
 nostr_mls_path="${main_path}/packages/nostr-mls-package"
+bitchat_path="${main_path}/packages/bitchat-flutter-plugin"
 
 # Default branches
 main_branch="main"
 core_branch="upgrade/isar4"       # Fixed
 nostr_branch="main"
 mls_branch="main"
+bitchat_branch="master"
 
 usage() {
   cat <<EOF
@@ -31,17 +34,19 @@ Options:
   -m <branch>   Branch name for main project          (default: main)
   -n <branch>   Branch name for packages/nostr-dart   (default: main)
   -l <branch>   Branch name for packages/nostr-mls-package (default: main)
+  -b <branch>   Branch name for packages/bitchat-flutter-plugin (default: master)
   -h            Show this help message
 EOF
   exit 1
 }
 
 # ------------------------- Parse CLI arguments ------------------------------
-while getopts ':m:n:l:h' opt; do
+while getopts ':m:n:l:b:h' opt; do
   case "$opt" in
     m) main_branch="$OPTARG" ;;
     n) nostr_branch="$OPTARG" ;;
     l) mls_branch="$OPTARG" ;;
+    b) bitchat_branch="$OPTARG" ;;
     h) usage ;;
     :) echo "Option -$OPTARG requires an argument."; exit 1 ;;
     \?) echo "Invalid option: -$OPTARG"; usage ;;
@@ -170,6 +175,7 @@ checkout_branch "$main_path" "$main_branch"
 checkout_branch "$core_path" "$core_branch"
 checkout_branch "$nostr_dart_path" "$nostr_branch"
 checkout_branch "$nostr_mls_path" "$mls_branch"
+checkout_branch "$bitchat_path" "$bitchat_branch"
 
 log_stage "Step 2: Installing Flutter dependencies"
 # Only run flutter pub get in the main project
