@@ -10,7 +10,6 @@ import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/utils/widget_tool.dart';
 import 'package:ox_common/widgets/avatar.dart';
 import 'package:chatcore/chat-core.dart';
-import 'package:ox_common/widgets/common_image.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 
 import 'session_list_data_controller.dart';
@@ -106,98 +105,54 @@ class _SessionListWidgetState extends State<SessionListWidget> {
     return ValueListenableBuilder(
       valueListenable: item.build$,
       builder: (context, value, _) {
-        return GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onTap: () => widget.itemOnTap(item),
-          child: buildSlidableWrapper(
-            context: context,
-            item: item,
-            child: buildItemContent(context, item)
+        return CLListItemActions(
+          actions: [
+            buildMuteAction(item),
+            buildDeleteAction(item),
+          ],
+          child: Builder(
+            builder: (context) {
+              return GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () {
+                  Slidable.of(context)?.close();
+                  widget.itemOnTap(item);
+                },
+                child: buildItemContent(item),
+              );
+            }
           ),
         );
       },
     );
   }
 
-  Widget buildSlidableWrapper({
-    required BuildContext context,
-    required SessionListViewModel item,
-    required Widget child,
-  }) {
-    return Slidable(
-      endActionPane: ActionPane(
-        extentRatio: 0.44,
-        motion: const ScrollMotion(),
-        children:[
-          buildMuteAction(
-            context: context,
-            item: item,
-          ),
-          buildDeleteAction(
-            context: context,
-            item: item,
-          ),
-        ],
-      ),
-      child: child,
-    );
-  }
-
-  CustomSlidableAction buildMuteAction({
-    required BuildContext context,
-    required SessionListViewModel item,
-  }) {
+  ItemAction buildMuteAction(SessionListViewModel item) {
     bool isMute = item.isMute;
-    return CustomSlidableAction(
-      onPressed: (BuildContext _) async {
+    return ItemAction(
+      id: 'mute',
+      label: Localized.text(
+        isMute ? 'ox_chat.un_mute_item' : 'ox_chat.mute_item',
+      ),
+      icon: isMute ? CupertinoIcons.volume_up : CupertinoIcons.volume_off,
+      onTap: (_) async {
         await ChatSessionUtils.setChatMute(item.sessionModel, !isMute);
         item.rebuild();
-      },
-      padding: EdgeInsets.zero,
-      backgroundColor: ColorToken.primaryContainer.of(context),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CommonImage(
-            iconName: isMute ? 'icon_unmute.png' : 'icon_mute.png',
-            size: 24.px,
-            color: ColorToken.onPrimaryContainer.of(context),
-            package: 'ox_chat',
-          ).setPaddingOnly(bottom: 8.px),
-          CLText.labelSmall(
-            Localized.text(isMute ? 'ox_chat.un_mute_item' : 'ox_chat.mute_item'),
-            colorToken: ColorToken.onPrimaryContainer,
-          ),
-        ],
-      ),
+        return true;
+      }
     );
   }
 
-  CustomSlidableAction buildDeleteAction({
-    required BuildContext context,
-    required SessionListViewModel item,
-  }) {
-    return CustomSlidableAction(
-      onPressed: (BuildContext _) async {
-        await _showDeleteOptions(context, item);
-      },
-      padding: EdgeInsets.zero,
-      backgroundColor: ColorToken.error.of(context),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CommonImage(
-            iconName: 'icon_chat_delete.png',
-            size: 24.px,
-            color: ColorToken.onError.of(context),
-            package: 'ox_chat',
-          ).setPaddingOnly(bottom: 8.px),
-          CLText.labelSmall(
-            Localized.text('ox_chat.delete'),
-            colorToken: ColorToken.onError,
-          ),
-        ],
-      ),
+  ItemAction buildDeleteAction(SessionListViewModel item) {
+    return ItemAction(
+      id: 'delete',
+      label: Localized.text('ox_chat.delete'),
+      icon: CupertinoIcons.delete_solid,
+      destructive: true,
+      onTap: (ctx) async {
+        await _showDeleteOptions(ctx, item);
+        return true;
+      }
     );
   }
 
@@ -520,7 +475,7 @@ class _SessionListWidgetState extends State<SessionListWidget> {
     }
   }
 
-  Widget buildItemContent(BuildContext context, SessionListViewModel item) {
+  Widget buildItemContent(SessionListViewModel item) {
     return ValueListenableBuilder(
       valueListenable: item.entity$,
       builder: (context, value, _) {
