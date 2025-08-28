@@ -23,7 +23,7 @@ class CLPopupMenuItem<T> {
   });
 }
 
-class CLPopupMenu<T> extends StatelessWidget {
+class CLPopupMenu<T> extends StatefulWidget {
   final Widget child;
   final List<CLPopupMenuItem<T>> items;
   final T? initialValue;
@@ -58,6 +58,12 @@ class CLPopupMenu<T> extends StatelessWidget {
     this.itemHeight = 44.0,
     this.trigger = CLPopupTrigger.tap,
   });
+  @override
+  State<CLPopupMenu<T>> createState() => _CLPopupMenuOuterState<T>();
+}
+
+class _CLPopupMenuOuterState<T> extends State<CLPopupMenu<T>> {
+  ValueNotifier<bool> keepHighlight$ = ValueNotifier(false);
 
   Offset get defaultOffset => const Offset(0, 8.0);
 
@@ -67,15 +73,59 @@ class CLPopupMenu<T> extends StatelessWidget {
   }
 
   Widget _buildPopupMenu(BuildContext context) {
+    switch (widget.trigger) {
+      case CLPopupTrigger.tap:
+        return _buildWithTapTrigger();
+      case CLPopupTrigger.longPress:
+        return _buildWithLongPressTrigger();
+    }
+  }
+
+  Widget _buildWithTapTrigger() {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: trigger == CLPopupTrigger.tap ? () => _showPopupMenu(context) : null,
-      onLongPress: trigger == CLPopupTrigger.longPress ? () => _showPopupMenu(context) : null,
-      child: child,
+      onTap: () => _showPopupMenu(context),
+      child: widget.child,
     );
   }
 
-  void _showPopupMenu(BuildContext context) {
+  Widget _buildWithLongPressTrigger() {
+    final highlightColor = ColorToken.primary.of(context).withValues(alpha: 0.08);
+    final Widget core = InkWell(
+      highlightColor: highlightColor,
+      splashColor: highlightColor,
+      onLongPress: () async {
+        keepHighlight$.value = true;
+        await _showPopupMenu(context);
+        keepHighlight$.value = false;
+      },
+      child: widget.child,
+    );
+    return Stack(
+      children: [
+        core,
+        if (PlatformStyle.isUseMaterial)
+          Positioned.fill(
+            child: ValueListenableBuilder(
+              valueListenable: keepHighlight$,
+              builder: (context, keepHighlight, child) {
+                if (!keepHighlight) return const SizedBox();
+                return child ?? const SizedBox();
+              },
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: highlightColor,
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Future _showPopupMenu(BuildContext context) {
     final RenderBox button = context.findRenderObject() as RenderBox;
     final RenderBox overlay = Navigator.of(context).overlay!.context.findRenderObject() as RenderBox;
     
@@ -86,26 +136,26 @@ class CLPopupMenu<T> extends StatelessWidget {
     
     final estimatedMenuWidth = PlatformStyle.isUseMaterial ? 200.0 : 250.0;
     const estimatedMenuItemHeight = 44.0;
-    final estimatedMenuHeight = items.length * estimatedMenuItemHeight;
-    
+    final estimatedMenuHeight = widget.items.length * estimatedMenuItemHeight;
+
     // Use the same default offset as Material design
-    final effectiveOffset = offset ?? defaultOffset;
-    
+    final effectiveOffset = widget.offset ?? defaultOffset;
+
     // Calculate position and direction based on whether scaleDirection is provided
     double left = buttonPosition.dx + effectiveOffset.dx;
     double top = buttonPosition.dy + buttonSize.height + effectiveOffset.dy; // Default: below button
-    Alignment direction = scaleDirection ?? Alignment.topLeft; // Default: expand downward
-    
-    if (scaleDirection != null) {
+    Alignment direction = widget.scaleDirection ?? Alignment.topLeft; // Default: expand downward
+
+    if (widget.scaleDirection != null) {
       // Use provided direction to determine position
-      if (scaleDirection == Alignment.bottomLeft) {
+      if (widget.scaleDirection == Alignment.bottomLeft) {
         // Upward expansion: position menu above button
         top = buttonPosition.dy - estimatedMenuHeight - effectiveOffset.dy;
-      } else if (scaleDirection == Alignment.topRight) {
+      } else if (widget.scaleDirection == Alignment.topRight) {
         // Leftward expansion: position menu to the left of button
         left = buttonPosition.dx - estimatedMenuWidth - effectiveOffset.dx;
         top = buttonPosition.dy + effectiveOffset.dy;
-      } else if (scaleDirection == Alignment.topLeft) {
+      } else if (widget.scaleDirection == Alignment.topLeft) {
         // Rightward expansion: position menu to the right of button
         left = buttonPosition.dx + buttonSize.width + effectiveOffset.dx;
         top = buttonPosition.dy + effectiveOffset.dy;
@@ -158,13 +208,13 @@ class CLPopupMenu<T> extends StatelessWidget {
     
     overlayEntry = OverlayEntry(
       builder: (context) => _CLPopupMenu<T>(
-        items: items,
+        items: widget.items,
         position: Offset(left, top),
         scaleDirection: direction,
         onSelected: (value) async {
           await removalCompleter.future;
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            onSelected?.call(value);
+            widget.onSelected?.call(value);
           });
         },
         onCanceled: () {
@@ -176,15 +226,17 @@ class CLPopupMenu<T> extends StatelessWidget {
                 removalCompleter.complete();
               }
             });
-            onCanceled?.call();
+            widget.onCanceled?.call();
           }
         },
         maxWidth: estimatedMenuWidth,
-        itemHeight: itemHeight,
+        itemHeight: widget.itemHeight,
       ),
     );
     
     overlayState.insert(overlayEntry);
+
+    return removalCompleter.future;
   }
 }
 

@@ -2,7 +2,7 @@
 //  OXCImageUtils.swift
 //  ox_common
 //
-//  Created by AI Assistant on 2025/1/27.
+//  Created by w on 2025/1/27.
 //
 
 import Cocoa
