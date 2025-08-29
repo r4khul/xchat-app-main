@@ -30,6 +30,7 @@ class CLMultiUserSelector extends StatefulWidget {
     super.key,
     this.userPubkeys,
     this.initialSelectedIds = const [],
+    this.excludeUserPubkeys = const [],
     required this.onChanged,
     this.title,
     this.maxSelectable,
@@ -38,6 +39,7 @@ class CLMultiUserSelector extends StatefulWidget {
 
   final List<String>? userPubkeys;
   final List<String> initialSelectedIds;
+  final List<String> excludeUserPubkeys;
   final void Function(List<SelectableUser> selected) onChanged;
   final String? title;
   final int? maxSelectable;
@@ -84,9 +86,12 @@ class _CLMultiUserSelectorState extends State<CLMultiUserSelector> {
         externalUsers: widget.userPubkeys?.map(
           (pubkey) => Account.sharedInstance.getUserNotifier(pubkey)
         ).toList(),
+        excludeUserPubkeys: widget.excludeUserPubkeys,
       );
     } else {
-      await _searchManager.initialize();
+      await _searchManager.initialize(
+        excludeUserPubkeys: widget.excludeUserPubkeys,
+      );
     }
 
     _allUsers = _searchManager.allUsers;

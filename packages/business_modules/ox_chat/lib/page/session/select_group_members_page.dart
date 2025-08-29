@@ -3,6 +3,7 @@ import 'package:ox_common/component.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/widgets/multi_user_selector.dart';
 import 'package:ox_localizable/ox_localizable.dart';
+import 'package:ox_common/login/login_manager.dart';
 
 import 'group_creation_page.dart';
 
@@ -16,11 +17,11 @@ class SelectGroupMembersPage extends StatefulWidget {
 class _SelectGroupMembersPageState extends State<SelectGroupMembersPage> {
   List<SelectableUser> _selectedUsers = [];
 
-
   @override
   Widget build(BuildContext context) {
     return CLMultiUserSelector(
       title: Localized.text('ox_chat.str_new_group'),
+      excludeUserPubkeys: [LoginManager.instance.currentPubkey],
       onChanged: _onSelectionChanged,
       actions: [
         CLButton.text(
