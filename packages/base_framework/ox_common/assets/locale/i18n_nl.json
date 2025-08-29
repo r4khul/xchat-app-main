@@ -148,5 +148,18 @@
   "september": "September",
   "october": "Oktober",
   "november": "November",
-  "december": "December"
+  "december": "December",
+  "text_size": "Tekstgrootte",
+  "edit_photo": "Foto bewerken",
+  "image_failed_to_load": "Afbeelding kon niet worden geladen",
+  "circles": "Cirkels",
+  "show_private_key": "Privésleutel tonen",
+  "by_creating_account_accept": "Door uw account aan te maken, accepteert u",
+  "and": "en",
+  "no_recents": "Geen recente",
+  "powered_by_giphy": "Aangedreven door GIPHY",
+  "search": "Zoeken",
+  "str_recent_chats": "Recente chats",
+  "str_title_contacts": "Contacten",
+  "str_title_groups": "Groepen"
 }

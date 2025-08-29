@@ -183,7 +183,7 @@ class _ChatChooseSharePageState extends State<ChatChooseSharePage> with ShareIte
                       fit: BoxFit.fill,
                     ),
                   ),
-                  hintText: 'search'.localized(),
+                  hintText: Localized.text('ox_common.search'),
                   hintStyle: TextStyle(
                     fontSize: Adapt.px(16),
                     fontWeight: FontWeight.w400,

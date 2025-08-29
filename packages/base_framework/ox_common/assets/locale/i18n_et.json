@@ -148,5 +148,18 @@
   "september": "September",
   "october": "Oktoober",
   "november": "November",
-  "december": "Detsember"
+  "december": "Detsember",
+  "text_size": "Teksti suurus",
+  "edit_photo": "Redigeeri fotot",
+  "image_failed_to_load": "Pilti ei õnnestunud laadida",
+  "circles": "Ringid",
+  "show_private_key": "Näita privaatvõtit",
+  "by_creating_account_accept": "Konto loomisel nõustute",
+  "and": "ja",
+  "no_recents": "Ei hiljutisi",
+  "powered_by_giphy": "Toetatud GIPHY poolt",
+  "search": "Otsi",
+  "str_recent_chats": "Hiljutised vestlused",
+  "str_title_contacts": "Kontaktid",
+  "str_title_groups": "Grupid"
 }

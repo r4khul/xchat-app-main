@@ -229,7 +229,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> with LoginManager
       text: TextSpan(
         style: Theme.of(context).textTheme.bodySmall,
         children: [
-          const TextSpan(text: 'By Creating your account you accept the '),
+          TextSpan(text: Localized.text('ox_common.by_creating_account_accept')),
           TextSpan(
             text: Localized.text('ox_login.terms_of_service'),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -239,7 +239,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> with LoginManager
             ),
             recognizer: TapGestureRecognizer()..onTap = _onTermsOfUseTap,
           ),
-          const TextSpan(text: ' and '),
+          TextSpan(text: Localized.text('ox_common.and')),
           TextSpan(
             text: Localized.text('ox_login.privacy_policy'),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(

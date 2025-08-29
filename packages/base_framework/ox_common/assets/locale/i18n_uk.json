@@ -148,5 +148,18 @@
   "september": "Вересень",
   "october": "Жовтень",
   "november": "Листопад",
-  "december": "Грудень"
+  "december": "Грудень",
+  "text_size": "Розмір тексту",
+  "edit_photo": "Редагувати фото",
+  "image_failed_to_load": "Не вдалося завантажити зображення",
+  "circles": "Кола",
+  "show_private_key": "Показати приватний ключ",
+  "by_creating_account_accept": "Створюючи обліковий запис, ви приймаєте",
+  "and": "і",
+  "no_recents": "Немає нещодавніх",
+  "powered_by_giphy": "Працює на GIPHY",
+  "search": "Пошук",
+  "str_recent_chats": "Останні чати",
+  "str_title_contacts": "Контакти",
+  "str_title_groups": "Групи"
 }

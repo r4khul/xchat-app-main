@@ -148,5 +148,18 @@
   "september": "Setembre",
   "october": "Octubre",
   "november": "Novembre",
-  "december": "Desembre"
+  "december": "Desembre",
+  "text_size": "Mida del text",
+  "edit_photo": "Editar foto",
+  "image_failed_to_load": "Error en carregar la imatge",
+  "circles": "Cercles",
+  "show_private_key": "Mostrar clau privada",
+  "by_creating_account_accept": "En crear el teu compte, acceptes",
+  "and": "i",
+  "no_recents": "Sense recents",
+  "powered_by_giphy": "Impulsat per GIPHY",
+  "search": "Cercar",
+  "str_recent_chats": "Xats recents",
+  "str_title_contacts": "Contactes",
+  "str_title_groups": "Grups"
 }

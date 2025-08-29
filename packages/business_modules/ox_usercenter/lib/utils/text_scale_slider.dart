@@ -9,6 +9,7 @@ import 'package:ox_common/utils/took_kit.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:ox_common/utils/widget_tool.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
+import 'package:ox_localizable/ox_localizable.dart';
 
 class TextScaleSlider extends StatefulWidget {
   final ValueChanged<double>? onChanged;
@@ -47,7 +48,7 @@ class _TextScaleSliderState extends State<TextScaleSlider> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              CLText.bodyLarge('Text Size',),
+              CLText.bodyLarge(Localized.text('ox_common.text_size'),),
               CLText.bodyLarge(getFormattedTextSize(_currentValue),),
             ],
           ).setPadding(EdgeInsets.symmetric(horizontal: 16.px)),

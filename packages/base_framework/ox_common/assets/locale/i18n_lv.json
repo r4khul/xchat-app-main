@@ -148,5 +148,18 @@
   "september": "Septembris",
   "october": "Oktobris",
   "november": "Novembris",
-  "december": "Decembris"
+  "december": "Decembris",
+  "text_size": "Teksta lielums",
+  "edit_photo": "Rediģēt foto",
+  "image_failed_to_load": "Neizdevās ielādēt attēlu",
+  "circles": "Aplis",
+  "show_private_key": "Rādīt privāto atslēgu",
+  "by_creating_account_accept": "Izveidojot kontu, jūs piekrītat",
+  "and": "un",
+  "no_recents": "Nav nesen",
+  "powered_by_giphy": "Darbina GIPHY",
+  "search": "Meklēt",
+  "str_recent_chats": "Nesenās sarunas",
+  "str_title_contacts": "Kontakti",
+  "str_title_groups": "Grupas"
 }

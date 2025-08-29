@@ -148,5 +148,18 @@
   "september": "Tháng 9",
   "october": "Tháng 10",
   "november": "Tháng 11",
-  "december": "Tháng 12"
+  "december": "Tháng 12",
+  "text_size": "Kích thước văn bản",
+  "edit_photo": "Chỉnh sửa ảnh",
+  "image_failed_to_load": "Không thể tải hình ảnh",
+  "circles": "Vòng tròn",
+  "show_private_key": "Hiển thị khóa riêng tư",
+  "by_creating_account_accept": "Bằng việc tạo tài khoản, bạn chấp nhận",
+  "and": "và",
+  "no_recents": "Không có gần đây",
+  "powered_by_giphy": "Được hỗ trợ bởi GIPHY",
+  "search": "Tìm kiếm",
+  "str_recent_chats": "Trò chuyện gần đây",
+  "str_title_contacts": "Danh bạ",
+  "str_title_groups": "Nhóm"
 }

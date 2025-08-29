@@ -148,5 +148,18 @@
   "september": "Settembre",
   "october": "Ottobre",
   "november": "Novembre",
-  "december": "Dicembre"
+  "december": "Dicembre",
+  "text_size": "Dimensione testo",
+  "edit_photo": "Modifica foto",
+  "image_failed_to_load": "Impossibile caricare l'immagine",
+  "circles": "Cerchi",
+  "show_private_key": "Mostra chiave privata",
+  "by_creating_account_accept": "Creando il tuo account accetti",
+  "and": "e",
+  "no_recents": "Nessun recente",
+  "powered_by_giphy": "Alimentato da GIPHY",
+  "search": "Cerca",
+  "str_recent_chats": "Chat recenti",
+  "str_title_contacts": "Contatti",
+  "str_title_groups": "Gruppi"
 }

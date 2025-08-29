@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/utils/string_utils.dart';
 import 'package:ox_common/component.dart';
+import 'package:ox_localizable/ox_localizable.dart';
 
 import 'decryption_overlay.dart';
 
@@ -144,7 +145,7 @@ class ChatImagePreviewWidgetState extends State<ChatImagePreviewWidget> with Tic
             return Container(
               color: ColorToken.secondaryContainer.of(context),
               alignment: Alignment.center,
-              child: CLText.bodyMedium('Image failed to load'),
+              child: CLText.bodyMedium(Localized.text('ox_common.image_failed_to_load')),
             );
           },
           // loadingBuilder: (context, child, loadingProgress) {

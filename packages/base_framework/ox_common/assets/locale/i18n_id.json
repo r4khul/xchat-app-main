@@ -148,5 +148,18 @@
   "september": "September",
   "october": "Oktober",
   "november": "November",
-  "december": "Desember"
+  "december": "Desember",
+  "text_size": "Ukuran teks",
+  "edit_photo": "Edit foto",
+  "image_failed_to_load": "Gagal memuat gambar",
+  "circles": "Lingkaran",
+  "show_private_key": "Tampilkan kunci pribadi",
+  "by_creating_account_accept": "Dengan membuat akun, Anda menerima",
+  "and": "dan",
+  "no_recents": "Tidak ada yang terbaru",
+  "powered_by_giphy": "Didukung oleh GIPHY",
+  "search": "Cari",
+  "str_recent_chats": "Obrolan terbaru",
+  "str_title_contacts": "Kontak",
+  "str_title_groups": "Grup"
 }

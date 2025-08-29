@@ -148,5 +148,18 @@
   "september": "Září",
   "october": "Říjen",
   "november": "Listopad",
-  "december": "Prosinec"
+  "december": "Prosinec",
+  "text_size": "Velikost textu",
+  "edit_photo": "Upravit fotografii",
+  "image_failed_to_load": "Obrázek se nepodařilo načíst",
+  "circles": "Kruhy",
+  "show_private_key": "Zobrazit soukromý klíč",
+  "by_creating_account_accept": "Vytvořením účtu přijímáte",
+  "and": "a",
+  "no_recents": "Žádné nedávné",
+  "powered_by_giphy": "Poháněno GIPHY",
+  "search": "Hledat",
+  "str_recent_chats": "Poslední chaty",
+  "str_title_contacts": "Kontakty",
+  "str_title_groups": "Skupiny"
 }

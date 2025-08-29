@@ -148,5 +148,18 @@
   "september": "Σεπτέμβριος",
   "october": "Οκτώβριος",
   "november": "Νοέμβριος",
-  "december": "Δεκέμβριος"
+  "december": "Δεκέμβριος",
+  "text_size": "Μέγεθος κειμένου",
+  "edit_photo": "Επεξεργασία φωτογραφίας",
+  "image_failed_to_load": "Αποτυχία φόρτωσης εικόνας",
+  "circles": "Κύκλοι",
+  "show_private_key": "Εμφάνιση ιδιωτικού κλειδιού",
+  "by_creating_account_accept": "Δημιουργώντας τον λογαριασμό σας, αποδέχεστε",
+  "and": "και",
+  "no_recents": "Δεν υπάρχουν πρόσφατα",
+  "powered_by_giphy": "Τροφοδοτείται από GIPHY",
+  "search": "Αναζήτηση",
+  "str_recent_chats": "Πρόσφατες συνομιλίες",
+  "str_title_contacts": "Επαφές",
+  "str_title_groups": "Ομάδες"
 }

@@ -148,5 +148,18 @@
   "september": "September",
   "october": "Oktober",
   "november": "November",
-  "december": "December"
+  "december": "December",
+  "text_size": "Tekststørrelse",
+  "edit_photo": "Rediger foto",
+  "image_failed_to_load": "Kunne ikke indlæse billede",
+  "circles": "Cirkler",
+  "show_private_key": "Vis privat nøgle",
+  "by_creating_account_accept": "Ved at oprette din konto accepterer du",
+  "and": "og",
+  "no_recents": "Ingen nylige",
+  "powered_by_giphy": "Drevet af GIPHY",
+  "search": "Søg",
+  "str_recent_chats": "Seneste chats",
+  "str_title_contacts": "Kontakter",
+  "str_title_groups": "Grupper"
 }

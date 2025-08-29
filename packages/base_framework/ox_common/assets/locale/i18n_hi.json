@@ -148,5 +148,18 @@
   "september": "सितंबर",
   "october": "अक्टूबर",
   "november": "नवंबर",
-  "december": "दिसंबर"
+  "december": "दिसंबर",
+  "text_size": "टेक्स्ट का आकार",
+  "edit_photo": "फोटो संपादित करें",
+  "image_failed_to_load": "छवि लोड करने में विफल",
+  "circles": "सर्कल",
+  "show_private_key": "निजी कुंजी दिखाएं",
+  "by_creating_account_accept": "अपना खाता बनाकर आप स्वीकार करते हैं",
+  "and": "और",
+  "no_recents": "कोई हाल ही का नहीं",
+  "powered_by_giphy": "GIPHY द्वारा संचालित",
+  "search": "खोजें",
+  "str_recent_chats": "हाल के चैट",
+  "str_title_contacts": "संपर्क",
+  "str_title_groups": "समूह"
 }

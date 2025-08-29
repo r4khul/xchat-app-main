@@ -148,5 +148,18 @@
   "september": "سپتامبر",
   "october": "اکتبر",
   "november": "نوامبر",
-  "december": "دسامبر"
+  "december": "دسامبر",
+  "text_size": "اندازه متن",
+  "edit_photo": "ویرایش عکس",
+  "image_failed_to_load": "بارگذاری تصویر ناموفق بود",
+  "circles": "حلقه‌ها",
+  "show_private_key": "نمایش کلید خصوصی",
+  "by_creating_account_accept": "با ایجاد حساب کاربری خود، شما می‌پذیرید",
+  "and": "و",
+  "no_recents": "بدون اخیر",
+  "powered_by_giphy": "قدرت گرفته از GIPHY",
+  "search": "جستجو",
+  "str_recent_chats": "گفتگوهای اخیر",
+  "str_title_contacts": "مخاطبین",
+  "str_title_groups": "گروه‌ها"
 }

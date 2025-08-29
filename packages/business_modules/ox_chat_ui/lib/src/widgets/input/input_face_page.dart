@@ -1,6 +1,7 @@
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:ox_common/utils/theme_color.dart';
+import 'package:ox_localizable/ox_localizable.dart';
 
 class InputFacePage extends StatefulWidget {
   final TextEditingController? textController;
@@ -29,8 +30,8 @@ class _InputFacePageState extends State<InputFacePage> {
         showRecentsTab: false,
         recentsLimit: 28,
         checkPlatformCompatibility: false,
-        noRecents: const Text(
-          'No Recents',
+        noRecents: Text(
+          Localized.text('ox_common.no_recents'),
           style: TextStyle(fontSize: 20, color: Colors.black26),
           textAlign: TextAlign.center,
         ),

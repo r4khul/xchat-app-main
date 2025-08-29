@@ -148,5 +148,18 @@
   "september": "September",
   "october": "Oktober",
   "november": "November",
-  "december": "December"
+  "december": "December",
+  "text_size": "Textstorlek",
+  "edit_photo": "Redigera foto",
+  "image_failed_to_load": "Bild kunde inte laddas",
+  "circles": "Cirklar",
+  "show_private_key": "Visa privat nyckel",
+  "by_creating_account_accept": "Genom att skapa ditt konto accepterar du",
+  "and": "och",
+  "no_recents": "Inga senaste",
+  "powered_by_giphy": "Drivs av GIPHY",
+  "search": "Sök",
+  "str_recent_chats": "Senaste chattar",
+  "str_title_contacts": "Kontakter",
+  "str_title_groups": "Grupper"
 }

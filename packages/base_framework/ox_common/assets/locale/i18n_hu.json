@@ -148,5 +148,18 @@
   "september": "Szeptember",
   "october": "Október",
   "november": "November",
-  "december": "December"
+  "december": "December",
+  "text_size": "Szöveg mérete",
+  "edit_photo": "Fotó szerkesztése",
+  "image_failed_to_load": "A kép betöltése sikertelen",
+  "circles": "Körök",
+  "show_private_key": "Privát kulcs megjelenítése",
+  "by_creating_account_accept": "Fiók létrehozásával elfogadja",
+  "and": "és",
+  "no_recents": "Nincs legutóbbi",
+  "powered_by_giphy": "GIPHY által működtetett",
+  "search": "Keresés",
+  "str_recent_chats": "Legutóbbi beszélgetések",
+  "str_title_contacts": "Kapcsolatok",
+  "str_title_groups": "Csoportok"
 }

@@ -97,7 +97,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
           },
         ).setPaddingOnly(top: 8.px),
         CLButton.tonal(
-          child: CLText.labelLarge('Edit Photo'),
+          child: CLText.labelLarge(Localized.text('ox_common.edit_photo')),
           height: 30.px,
           padding: EdgeInsets.symmetric(
             horizontal: 12.px,

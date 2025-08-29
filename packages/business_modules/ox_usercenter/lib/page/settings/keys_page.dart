@@ -146,7 +146,7 @@ class _KeysPageState extends State<KeysPage> {
             vertical: 12.px,
           ),
           expanded: true,
-          text: 'Show Private Key',
+          text: Localized.text('ox_common.show_private_key'),
           onTap: isLoading ? null : () => isShowPriv$.value = true,
         );
       },

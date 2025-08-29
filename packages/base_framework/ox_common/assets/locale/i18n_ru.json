@@ -148,5 +148,18 @@
   "september": "Сентябрь",
   "october": "Октябрь",
   "november": "Ноябрь",
-  "december": "Декабрь"
+  "december": "Декабрь",
+  "text_size": "Размер текста",
+  "edit_photo": "Редактировать фото",
+  "image_failed_to_load": "Не удалось загрузить изображение",
+  "circles": "Круги",
+  "show_private_key": "Показать приватный ключ",
+  "by_creating_account_accept": "Создавая аккаунт, вы принимаете",
+  "and": "и",
+  "no_recents": "Нет недавних",
+  "powered_by_giphy": "Работает на GIPHY",
+  "search": "Поиск",
+  "str_recent_chats": "Недавние чаты",
+  "str_title_contacts": "Контакты",
+  "str_title_groups": "Группы"
 }

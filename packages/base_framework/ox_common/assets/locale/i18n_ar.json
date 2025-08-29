@@ -148,5 +148,18 @@
   "september": "سبتمبر",
   "october": "أكتوبر",
   "november": "نوفمبر",
-  "december": "ديسمبر"
+  "december": "ديسمبر",
+  "text_size": "حجم النص",
+  "edit_photo": "تعديل الصورة",
+  "image_failed_to_load": "فشل في تحميل الصورة",
+  "circles": "الدوائر",
+  "show_private_key": "إظهار المفتاح الخاص",
+  "by_creating_account_accept": "بإنشاء حسابك، فإنك تقبل",
+  "and": "و",
+  "no_recents": "لا توجد سجلات حديثة",
+  "powered_by_giphy": "مدعوم من GIPHY",
+  "search": "بحث",
+  "str_recent_chats": "المحادثات الحديثة",
+  "str_title_contacts": "جهات الاتصال",
+  "str_title_groups": "المجموعات"
 }

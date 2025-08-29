@@ -55,7 +55,7 @@ class _GiphySearchPageState extends State<GiphySearchPage> {
           Padding(
             padding: EdgeInsets.only(bottom: bottomPadding > 0 ? bottomPadding : Adapt.px(12), top: Adapt.px(12)),
             child: Text(
-              'Powered by GIPHY',
+              Localized.text('ox_common.powered_by_giphy'),
               style: TextStyle(
                   fontSize: Adapt.px(14),
                   fontWeight: FontWeight.w400,

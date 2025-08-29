@@ -148,5 +148,18 @@
   "september": "Eylül",
   "october": "Ekim",
   "november": "Kasım",
-  "december": "Aralık"
+  "december": "Aralık",
+  "text_size": "Metin boyutu",
+  "edit_photo": "Fotoğrafı düzenle",
+  "image_failed_to_load": "Resim yüklenemedi",
+  "circles": "Daireler",
+  "show_private_key": "Özel anahtarı göster",
+  "by_creating_account_accept": "Hesabınızı oluşturarak kabul ediyorsunuz",
+  "and": "ve",
+  "no_recents": "Son yok",
+  "powered_by_giphy": "GIPHY tarafından desteklenir",
+  "search": "Ara",
+  "str_recent_chats": "Son sohbetler",
+  "str_title_contacts": "Kişiler",
+  "str_title_groups": "Gruplar"
 }

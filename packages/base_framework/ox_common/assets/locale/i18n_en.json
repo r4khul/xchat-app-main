@@ -148,5 +148,18 @@
   "september": "September",
   "october": "October",
   "november": "November",
-  "december": "December"
+  "december": "December",
+  "text_size": "Text Size",
+  "edit_photo": "Edit Photo",
+  "image_failed_to_load": "Image failed to load",
+  "circles": "Circles",
+  "show_private_key": "Show Private Key",
+  "by_creating_account_accept": "By Creating your account you accept the ",
+  "and": " and ",
+  "no_recents": "No Recents",
+  "powered_by_giphy": "Powered by Giphy",
+  "search": "Search",
+  "str_recent_chats": "Recent Chats",
+  "str_title_contacts": "Contacts",
+  "str_title_groups": "Groups"
 }
