@@ -410,7 +410,7 @@ extension ScanAnalysisHandlerEx on ScanUtils {
     action: (String str, BuildContext context) async {
       bool isLogin = LoginManager.instance.isLoginCircle;
       if (!isLogin) {
-        CommonToast.instance.show(context, 'please_sign_in'.commonLocalized());
+        CommonToast.instance.show(context, 'str_please_sign_in'.commonLocalized());
         return false;
       }
 
@@ -468,7 +468,7 @@ extension ScanAnalysisHandlerEx on ScanUtils {
     action: (String str, BuildContext context) async {
       bool isLogin = LoginManager.instance.isLoginCircle;
       if (!isLogin) {
-        CommonToast.instance.show(context, 'please_sign_in'.commonLocalized());
+        CommonToast.instance.show(context, 'str_please_sign_in'.commonLocalized());
         return false;
       }
 
@@ -503,7 +503,7 @@ extension ScanAnalysisHandlerEx on ScanUtils {
     action: (String nwcURI, BuildContext context) async {
       bool isLogin = LoginManager.instance.isLoginCircle;
       if (!isLogin) {
-        CommonToast.instance.show(context, 'please_sign_in'.commonLocalized());
+        CommonToast.instance.show(context, 'str_please_sign_in'.commonLocalized());
         return false;
       }
 

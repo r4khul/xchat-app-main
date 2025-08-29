@@ -51,13 +51,6 @@ class OXDateUtils {
     String key = weekdayKeys[weekday - 1];
     String localizedText = Localized.text(key);
     
-    if (localizedText == key) {
-      const List<String> englishWeekdays = [
-        'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
-      ];
-      return englishWeekdays[weekday - 1];
-    }
-    
     return localizedText;
   }
 
@@ -114,12 +107,9 @@ class OXDateUtils {
   /// Get Monthly copy
   static String monthString(int month) {
     if (month < 1 || month > 12) return '';
-    final enMonthList = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    if (localized.localeType == LocaleType.zh || localized.localeType == LocaleType.zh_tw) {
-      return '$month';
-    } else {
-      return enMonthList[--month];
-    }
+    final enMonthList = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+    final key = 'ox_common.${enMonthList[month - 1]}';
+      return Localized.text(key);
   }
 
   /// Get Daily copy

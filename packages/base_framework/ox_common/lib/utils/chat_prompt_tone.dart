@@ -6,20 +6,23 @@ import 'package:chatcore/chat-core.dart';
 import 'package:ox_common/utils/storage_key_tool.dart';
 import 'package:ox_common/utils/throttle_utils.dart';
 import 'package:ox_common/utils/user_config_tool.dart';
+import 'package:ox_localizable/ox_localizable.dart';
 
 import 'ox_userinfo_manager.dart';
 
 enum SoundType { Message_Received, Message_Sent, Zap_Received, Zap_Sent }
 
 enum SoundTheme {
-  classic(1, 'classic', 'Default'),
-  ostrich(2, 'ostrich', 'Ostrich');
+  classic(1, 'classic', 'str_default'),
+  ostrich(2, 'ostrich', 'str_ostrich');
 
   final int id;
   final String name;
   final String symbol;
 
   const SoundTheme(this.id, this.name, this.symbol);
+  
+  String get localizedSymbol => Localized.text('ox_common.$symbol');
 }
 
 class PromptToneManager {

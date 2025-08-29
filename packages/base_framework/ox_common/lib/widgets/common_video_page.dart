@@ -444,14 +444,14 @@ class _CustomControlsState extends State<CustomControls> {
 
                     if (result['isSuccess'] == true) {
                       await OXLoading.dismiss();
-                      CommonToast.instance.show(context, 'Save successful');
+                      CommonToast.instance.show(context, 'str_save_successful'.commonLocalized());
                     }
                   } else {
                     final result =
                         await ImageGallerySaverPlus.saveFile(widget.videoUrl);
                     if (result['isSuccess'] == true) {
                       await OXLoading.dismiss();
-                      CommonToast.instance.show(context, 'Save successful');
+                      CommonToast.instance.show(context, 'str_save_successful'.commonLocalized());
                     }
                   }
                 },

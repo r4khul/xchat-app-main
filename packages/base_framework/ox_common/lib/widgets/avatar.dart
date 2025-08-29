@@ -6,8 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/utils/adapt.dart';
+import 'package:ox_common/utils/string_utils.dart';
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_module_service/ox_module_service.dart';
+import 'package:ox_localizable/ox_localizable.dart';
 
 import 'avatar_generator.dart';
 
@@ -141,7 +143,7 @@ class OXUserAvatarState extends State<OXUserAvatar> {
     } else {
       final user = widget.user;
       if (user == null) {
-        CommonToast.instance.show(context, 'User not found');
+        CommonToast.instance.show(context, 'str_user_not_found'.commonLocalized());
         return ;
       }
       await OXModuleService.pushPage(context, 'ox_chat', 'ContactUserInfoPage', {
