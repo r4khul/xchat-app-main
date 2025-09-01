@@ -71,7 +71,7 @@
   "signer_waiting": "Изчакване на одобрение за подпис...",
   "signer_signature": "Подписът е одобрен.",
   "invalid_url_format": "Невалиден URL формат",
-  "operation_failed": "Операцията неуспешна",
+  "operation_failed": "Операцията неуспешна, причина за неуспех: ${errMsg}",
   "required": "Изисква се",
   "network_warning_title": "Проблем с връзката към сървъра",
   "network_warning_message": "Не може да се свърже със сървъра ${relay}. Сървърът може да е офлайн или недостъпен, но все пак можете да се опитате да се присъедините към кръга. Искате ли да продължите?",
@@ -161,5 +161,7 @@
   "search": "Търси",
   "str_recent_chats": "Скорошни чатове",
   "str_title_contacts": "Контакти",
-  "str_title_groups": "Групи"
+  "str_title_groups": "Групи",
+  "logged_circle_not_found": "Влязъл кръг не е намерен",
+  "push_token_is_null": "Push токенът е null"
 }

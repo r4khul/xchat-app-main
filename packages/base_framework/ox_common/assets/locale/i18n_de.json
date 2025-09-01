@@ -71,7 +71,7 @@
   "signer_waiting": "Warte auf Signatur-Genehmigung...",
   "signer_signature": "Signatur genehmigt.",
   "invalid_url_format": "Ungültiges URL-Format",
-  "operation_failed": "Vorgang fehlgeschlagen",
+  "operation_failed": "Vorgang fehlgeschlagen, Fehlergrund: ${errMsg}",
   "required": "Erforderlich",
   "network_warning_title": "Server-Verbindungsproblem",
   "network_warning_message": "Kann nicht mit dem Server ${relay} verbinden. Der Server könnte offline oder unerreichbar sein, aber Sie können trotzdem versuchen, dem Kreis beizutreten. Möchten Sie fortfahren?",
@@ -161,5 +161,7 @@
   "search": "Suchen",
   "str_recent_chats": "Letzte Chats",
   "str_title_contacts": "Kontakte",
-  "str_title_groups": "Gruppen"
+  "str_title_groups": "Gruppen",
+  "logged_circle_not_found": "Angemeldeter Kreis nicht gefunden",
+  "push_token_is_null": "Push-Token ist null"
 }

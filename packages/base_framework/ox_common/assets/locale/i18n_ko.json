@@ -71,7 +71,7 @@
   "signer_waiting": "서명 승인 대기 중...",
   "signer_signature": "서명이 승인됨.",
   "invalid_url_format": "잘못된 URL 형식",
-  "operation_failed": "작업 실패",
+  "operation_failed": "작업 실패, 실패 이유: ${errMsg}",
   "required": "필수",
   "network_warning_title": "서버 연결 문제",
   "network_warning_message": "서버 ${relay}에 연결할 수 없습니다. 서버가 오프라인이거나 접근할 수 없을 수 있지만, 여전히 원에 참여할 수 있습니다. 계속하시겠습니까?",
@@ -161,5 +161,7 @@
   "search": "검색",
   "str_recent_chats": "최근 채팅",
   "str_title_contacts": "연락처",
-  "str_title_groups": "그룹"
+  "str_title_groups": "그룹",
+  "logged_circle_not_found": "로그인된 원을 찾을 수 없습니다",
+  "push_token_is_null": "푸시 토큰이 null입니다"
 }

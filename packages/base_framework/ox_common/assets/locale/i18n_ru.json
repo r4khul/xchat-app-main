@@ -71,7 +71,7 @@
   "signer_waiting": "Ожидание одобрения подписи...",
   "signer_signature": "Подпись одобрена.",
   "invalid_url_format": "Неверный формат URL",
-  "operation_failed": "Операция не удалась",
+  "operation_failed": "Операция не удалась, причина неудачи: ${errMsg}",
   "required": "Обязательно",
   "network_warning_title": "Проблема подключения к серверу",
   "network_warning_message": "Не удается подключиться к серверу ${relay}. Сервер может быть офлайн или недоступен, но вы все еще можете попытаться присоединиться к кругу. Хотите продолжить?",
@@ -161,5 +161,7 @@
   "search": "Поиск",
   "str_recent_chats": "Недавние чаты",
   "str_title_contacts": "Контакты",
-  "str_title_groups": "Группы"
+  "str_title_groups": "Группы",
+  "logged_circle_not_found": "Войденный круг не найден",
+  "push_token_is_null": "Push-токен равен null"
 }

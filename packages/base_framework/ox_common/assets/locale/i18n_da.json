@@ -71,7 +71,7 @@
   "signer_waiting": "[signer_waiting]",
   "signer_signature": "[signer_signature]",
   "invalid_url_format": "[invalid_url_format]",
-  "operation_failed": "[operation_failed]",
+  "operation_failed": "Handling mislykkedes, fejlårsag: ${errMsg}",
   "required": "[required]",
   "network_warning_title": "[network_warning_title]",
   "network_warning_message": "[network_warning_message]",
@@ -161,5 +161,7 @@
   "search": "Søg",
   "str_recent_chats": "Seneste chats",
   "str_title_contacts": "Kontakter",
-  "str_title_groups": "Grupper"
+  "str_title_groups": "Grupper",
+  "logged_circle_not_found": "Indlogget cirkel ikke fundet",
+  "push_token_is_null": "Push token er null"
 }

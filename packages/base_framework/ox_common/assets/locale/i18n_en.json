@@ -71,7 +71,7 @@
   "signer_waiting": "Waiting for signature approval...",
   "signer_signature": "Signature approved.",
   "invalid_url_format": "Invalid URL format",
-  "operation_failed": "Operation failed",
+  "operation_failed": "Operation failed, failure reason: ${errMsg}",
   "required": "Required",
   "network_warning_title": "Server Connection Issue",
   "network_warning_message": "Unable to connect to the server at ${relay}. The server may be offline or unreachable, but you can still try to join the circle. Do you want to continue?",
@@ -161,5 +161,7 @@
   "search": "Search",
   "str_recent_chats": "Recent Chats",
   "str_title_contacts": "Contacts",
-  "str_title_groups": "Groups"
+  "str_title_groups": "Groups",
+  "logged_circle_not_found": "Logged circle not found",
+  "push_token_is_null": "Push token is null"
 }

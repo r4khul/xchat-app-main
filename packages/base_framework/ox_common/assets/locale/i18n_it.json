@@ -71,7 +71,7 @@
   "signer_waiting": "[signer_waiting]",
   "signer_signature": "[signer_signature]",
   "invalid_url_format": "[invalid_url_format]",
-  "operation_failed": "[operation_failed]",
+  "operation_failed": "Operazione fallita, motivo del fallimento: ${errMsg}",
   "required": "[required]",
   "network_warning_title": "[network_warning_title]",
   "network_warning_message": "[network_warning_message]",
@@ -161,5 +161,7 @@
   "search": "Cerca",
   "str_recent_chats": "Chat recenti",
   "str_title_contacts": "Contatti",
-  "str_title_groups": "Gruppi"
+  "str_title_groups": "Gruppi",
+  "logged_circle_not_found": "Cerchio connesso non trovato",
+  "push_token_is_null": "Token di notifica push è nullo"
 }

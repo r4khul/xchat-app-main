@@ -40,10 +40,10 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                   size: 20.px,
                 ),
                 title: Localized.text('ox_usercenter.allow_send_notification'),
-                value$: CLPushNotificationManager.instance.allowSendNotificationNotifier,
+                value$: CLUserPushNotificationManager.instance.allowSendNotificationNotifier,
                 onChanged: (value) async {
                   OXLoading.show();
-                  await CLPushNotificationManager.instance.setAllowSendNotification(value);
+                  await CLUserPushNotificationManager.instance.setAllowSendNotification(value);
                   OXLoading.dismiss();
                 },
               ),
@@ -56,17 +56,18 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
               SwitcherItemModel(
                 icon: ListViewIcon(iconName: 'icon_setting_notification.png', package: 'ox_usercenter'),
                 title: Localized.text('ox_usercenter.allow_receive_notification'),
-                value$: CLPushNotificationManager.instance.allowReceiveNotificationNotifier,
+                value$: CLUserPushNotificationManager.instance.allowReceiveNotificationNotifier,
                 onChanged: (value) async {
                   OXLoading.show();
-                  final isSuccess = await CLPushNotificationManager.instance.setAllowReceiveNotification(
+                  final errMsg = await CLUserPushNotificationManager.instance.setAllowReceiveNotification(
                     value,
                   );
                   OXLoading.dismiss();
-                  if (!isSuccess) {
+                  if (errMsg != null) {
                     CommonToast.instance.show(
                       context, 
-                      Localized.text('ox_usercenter.notification_setting_failed'),
+                      Localized.text('ox_common.operation_failed')
+                          .replaceAll(r'${errMsg}', errMsg),
                     );
                   }
                 },

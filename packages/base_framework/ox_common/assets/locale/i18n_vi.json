@@ -71,7 +71,7 @@
   "signer_waiting": "Đang chờ phê duyệt chữ ký...",
   "signer_signature": "Chữ ký đã được phê duyệt.",
   "invalid_url_format": "Định dạng URL không hợp lệ",
-  "operation_failed": "Thao tác thất bại",
+  "operation_failed": "Thao tác thất bại, lý do thất bại: ${errMsg}",
   "required": "Bắt buộc",
   "network_warning_title": "Vấn đề kết nối máy chủ",
   "network_warning_message": "Không thể kết nối với máy chủ ${relay}. Máy chủ có thể ngoại tuyến hoặc không thể truy cập, nhưng bạn vẫn có thể thử tham gia vòng tròn. Bạn có muốn tiếp tục không?",
@@ -161,5 +161,7 @@
   "search": "Tìm kiếm",
   "str_recent_chats": "Trò chuyện gần đây",
   "str_title_contacts": "Danh bạ",
-  "str_title_groups": "Nhóm"
+  "str_title_groups": "Nhóm",
+  "logged_circle_not_found": "Không tìm thấy vòng tròn đã đăng nhập",
+  "push_token_is_null": "Token push là null"
 }

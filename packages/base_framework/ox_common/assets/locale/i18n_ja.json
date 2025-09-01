@@ -71,7 +71,7 @@
   "signer_waiting": "署名承認を待機中...",
   "signer_signature": "署名が承認されました。",
   "invalid_url_format": "無効なURL形式",
-  "operation_failed": "操作に失敗しました",
+  "operation_failed": "操作に失敗しました。失敗理由：${errMsg}",
   "required": "必須",
   "network_warning_title": "サーバー接続の問題",
   "network_warning_message": "サーバー ${relay} に接続できません。サーバーがオフラインまたはアクセスできない可能性がありますが、サークルに参加することはできます。続行しますか？",
@@ -161,5 +161,7 @@
   "search": "検索",
   "str_recent_chats": "最近のチャット",
   "str_title_contacts": "連絡先",
-  "str_title_groups": "グループ"
+  "str_title_groups": "グループ",
+  "logged_circle_not_found": "ログインしたサークルが見つかりません",
+  "push_token_is_null": "プッシュトークンがnullです"
 }

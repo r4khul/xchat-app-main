@@ -71,7 +71,7 @@
   "signer_waiting": "İmza təsdiqini gözləyir...",
   "signer_signature": "İmza təsdiqləndi.",
   "invalid_url_format": "Yanlış URL formatı",
-  "operation_failed": "Əməliyyat uğursuz oldu",
+  "operation_failed": "Əməliyyat uğursuz oldu, uğursuzluq səbəbi: ${errMsg}",
   "required": "Tələb olunur",
   "network_warning_title": "Server qoşulma problemi",
   "network_warning_message": "Server ${relay} ilə qoşula bilmir. Server offline ola bilər və ya əlçatan olmaya bilər, amma siz hələ də dairəyə qoşulmağa çalışa bilərsiniz. Davam etmək istəyirsinizmi?",
@@ -161,5 +161,7 @@
   "search": "Axtar",
   "str_recent_chats": "Son söhbətlər",
   "str_title_contacts": "Əlaqələr",
-  "str_title_groups": "Qruplar"
+  "str_title_groups": "Qruplar",
+  "logged_circle_not_found": "Daxil olunmuş dairə tapılmadı",
+  "push_token_is_null": "Push token null-dur"
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:ox_common/push/core/local_push_kit.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -8,11 +10,11 @@ import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import 'package:chatcore/chat-core.dart';
 
-import 'push_integration.dart';
-
-class CLPushNotificationManager {
-  static final CLPushNotificationManager instance = CLPushNotificationManager._internal();
-  CLPushNotificationManager._internal();
+class CLUserPushNotificationManager implements PushPermissionChecker {
+  static final CLUserPushNotificationManager instance = CLUserPushNotificationManager._internal();
+  CLUserPushNotificationManager._internal() {
+    NotificationHelper.sharedInstance.permissionChecker = this;
+  }
 
   final ValueNotifier<bool> _allowSendNotificationNotifier = ValueNotifier<bool>(false);
   final ValueNotifier<bool> _allowReceiveNotificationNotifier = ValueNotifier<bool>(false);
@@ -23,6 +25,8 @@ class CLPushNotificationManager {
   bool get allowSendNotification => _allowSendNotificationNotifier.value;
   bool get allowReceiveNotification => _allowReceiveNotificationNotifier.value;
 
+  Completer _initCmp = Completer();
+
   Future<void> initialize() async {
     final currentState = LoginManager.instance.currentState;
     final circle = currentState.currentCircle;
@@ -30,13 +34,33 @@ class CLPushNotificationManager {
     if (circle == null) return;
 
     await _loadConfiguration(circle);
-    await _syncToNotificationHelper();
 
-    if (!_isConfigurationInitialized(circle)) {
-      await _initializeDefaultConfiguration(circle);
+    _initCmp.complete();
+
+    if (allowReceiveNotification || allowSendNotification) {
+      NotificationHelper.sharedInstance.connectServerRelay();
     }
 
     await checkAndUpdatePermissionStatus();
+  }
+
+  Future registerPushTokenHandler(String token) async {
+    final currentState = LoginManager.instance.currentState;
+    final circle = currentState.currentCircle;
+
+    if (circle == null) return;
+
+    await _initCmp.future;
+
+    if (!_isConfigurationInitialized(circle)) {
+      await _initializeDefaultConfiguration(circle);
+      return;
+    }
+
+    final allowReceive = _allowReceiveNotificationNotifier.value;
+    if (allowReceive) {
+      NotificationHelper.sharedInstance.updateNotificationDeviceId(token);
+    }
   }
 
   Future<void> setAllowSendNotification(bool value) async {
@@ -49,16 +73,15 @@ class CLPushNotificationManager {
     await circle.updateAllowSendNotification(value);
 
     _allowSendNotificationNotifier.value = value;
-    
-    await _syncToNotificationHelper();
   }
 
-  Future<bool> setAllowReceiveNotification(bool value) async {
-    if (_allowReceiveNotificationNotifier.value == value) return true;
+  // Return error message
+  Future<String?> setAllowReceiveNotification(bool value) async {
+    if (_allowReceiveNotificationNotifier.value == value) return null;
 
     final currentState = LoginManager.instance.currentState;
     final circle = currentState.currentCircle;
-    if (circle == null) return false;
+    if (circle == null) return Localized.text('ox_common.logged_circle_not_found');
 
     if (value) {
       // Check push permission
@@ -69,29 +92,34 @@ class CLPushNotificationManager {
             openAppSettings();
           }
         });
-        return true;
+        return null;
       }
-      
-      final success = await _uploadPushToken();
-      if (!success) {
-        return false;
+
+      final pushToken = currentState.account?.pushToken;
+      if (pushToken == null || pushToken.isEmpty) {
+        return Localized.text('ox_common.push_token_is_null');
       }
-    }
-    else{
-      await LoginManager.instance.saveUploadPushTokenState(false);
+
+      final event = await NotificationHelper.sharedInstance.updateNotificationDeviceId(pushToken);
+      if (!event.status) {
+        return event.message;
+      }
+    } else {
+      final event = await NotificationHelper.sharedInstance.removeNotification();
+      if (!event.status) {
+        return event.message;
+      }
     }
 
     await circle.updateAllowReceiveNotification(value);
 
     _allowReceiveNotificationNotifier.value = value;
-    
-    await _syncToNotificationHelper();
 
-    return true;
+    return null;
   }
 
   Future<void> checkAndUpdatePermissionStatus() async {
-    if (!_allowReceiveNotificationNotifier.value) return;
+    if (!allowReceiveNotification) return;
 
     final hasPermission = await _checkNativePushPermission();
     if (!hasPermission) {
@@ -111,8 +139,8 @@ class CLPushNotificationManager {
   Future<void> _initializeDefaultConfiguration(Circle circle) async {
     final hasPermission = await _checkNativePushPermission();
     await setAllowSendNotification(hasPermission);
-    await setAllowReceiveNotification(hasPermission).then((isSuccess) {
-      if (!isSuccess) setAllowReceiveNotification(false);
+    await setAllowReceiveNotification(hasPermission).then((err) {
+      if (err != null) setAllowReceiveNotification(false);
     });
   }
 
@@ -141,30 +169,15 @@ class CLPushNotificationManager {
     return result ?? false;
   }
 
-  Future<bool> _uploadPushToken() async {
-    final currentState = LoginManager.instance.currentState;
-    final account = currentState.account;
-    final pushToken = account?.pushToken;
-    if (account == null) return false;
-    if (pushToken == null || pushToken.isEmpty) return false;
-    if (account.hasUpload == true) return true;
-
-    return CLPushIntegration.instance.uploadPushToken(pushToken)
-        .timeout(Duration(seconds: 3), onTimeout: () => false);
-  }
-  
-  Future<void> _syncToNotificationHelper() async {
-    try {
-      final notificationHelper = NotificationHelper.sharedInstance;
-      await notificationHelper.setAllowSendNotification(_allowSendNotificationNotifier.value);
-      await notificationHelper.setAllowReceiveNotification(_allowReceiveNotificationNotifier.value);
-    } catch (e) {
-      debugPrint('Failed to sync to NotificationHelper: $e');
-    }
-  }
-
   void dispose() {
+    _initCmp = Completer();
     _allowSendNotificationNotifier.dispose();
     _allowReceiveNotificationNotifier.dispose();
   }
+
+  @override
+  Future<bool> canReceiveNotification() async => allowReceiveNotification;
+
+  @override
+  Future<bool> canSendNotification() async => allowSendNotification;
 }

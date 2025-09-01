@@ -71,7 +71,7 @@
   "signer_waiting": "في انتظار موافقة التوقيع...",
   "signer_signature": "تمت الموافقة على التوقيع.",
   "invalid_url_format": "تنسيق URL غير صحيح",
-  "operation_failed": "فشلت العملية",
+  "operation_failed": "فشلت العملية، سبب الفشل: ${errMsg}",
   "required": "مطلوب",
   "network_warning_title": "مشكلة في اتصال الخادم",
   "network_warning_message": "لا يمكن الاتصال بالخادم ${relay}. قد يكون الخادم غير متصل أو غير قابل للوصول، ولكن يمكنك محاولة الانضمام إلى الدائرة. هل تريد المتابعة؟",
@@ -161,5 +161,7 @@
   "search": "بحث",
   "str_recent_chats": "المحادثات الحديثة",
   "str_title_contacts": "جهات الاتصال",
-  "str_title_groups": "المجموعات"
+  "str_title_groups": "المجموعات",
+  "logged_circle_not_found": "الدائرة المسجلة الدخول غير موجودة",
+  "push_token_is_null": "رمز الإشعارات الفورية فارغ"
 }

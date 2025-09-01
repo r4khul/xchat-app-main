@@ -71,7 +71,7 @@
   "signer_waiting": "Väntar på signaturgodkännande...",
   "signer_signature": "Signatur godkänd.",
   "invalid_url_format": "Ogiltigt URL-format",
-  "operation_failed": "Åtgärden misslyckades",
+  "operation_failed": "Åtgärden misslyckades, misslyckandets orsak: ${errMsg}",
   "required": "Krävs",
   "network_warning_title": "Serveranslutningsproblem",
   "network_warning_message": "Kan inte ansluta till servern ${relay}. Servern kan vara offline eller otillgänglig, men du kan fortfarande försöka gå med i cirkeln. Vill du fortsätta?",
@@ -161,5 +161,7 @@
   "search": "Sök",
   "str_recent_chats": "Senaste chattar",
   "str_title_contacts": "Kontakter",
-  "str_title_groups": "Grupper"
+  "str_title_groups": "Grupper",
+  "logged_circle_not_found": "Inloggad cirkel hittades inte",
+  "push_token_is_null": "Push-token är null"
 }

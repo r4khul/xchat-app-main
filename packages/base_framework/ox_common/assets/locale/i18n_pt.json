@@ -71,7 +71,7 @@
   "signer_waiting": "Aguardando aprovação da assinatura...",
   "signer_signature": "Assinatura aprovada.",
   "invalid_url_format": "Formato de URL inválido",
-  "operation_failed": "Operação falhou",
+  "operation_failed": "Operação falhou, motivo da falha: ${errMsg}",
   "required": "Obrigatório",
   "network_warning_title": "Problema de conexão do servidor",
   "network_warning_message": "Não é possível conectar ao servidor ${relay}. O servidor pode estar offline ou inacessível, mas você ainda pode tentar entrar no círculo. Você quer continuar?",
@@ -161,5 +161,7 @@
   "search": "Pesquisar",
   "str_recent_chats": "Chats recentes",
   "str_title_contacts": "Contatos",
-  "str_title_groups": "Grupos"
+  "str_title_groups": "Grupos",
+  "logged_circle_not_found": "Círculo conectado não encontrado",
+  "push_token_is_null": "Token de notificação push é nulo"
 }

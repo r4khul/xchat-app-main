@@ -71,7 +71,7 @@
   "signer_waiting": "Oczekiwanie na zatwierdzenie podpisu...",
   "signer_signature": "Podpis zatwierdzony.",
   "invalid_url_format": "Nieprawidłowy format URL",
-  "operation_failed": "Operacja nie powiodła się",
+  "operation_failed": "Operacja nie powiodła się, powód niepowodzenia: ${errMsg}",
   "required": "Wymagane",
   "network_warning_title": "Problem z połączeniem serwera",
   "network_warning_message": "Nie można połączyć się z serwerem ${relay}. Serwer może być offline lub niedostępny, ale nadal możesz spróbować dołączyć do kręgu. Czy chcesz kontynuować?",
@@ -161,5 +161,7 @@
   "search": "Szukaj",
   "str_recent_chats": "Ostatnie czaty",
   "str_title_contacts": "Kontakty",
-  "str_title_groups": "Grupy"
+  "str_title_groups": "Grupy",
+  "logged_circle_not_found": "Zalogowany krąg nie został znaleziony",
+  "push_token_is_null": "Token push jest null"
 }

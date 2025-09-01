@@ -71,7 +71,7 @@
   "signer_waiting": "[signer_waiting]",
   "signer_signature": "[signer_signature]",
   "invalid_url_format": "[invalid_url_format]",
-  "operation_failed": "[operation_failed]",
+  "operation_failed": "عملیات ناموفق بود، دلیل شکست: ${errMsg}",
   "required": "[required]",
   "network_warning_title": "[network_warning_title]",
   "network_warning_message": "[network_warning_message]",
@@ -161,5 +161,7 @@
   "search": "جستجو",
   "str_recent_chats": "گفتگوهای اخیر",
   "str_title_contacts": "مخاطبین",
-  "str_title_groups": "گروه‌ها"
+  "str_title_groups": "گروه‌ها",
+  "logged_circle_not_found": "حلقه وارد شده یافت نشد",
+  "push_token_is_null": "توکن push null است"
 }

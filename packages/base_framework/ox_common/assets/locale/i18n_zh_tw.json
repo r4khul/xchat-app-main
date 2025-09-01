@@ -71,7 +71,7 @@
   "signer_waiting": "等待簽名確認...",
   "signer_signature": "簽名已確認",
   "invalid_url_format": "無效的URL格式",
-  "operation_failed": "操作失敗",
+  "operation_failed": "操作失敗，失敗原因：${errMsg}",
   "required": "必填",
   "network_warning_title": "伺服器連線問題",
   "network_warning_message": "無法連線到伺服器 ${relay}。伺服器可能離線或無法存取，但您仍可以嘗試加入圈子。是否要繼續？",
@@ -161,5 +161,7 @@
   "search": "搜尋",
   "str_recent_chats": "最近聊天",
   "str_title_contacts": "聯絡人",
-  "str_title_groups": "群組"
+  "str_title_groups": "群組",
+  "logged_circle_not_found": "未找到已登入的圈子",
+  "push_token_is_null": "推播令牌為空"
 }

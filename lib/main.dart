@@ -11,6 +11,7 @@ import 'package:ox_common/component.dart';
 import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/login/account_path_manager.dart';
 import 'package:ox_common/push/push_integration.dart';
+import 'package:ox_common/push/push_notification_manager.dart';
 import 'package:ox_common/scheme/scheme_helper.dart';
 import 'package:ox_common/utils/chat_prompt_tone.dart';
 import 'package:ox_common/utils/error_utils.dart';
@@ -238,8 +239,9 @@ class MainState extends State<MainApp>
         if (!LoginManager.instance.isLoginCircle) return;
         SchemeHelper.tryHandlerForOpenAppScheme();
         keepHeartBeat();
+        CLPushIntegration.instance.registeNotificationIfNeeded();
         // For handling notification permission being granted
-        CLPushIntegration.instance.initializeForRemotePush();
+        CLUserPushNotificationManager.instance.checkAndUpdatePermissionStatus();
         break;
       case AppLifecycleState.paused:
         PromptToneManager.sharedInstance.isAppPaused = true;

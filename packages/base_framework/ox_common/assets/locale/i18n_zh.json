@@ -71,7 +71,7 @@
   "signer_waiting": "等待签名确认...",
   "signer_signature": "签名已确认",
   "invalid_url_format": "无效的URL格式",
-  "operation_failed": "操作失败",
+  "operation_failed": "操作失败，失败原因：${errMsg}",
   "required": "必填",
   "network_warning_title": "服务器连接问题",
   "network_warning_message": "无法连接到服务器 ${relay}。服务器可能离线或无法访问，但您仍可以尝试加入圈子。是否要继续？",
@@ -161,5 +161,7 @@
   "search": "搜索",
   "str_recent_chats": "最近聊天",
   "str_title_contacts": "联系人",
-  "str_title_groups": "群组"
+  "str_title_groups": "群组",
+  "logged_circle_not_found": "未找到已登录的圈子",
+  "push_token_is_null": "推送令牌为空"
 }

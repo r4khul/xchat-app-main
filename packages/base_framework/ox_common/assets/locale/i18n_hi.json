@@ -71,7 +71,7 @@
   "signer_waiting": "[signer_waiting]",
   "signer_signature": "[signer_signature]",
   "invalid_url_format": "[invalid_url_format]",
-  "operation_failed": "[operation_failed]",
+  "operation_failed": "ऑपरेशन विफल, विफलता का कारण: ${errMsg}",
   "required": "[required]",
   "network_warning_title": "[network_warning_title]",
   "network_warning_message": "[network_warning_message]",
@@ -161,5 +161,7 @@
   "search": "खोजें",
   "str_recent_chats": "हाल के चैट",
   "str_title_contacts": "संपर्क",
-  "str_title_groups": "समूह"
+  "str_title_groups": "समूह",
+  "logged_circle_not_found": "लॉग इन सर्कल नहीं मिला",
+  "push_token_is_null": "पुश टोकन null है"
 }

@@ -342,15 +342,6 @@ extension LoginManagerAccount on LoginManager {
     return true;
   }
 
-  Future<bool> saveUploadPushTokenState(bool hasUpload) async {
-    final account = currentState.account;
-    if (account == null) return false;
-
-    account.hasUpload = hasUpload;
-    await account.saveToDB();
-    return true;
-  }
-
   // ============ Private Authentication Methods ============
 
   /// Unified account login interface
@@ -601,6 +592,7 @@ extension LoginManagerCircle on LoginManager {
         await _stopBitchatService();
       }
       await Account.sharedInstance.logout();
+      CLUserPushNotificationManager.instance.dispose();
       CLCacheManager.clearCircleCacheById(originCircle.id);
       AccountPathManager.clearCircleTempFolder(
         currentState.account!.pubkey,
@@ -885,8 +877,8 @@ extension LoginManagerCircle on LoginManager {
 
   void initializePushCore() async {
     await CLPushIntegration.instance.initialize();
-    await CLPushIntegration.instance.initializeForRemotePush();
-    await CLPushNotificationManager.instance.initialize();
+    await CLPushIntegration.instance.registeNotificationIfNeeded();
+    await CLUserPushNotificationManager.instance.initialize();
   }
 
   /// Initialize and start BitchatService for bitchat circles

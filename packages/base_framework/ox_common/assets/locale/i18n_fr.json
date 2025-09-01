@@ -71,7 +71,7 @@
   "signer_waiting": "En attente d'approbation de signature...",
   "signer_signature": "Signature approuvée.",
   "invalid_url_format": "Format d'URL invalide",
-  "operation_failed": "Opération échouée",
+  "operation_failed": "Opération échouée, raison de l'échec : ${errMsg}",
   "required": "Requis",
   "network_warning_title": "Problème de connexion au serveur",
   "network_warning_message": "Impossible de se connecter au serveur ${relay}. Le serveur peut être hors ligne ou inaccessible, mais vous pouvez toujours essayer de rejoindre le cercle. Voulez-vous continuer ?",
@@ -161,5 +161,7 @@
   "search": "Rechercher",
   "str_recent_chats": "Chats récents",
   "str_title_contacts": "Contacts",
-  "str_title_groups": "Groupes"
+  "str_title_groups": "Groupes",
+  "logged_circle_not_found": "Cercle connecté non trouvé",
+  "push_token_is_null": "Le jeton de notification push est nul"
 }

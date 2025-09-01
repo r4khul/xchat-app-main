@@ -71,7 +71,7 @@
   "signer_waiting": "İmza onayı bekleniyor...",
   "signer_signature": "İmza onaylandı.",
   "invalid_url_format": "Geçersiz URL formatı",
-  "operation_failed": "İşlem başarısız",
+  "operation_failed": "İşlem başarısız, başarısızlık nedeni: ${errMsg}",
   "required": "Gerekli",
   "network_warning_title": "Sunucu bağlantı sorunu",
   "network_warning_message": "${relay} sunucusuna bağlanılamıyor. Sunucu çevrimdışı olabilir veya erişilemeyebilir, ancak yine de daireye katılmaya çalışabilirsiniz. Devam etmek istiyor musunuz?",
@@ -161,5 +161,7 @@
   "search": "Ara",
   "str_recent_chats": "Son sohbetler",
   "str_title_contacts": "Kişiler",
-  "str_title_groups": "Gruplar"
+  "str_title_groups": "Gruplar",
+  "logged_circle_not_found": "Giriş yapılmış daire bulunamadı",
+  "push_token_is_null": "Push token boş"
 }

@@ -71,7 +71,7 @@
   "signer_waiting": "[signer_waiting]",
   "signer_signature": "[signer_signature]",
   "invalid_url_format": "[invalid_url_format]",
-  "operation_failed": "[operation_failed]",
+  "operation_failed": "Η λειτουργία απέτυχε, λόγος αποτυχίας: ${errMsg}",
   "required": "[required]",
   "network_warning_title": "[network_warning_title]",
   "network_warning_message": "[network_warning_message]",
@@ -161,5 +161,7 @@
   "search": "Αναζήτηση",
   "str_recent_chats": "Πρόσφατες συνομιλίες",
   "str_title_contacts": "Επαφές",
-  "str_title_groups": "Ομάδες"
+  "str_title_groups": "Ομάδες",
+  "logged_circle_not_found": "Η συνδεδεμένη κύκλος δεν βρέθηκε",
+  "push_token_is_null": "Το push token είναι null"
 }

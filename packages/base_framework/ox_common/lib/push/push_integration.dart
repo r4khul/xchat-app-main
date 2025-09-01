@@ -2,9 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:chatcore/chat-core.dart';
-import 'package:nostr_core_dart/nostr.dart';
 import 'package:flutter/widgets.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/ox_common.dart';
 import 'package:ox_common/utils/ox_chat_binding.dart';
@@ -15,6 +13,7 @@ import 'core/local_push_kit.dart';
 import 'core/message_models.dart';
 import 'core/policy_config.dart';
 import 'core/ports.dart';
+import 'push_notification_manager.dart';
 
 /// Wires LocalPushKit + Notifier + DecisionService into app lifecycle and message bus.
 class CLPushIntegration with WidgetsBindingObserver {
@@ -25,37 +24,15 @@ class CLPushIntegration with WidgetsBindingObserver {
   late final NotificationDecisionService _decision;
   bool _initialized = false;
   
-  // Device-level push token storage
-  static const String _devicePushTokenKey = 'device_push_token';
-  
-  /// Get device-level push token from local storage
-  Future<String?> get devicePushToken async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_devicePushTokenKey);
-  }
-  
-  /// Set device-level push token to local storage
-  Future<void> setDevicePushToken(String token) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_devicePushTokenKey, token);
-  }
-  
-  /// Check if the given token matches current device push token
-  Future<bool> isTokenMatchingDevice(String token) async {
-    final deviceToken = await devicePushToken;
-    return deviceToken != null && deviceToken == token;
-  }
-  
   /// Register push token handler - called when iOS native gets push token
   Future<void> registerPushTokenHandler(String token) async {
-    await setDevicePushToken(token);
-    
     final account = LoginManager.instance.currentState.account;
     if (account != null) {
       await LoginManager.instance.savePushToken(token);
+      if (LoginManager.instance.isLoginCircle) {
+        CLUserPushNotificationManager.instance.registerPushTokenHandler(token);
+      }
     }
-
-    uploadPushToken(token);
   }
 
   Future<void> initialize() async {
@@ -97,29 +74,14 @@ class CLPushIntegration with WidgetsBindingObserver {
     _initialized = true;
   }
 
-  Future<void> initializeForRemotePush() async {
+  Future<void> registeNotificationIfNeeded() async {
     final notificationPermission = await LocalPushKit.instance.requestPermission();
     if (!notificationPermission) return;
 
-    final accountPushToken = LoginManager.instance.currentState.account?.pushToken;
-    final isRotation = (await devicePushToken)?.isNotEmpty ?? false;
-
-    // account push token is null or empty, registe notification
-    if (accountPushToken == null || accountPushToken.isEmpty) {
-      registeNotification(isRotation);
-      return;
-    } 
-    
-    // account push token is not matching device push token, registe notification
-    if (!await isTokenMatchingDevice(accountPushToken)) {
-      registeNotification(isRotation);
-      return;
-    }
-
-    CLPushIntegration.instance.uploadPushToken(accountPushToken);
+    registeNotification();
   }
 
-  void registeNotification(bool isRotation) {
+  void registeNotification([bool isRotation = false]) {
     if (Platform.isIOS) {
       OXCommon.registeNotification(isRotation: isRotation);
     } else if (Platform.isAndroid) {
@@ -173,18 +135,6 @@ class CLPushIntegration with WidgetsBindingObserver {
     } catch (_) {
       return null;
     }
-  }
-
-  Future<bool> uploadPushToken(String token) async {
-    final account = LoginManager.instance.currentState.account;
-    if (account?.hasUpload == true) return true;
-    if (!LoginManager.instance.isLoginCircle) return false;
-
-    OKEvent okEvent = await NotificationHelper.sharedInstance.updateNotificationDeviceId(token);
-    if (okEvent.status && account != null) {
-      await LoginManager.instance.saveUploadPushTokenState(true);
-    }
-    return okEvent.status;
   }
 }
 

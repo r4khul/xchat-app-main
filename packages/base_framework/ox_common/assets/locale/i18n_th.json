@@ -71,7 +71,7 @@
   "signer_waiting": "รอการอนุมัติลายเซ็น...",
   "signer_signature": "ลายเซ็นได้รับการอนุมัติแล้ว",
   "invalid_url_format": "รูปแบบ URL ไม่ถูกต้อง",
-  "operation_failed": "การดำเนินการล้มเหลว",
+  "operation_failed": "การดำเนินการล้มเหลว, สาเหตุของความล้มเหลว: ${errMsg}",
   "required": "จำเป็น",
   "network_warning_title": "ปัญหาการเชื่อมต่อเซิร์ฟเวอร์",
   "network_warning_message": "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ ${relay} ได้ เซิร์ฟเวอร์อาจออฟไลน์หรือไม่สามารถเข้าถึงได้ แต่คุณยังสามารถลองเข้าร่วมวงกลมได้ คุณต้องการดำเนินการต่อหรือไม่?",
@@ -161,5 +161,7 @@
   "search": "ค้นหา",
   "str_recent_chats": "แชทล่าสุด",
   "str_title_contacts": "รายชื่อติดต่อ",
-  "str_title_groups": "กลุ่ม"
+  "str_title_groups": "กลุ่ม",
+  "logged_circle_not_found": "ไม่พบวงกลมที่เข้าสู่ระบบ",
+  "push_token_is_null": "โทเค็นพุชเป็น null"
 }

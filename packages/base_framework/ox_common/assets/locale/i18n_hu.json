@@ -71,7 +71,7 @@
   "signer_waiting": "[signer_waiting]",
   "signer_signature": "[signer_signature]",
   "invalid_url_format": "[invalid_url_format]",
-  "operation_failed": "[operation_failed]",
+  "operation_failed": "Művelet sikertelen, hiba oka: ${errMsg}",
   "required": "[required]",
   "network_warning_title": "[network_warning_title]",
   "network_warning_message": "[network_warning_message]",
@@ -161,5 +161,7 @@
   "search": "Keresés",
   "str_recent_chats": "Legutóbbi beszélgetések",
   "str_title_contacts": "Kapcsolatok",
-  "str_title_groups": "Csoportok"
+  "str_title_groups": "Csoportok",
+  "logged_circle_not_found": "Bejelentkezett kör nem található",
+  "push_token_is_null": "Push token null"
 }

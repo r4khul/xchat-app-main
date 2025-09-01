@@ -71,7 +71,7 @@
   "signer_waiting": "[signer_waiting]",
   "signer_signature": "[signer_signature]",
   "invalid_url_format": "[invalid_url_format]",
-  "operation_failed": "[operation_failed]",
+  "operation_failed": "Bewerking mislukt, foutreden: ${errMsg}",
   "required": "[required]",
   "network_warning_title": "[network_warning_title]",
   "network_warning_message": "[network_warning_message]",
@@ -161,5 +161,7 @@
   "search": "Zoeken",
   "str_recent_chats": "Recente chats",
   "str_title_contacts": "Contacten",
-  "str_title_groups": "Groepen"
+  "str_title_groups": "Groepen",
+  "logged_circle_not_found": "Aangemelde cirkel niet gevonden",
+  "push_token_is_null": "Push-token is null"
 }

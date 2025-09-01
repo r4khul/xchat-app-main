@@ -71,7 +71,7 @@
   "signer_waiting": "[signer_waiting]",
   "signer_signature": "[signer_signature]",
   "invalid_url_format": "[invalid_url_format]",
-  "operation_failed": "[operation_failed]",
+  "operation_failed": "Operació fallida, motiu de la fallada: ${errMsg}",
   "required": "[required]",
   "network_warning_title": "[network_warning_title]",
   "network_warning_message": "[network_warning_message]",
@@ -161,5 +161,7 @@
   "search": "Cercar",
   "str_recent_chats": "Xats recents",
   "str_title_contacts": "Contactes",
-  "str_title_groups": "Grups"
+  "str_title_groups": "Grups",
+  "logged_circle_not_found": "Cercle connectat no trobat",
+  "push_token_is_null": "El token push és null"
 }

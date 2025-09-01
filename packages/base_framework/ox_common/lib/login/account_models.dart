@@ -148,7 +148,6 @@ class AccountModel {
     required this.lastLoginAt,
     this.lastLoginCircleId,
     this.pushToken,
-    this.hasUpload = false,
     required this.db,
   });
 
@@ -162,7 +161,6 @@ class AccountModel {
   final int lastLoginAt;
   String? lastLoginCircleId;   // Last logged in circle ID
   String? pushToken;           // Push notification token
-  bool hasUpload = false;      // Whether push token has been uploaded
   
   late Isar db;
 
@@ -190,7 +188,6 @@ class AccountModel {
       lastLoginAt: lastLoginAt ?? this.lastLoginAt,
       lastLoginCircleId: lastLoginCircleId ?? this.lastLoginCircleId,
       pushToken: pushToken ?? this.pushToken,
-      hasUpload: hasUpload ?? this.hasUpload,
       db: db,
     );
   }
@@ -233,8 +230,6 @@ class AccountHelper {
     if (account.pushToken != null) {
       result.add(AccountDataISAR.createString(keyPushToken, account.pushToken!)..id = db.accountDataISARs.autoIncrement());
     }
-    
-    result.add(AccountDataISAR.createBool(keyHasUpload, account.hasUpload)..id = db.accountDataISARs.autoIncrement());
     
     return result;
   }
@@ -300,7 +295,6 @@ class AccountHelper {
         lastLoginAt: dataMap[keyLastLoginAt] as int? ?? DateTime.now().millisecondsSinceEpoch,
         lastLoginCircleId: dataMap[keyLastLoginCircleId] as String?,
         pushToken: dataMap[keyPushToken] as String?,
-        hasUpload: hasUpload,
         db: accountDb,
       );
     } catch (e) {

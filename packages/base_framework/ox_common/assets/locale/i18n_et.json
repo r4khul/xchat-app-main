@@ -71,7 +71,7 @@
   "signer_waiting": "[signer_waiting]",
   "signer_signature": "[signer_signature]",
   "invalid_url_format": "[invalid_url_format]",
-  "operation_failed": "[operation_failed]",
+  "operation_failed": "Toiming ebaõnnestus, ebaõnnestumise põhjus: ${errMsg}",
   "required": "[required]",
   "network_warning_title": "[network_warning_title]",
   "network_warning_message": "[network_warning_message]",
@@ -161,5 +161,7 @@
   "search": "Otsi",
   "str_recent_chats": "Hiljutised vestlused",
   "str_title_contacts": "Kontaktid",
-  "str_title_groups": "Grupid"
+  "str_title_groups": "Grupid",
+  "logged_circle_not_found": "Sisse logitud ring ei leitud",
+  "push_token_is_null": "Push token on null"
 }

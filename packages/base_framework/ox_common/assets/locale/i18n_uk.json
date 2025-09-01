@@ -71,7 +71,7 @@
   "signer_waiting": "Очікування схвалення підпису...",
   "signer_signature": "Підпис схвалено.",
   "invalid_url_format": "Неправильний формат URL",
-  "operation_failed": "Операція не вдалася",
+  "operation_failed": "Операція не вдалася, причина невдачі: ${errMsg}",
   "required": "Обов'язково",
   "network_warning_title": "Проблема підключення сервера",
   "network_warning_message": "Не вдається підключитися до сервера ${relay}. Сервер може бути офлайн або недоступний, але ви все ще можете спробувати приєднатися до кола. Чи хочете продовжити?",
@@ -161,5 +161,7 @@
   "search": "Пошук",
   "str_recent_chats": "Останні чати",
   "str_title_contacts": "Контакти",
-  "str_title_groups": "Групи"
+  "str_title_groups": "Групи",
+  "logged_circle_not_found": "Ввійшов коло не знайдено",
+  "push_token_is_null": "Push-токен є null"
 }
