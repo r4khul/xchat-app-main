@@ -10,6 +10,8 @@ import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import 'package:chatcore/chat-core.dart';
 
+import 'push_integration.dart';
+
 class CLUserPushNotificationManager implements PushPermissionChecker {
   static final CLUserPushNotificationManager instance = CLUserPushNotificationManager._internal();
   CLUserPushNotificationManager._internal() {
@@ -25,8 +27,6 @@ class CLUserPushNotificationManager implements PushPermissionChecker {
   bool get allowSendNotification => _allowSendNotificationNotifier.value;
   bool get allowReceiveNotification => _allowReceiveNotificationNotifier.value;
 
-  Completer _initCmp = Completer();
-
   Future<void> initialize() async {
     final currentState = LoginManager.instance.currentState;
     final circle = currentState.currentCircle;
@@ -35,32 +35,32 @@ class CLUserPushNotificationManager implements PushPermissionChecker {
 
     await _loadConfiguration(circle);
 
-    _initCmp.complete();
+    final token = await updatePushTokenIfNeeded();
 
-    if (allowReceiveNotification || allowSendNotification) {
-      NotificationHelper.sharedInstance.connectServerRelay();
+    if (!_isConfigurationInitialized(circle)) {
+      final hasPermission = await LocalPushKit.instance.requestPermission();
+      _initializeDefaultConfiguration(hasPermission, token);
+      return;
     }
 
     await checkAndUpdatePermissionStatus();
   }
 
-  Future registerPushTokenHandler(String token) async {
-    final currentState = LoginManager.instance.currentState;
-    final circle = currentState.currentCircle;
+  Future<String?> updatePushTokenIfNeeded() async {
+    final account = LoginManager.instance.currentState.account;
+    if (account == null) return null;
+    return CLPushIntegration.instance
+        .registerNotification()
+        .then((token) {
+      if (token.isEmpty) return null;
+      if (account.pubkey != LoginManager.instance.currentState.account?.pubkey) return null;
 
-    if (circle == null) return;
-
-    await _initCmp.future;
-
-    if (!_isConfigurationInitialized(circle)) {
-      await _initializeDefaultConfiguration(circle);
-      return;
-    }
-
-    final allowReceive = _allowReceiveNotificationNotifier.value;
-    if (allowReceive) {
-      NotificationHelper.sharedInstance.updateNotificationDeviceId(token);
-    }
+      LoginManager.instance.savePushToken(token);
+      if (allowReceiveNotification) {
+        NotificationHelper.sharedInstance.updateNotificationDeviceId(token);
+      }
+      return token;
+    });
   }
 
   Future<void> setAllowSendNotification(bool value) async {
@@ -70,13 +70,13 @@ class CLUserPushNotificationManager implements PushPermissionChecker {
     final circle = currentState.currentCircle;
     if (circle == null) return;
 
-    await circle.updateAllowSendNotification(value);
+    circle.updateAllowSendNotification(value);
 
     _allowSendNotificationNotifier.value = value;
   }
 
   // Return error message
-  Future<String?> setAllowReceiveNotification(bool value) async {
+  Future<String?> setAllowReceiveNotification(bool value, [String? pushToken, bool? hasPermission]) async {
     if (_allowReceiveNotificationNotifier.value == value) return null;
 
     final currentState = LoginManager.instance.currentState;
@@ -85,7 +85,7 @@ class CLUserPushNotificationManager implements PushPermissionChecker {
 
     if (value) {
       // Check push permission
-      final hasPermission = await _checkNativePushPermission();
+      hasPermission ??= await LocalPushKit.instance.requestPermission();
       if (!hasPermission) {
         _showPermissionDialog().then((shouldGoToSettings) {
           if (shouldGoToSettings) {
@@ -95,9 +95,20 @@ class CLUserPushNotificationManager implements PushPermissionChecker {
         return null;
       }
 
-      final pushToken = currentState.account?.pushToken;
+      pushToken ??= currentState.account?.pushToken;
       if (pushToken == null || pushToken.isEmpty) {
-        return Localized.text('ox_common.push_token_is_null');
+        // Try to register pushToken again
+        pushToken = await CLPushIntegration.instance
+            .registerNotification()
+            .timeout(Duration(seconds: 15), onTimeout: () => '')
+            .then((token) {
+          if (token.isEmpty) return '';
+          LoginManager.instance.savePushToken(token);
+          return token;
+        });
+        if (pushToken == null || pushToken.isEmpty) {
+          return Localized.text('ox_common.push_token_is_null');
+        }
       }
 
       final event = await NotificationHelper.sharedInstance.updateNotificationDeviceId(pushToken);
@@ -111,7 +122,7 @@ class CLUserPushNotificationManager implements PushPermissionChecker {
       }
     }
 
-    await circle.updateAllowReceiveNotification(value);
+    circle.updateAllowReceiveNotification(value);
 
     _allowReceiveNotificationNotifier.value = value;
 
@@ -121,7 +132,7 @@ class CLUserPushNotificationManager implements PushPermissionChecker {
   Future<void> checkAndUpdatePermissionStatus() async {
     if (!allowReceiveNotification) return;
 
-    final hasPermission = await _checkNativePushPermission();
+    final hasPermission = await LocalPushKit.instance.requestPermission();
     if (!hasPermission) {
       await setAllowReceiveNotification(false);
     }
@@ -136,16 +147,11 @@ class CLUserPushNotificationManager implements PushPermissionChecker {
     return circle.isNotificationSettingsInitialized;
   }
 
-  Future<void> _initializeDefaultConfiguration(Circle circle) async {
-    final hasPermission = await _checkNativePushPermission();
-    await setAllowSendNotification(hasPermission);
-    await setAllowReceiveNotification(hasPermission).then((err) {
+  Future<void> _initializeDefaultConfiguration(bool hasPermission, String? token) async {
+    await setAllowSendNotification(true);
+    await setAllowReceiveNotification(hasPermission, token, hasPermission).then((err) {
       if (err != null) setAllowReceiveNotification(false);
     });
-  }
-
-  Future<bool> _checkNativePushPermission() async {
-    return LocalPushKit.instance.requestPermission();
   }
 
   Future<bool> _showPermissionDialog() async {
@@ -170,7 +176,6 @@ class CLUserPushNotificationManager implements PushPermissionChecker {
   }
 
   void dispose() {
-    _initCmp = Completer();
     _allowSendNotificationNotifier.dispose();
     _allowReceiveNotificationNotifier.dispose();
   }

@@ -148,6 +148,10 @@ extension SwiftOXCCommonPlugin: FlutterApplicationLifeCycleDelegate {
         registerPushTokenHandler(token: deviceTokenStr)
     }
     
+    public func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: any Error) {
+        registerPushTokenFailHandler(err: error)
+    }
+    
     public func applicationDidEnterBackground(_ application: UIApplication) {
         IMBackgroundCoordinator.shared.applicationDidEnterBackground()
     }
@@ -161,28 +165,28 @@ extension SwiftOXCCommonPlugin {
         channel?.invokeMethod("registerPushTokenHandler", arguments: arguments)
     }
     
+    private func registerPushTokenFailHandler(err: Error) {
+        let arguments: [String: Any] = ["message": err.localizedDescription]
+        channel?.invokeMethod("registerPushTokenFailHandler", arguments: arguments)
+    }
+    
     private func registeNotification(isRotation: Bool) -> Void {
-        if #available(iOS 10.0, *) {
-            let notificationCenter = UNUserNotificationCenter.current()
-            notificationCenter.delegate = self
-            notificationCenter.requestAuthorization(options:[.sound, .alert, .badge]) { (granted, error) in
-                if (granted) {
-                    DispatchQueue.main.async {
-                        if isRotation {
-                            UIApplication.shared.unregisterForRemoteNotifications()
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                UIApplication.shared.registerForRemoteNotifications()
-                            }
-                        } else {
+        let notificationCenter = UNUserNotificationCenter.current()
+        notificationCenter.delegate = self
+        notificationCenter.requestAuthorization(options:[.sound, .alert, .badge]) { (granted, error) in
+            if (granted) {
+                DispatchQueue.main.async {
+                    if isRotation {
+                        UIApplication.shared.unregisterForRemoteNotifications()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                             UIApplication.shared.registerForRemoteNotifications()
                         }
+                    } else {
+                        UIApplication.shared.registerForRemoteNotifications()
                     }
-                    
                 }
+                
             }
-        }
-        else {
-            UIApplication.shared.registerUserNotificationSettings(UIUserNotificationSettings.init(types: [.sound, .alert, .badge], categories: nil))
         }
     }
 }

@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:chatcore/chat-core.dart';
 import 'package:flutter/widgets.dart';
-import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/ox_common.dart';
 import 'package:ox_common/utils/ox_chat_binding.dart';
 
@@ -13,7 +12,6 @@ import 'core/local_push_kit.dart';
 import 'core/message_models.dart';
 import 'core/policy_config.dart';
 import 'core/ports.dart';
-import 'push_notification_manager.dart';
 
 /// Wires LocalPushKit + Notifier + DecisionService into app lifecycle and message bus.
 class CLPushIntegration with WidgetsBindingObserver {
@@ -22,16 +20,18 @@ class CLPushIntegration with WidgetsBindingObserver {
 
   late final Notifier _notifier;
   late final NotificationDecisionService _decision;
+  Completer<String> _registerPushTokenCmp = Completer<String>()..complete('');
   bool _initialized = false;
   
-  /// Register push token handler - called when iOS native gets push token
   Future<void> registerPushTokenHandler(String token) async {
-    final account = LoginManager.instance.currentState.account;
-    if (account != null) {
-      await LoginManager.instance.savePushToken(token);
-      if (LoginManager.instance.isLoginCircle) {
-        CLUserPushNotificationManager.instance.registerPushTokenHandler(token);
-      }
+    if (!_registerPushTokenCmp.isCompleted) {
+      _registerPushTokenCmp.complete(token);
+    }
+  }
+
+  Future registerPushTokenFailHandler(String message) async {
+    if (!_registerPushTokenCmp.isCompleted) {
+      _registerPushTokenCmp.completeError(ErrorDescription(message));
     }
   }
 
@@ -74,19 +74,16 @@ class CLPushIntegration with WidgetsBindingObserver {
     _initialized = true;
   }
 
-  Future<void> registeNotificationIfNeeded() async {
-    final notificationPermission = await LocalPushKit.instance.requestPermission();
-    if (!notificationPermission) return;
+  Future<String> registerNotification([bool isRotation = false]) {
+    if (!_registerPushTokenCmp.isCompleted) return _registerPushTokenCmp.future;
 
-    registeNotification();
-  }
-
-  void registeNotification([bool isRotation = false]) {
+    _registerPushTokenCmp = Completer();
     if (Platform.isIOS) {
       OXCommon.registeNotification(isRotation: isRotation);
     } else if (Platform.isAndroid) {
       // TODO: Android implementation
     }
+    return _registerPushTokenCmp.future;
   }
 
   // Lifecycle
@@ -137,8 +134,6 @@ class CLPushIntegration with WidgetsBindingObserver {
     }
   }
 }
-
-// -------- Port Implementations --------
 
 class _ForegroundStateImpl implements ForegroundState {
   @override

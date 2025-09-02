@@ -1,29 +1,22 @@
-
 import 'package:flutter/services.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:chatcore/chat-core.dart';
 import 'package:ox_common/log_util.dart';
-import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/utils/chat_prompt_tone.dart';
-import 'package:ox_common/utils/compression_utils.dart';
 import 'package:ox_module_service/ox_module_service.dart';
 import 'package:isar/isar.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/material.dart';
-
-
 import 'package:ox_common/model/chat_session_model_isar.dart';
 
 import 'login/circle_config_models.dart';
 import 'model/file_server_model.dart';
 import 'push/push_integration.dart';
-import 'utils/ox_userinfo_manager.dart';
 
 const CommonModule = 'ox_common';
 
 class OXCommon extends OXFlutterModule {
   @override
-  // TODO: implement moduleName
   String get moduleName => CommonModule;
 
   @override
@@ -59,6 +52,10 @@ class OXCommon extends OXFlutterModule {
       case 'registerPushTokenHandler':
         String token = call.arguments['token'];
         CLPushIntegration.instance.registerPushTokenHandler(token);
+        break;
+      case 'registerPushTokenFailHandler':
+        String message = call.arguments['message'];
+        CLPushIntegration.instance.registerPushTokenFailHandler(message);
         break;
     }
   }
@@ -115,7 +112,6 @@ class OXCommon extends OXFlutterModule {
 
   @override
   Future<T?>? navigateToPage<T>(BuildContext context, String pageName, Map<String, dynamic>? params) {
-    // TODO: implement navigateToPage
     return null;
   }
 

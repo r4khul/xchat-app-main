@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:ox_common/component.dart';
+import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/widgets/common_loading.dart';
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_localizable/ox_localizable.dart';
@@ -19,6 +20,15 @@ class NotificationSettingsPage extends StatefulWidget {
 }
 
 class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
+  @override
+  void initState() {
+    super.initState();
+    if (LoginManager.instance.currentCircle?.isNotificationSettingsInitialized == false) {
+      CLUserPushNotificationManager.instance.setAllowSendNotification(true);
+      CLUserPushNotificationManager.instance.setAllowReceiveNotification(false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return CLScaffold(

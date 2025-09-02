@@ -877,7 +877,6 @@ extension LoginManagerCircle on LoginManager {
 
   void initializePushCore() async {
     await CLPushIntegration.instance.initialize();
-    await CLPushIntegration.instance.registeNotificationIfNeeded();
     await CLUserPushNotificationManager.instance.initialize();
   }
 

@@ -10,7 +10,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/login/account_path_manager.dart';
-import 'package:ox_common/push/push_integration.dart';
 import 'package:ox_common/push/push_notification_manager.dart';
 import 'package:ox_common/scheme/scheme_helper.dart';
 import 'package:ox_common/utils/chat_prompt_tone.dart';
@@ -239,7 +238,7 @@ class MainState extends State<MainApp>
         if (!LoginManager.instance.isLoginCircle) return;
         SchemeHelper.tryHandlerForOpenAppScheme();
         keepHeartBeat();
-        CLPushIntegration.instance.registeNotificationIfNeeded();
+        CLUserPushNotificationManager.instance.updatePushTokenIfNeeded();
         // For handling notification permission being granted
         CLUserPushNotificationManager.instance.checkAndUpdatePermissionStatus();
         break;
@@ -254,11 +253,11 @@ class MainState extends State<MainApp>
   }
 
   Future<void> keepHeartBeat() async {
-    if (LoginManager.instance.isLoginCircle) {
-      await ThreadPoolManager.sharedInstance.initialize();
-      Connect.sharedInstance.startHeartBeat();
-      Account.sharedInstance.startHeartBeat();
-    }
+    if (!LoginManager.instance.isLoginCircle) return;
+
+    await ThreadPoolManager.sharedInstance.initialize();
+    Connect.sharedInstance.startHeartBeat();
+    Account.sharedInstance.startHeartBeat();
   }
 
   void printMemoryUsage() {
