@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
-import 'package:ox_chat/manager/chat_message_helper.dart';
-import 'package:ox_chat/utils/custom_message_utils.dart';
+import 'package:ox_chat/message_handler/chat_message_helper.dart';
+import 'package:ox_chat/message_handler/custom_message_utils.dart';
 import 'package:ox_chat/widget/chat_video_message.dart';
 import 'package:ox_chat/widget/chat_image_preview_widget.dart';
 import 'package:ox_common/business_interface/ox_chat/call_message_type.dart';
@@ -19,6 +19,8 @@ import 'package:ox_common/utils/took_kit.dart';
 import 'package:ox_common/utils/widget_tool.dart';
 import 'package:ox_common/widgets/common_image.dart';
 import 'package:ox_common/widgets/common_long_content_page.dart';
+
+import 'system_message_interpreter.dart';
 
 part 'chat_message_builder_custom.dart';
 
@@ -205,6 +207,10 @@ class ChatMessageBuilder {
     }
 
     return widget;
+  }
+
+  static Widget buildSystemMessage(types.SystemMessage message) {
+    return SizedBox();
   }
 
   static InlineSpan moreButtonBuilder({

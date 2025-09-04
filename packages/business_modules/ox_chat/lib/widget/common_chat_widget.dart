@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:ox_chat/manager/chat_draft_manager.dart';
-import 'package:ox_chat/manager/chat_message_builder.dart';
-import 'package:ox_chat/manager/chat_message_helper.dart';
+import 'package:ox_chat/message_handler/chat_message_builder.dart';
+import 'package:ox_chat/message_handler/chat_message_helper.dart';
 import 'package:ox_chat/manager/chat_page_config.dart';
 import 'package:ox_chat/utils/chat_voice_helper.dart';
 import 'package:ox_chat/utils/general_handler/chat_general_handler.dart';

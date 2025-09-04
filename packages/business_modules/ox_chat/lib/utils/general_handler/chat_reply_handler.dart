@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
-import 'package:ox_chat/manager/chat_message_helper.dart';
+import 'package:ox_chat/message_handler/chat_message_helper.dart';
 import 'package:ox_chat/widget/reply_message_widget.dart';
 import 'package:ox_common/utils/ox_chat_binding.dart';
 

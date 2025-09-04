@@ -6,7 +6,7 @@ import 'package:ox_common/component.dart';
 import 'package:ox_common/upload/upload_utils.dart';
 import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/utils/video_data_manager.dart';
-import 'package:ox_chat/utils/custom_message_utils.dart';
+import 'package:ox_chat/message_handler/custom_message_utils.dart';
 
 class ChatVideoMessage extends StatefulWidget {
 

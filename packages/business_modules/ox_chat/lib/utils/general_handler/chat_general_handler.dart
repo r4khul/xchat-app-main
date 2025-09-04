@@ -7,14 +7,14 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
-import 'package:ox_chat/manager/chat_message_helper.dart';
+import 'package:ox_chat/message_handler/chat_message_helper.dart';
 import 'package:ox_chat/manager/chat_page_config.dart';
 import 'package:ox_chat/model/constant.dart';
-import 'package:ox_chat/utils/custom_message_utils.dart';
+import 'package:ox_chat/message_handler/custom_message_utils.dart';
 import 'package:ox_chat/utils/general_handler/chat_mention_handler.dart';
 import 'package:ox_chat/utils/general_handler/chat_reply_handler.dart';
 import 'package:ox_chat/utils/message_parser/define.dart';
-import 'package:ox_chat/utils/send_message/chat_send_message_helper.dart';
+import 'package:ox_chat/message_sender/chat_send_message_helper.dart';
 import 'package:ox_chat/widget/chat_send_image_prepare_dialog.dart';
 import 'package:ox_common/business_interface/ox_chat/call_message_type.dart';
 import 'package:ox_common/business_interface/ox_chat/utils.dart';

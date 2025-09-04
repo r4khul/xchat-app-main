@@ -2,7 +2,7 @@
 import 'dart:async';
 
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
-import 'package:ox_chat/utils/custom_message_utils.dart';
+import 'package:ox_chat/message_handler/custom_message_utils.dart';
 import 'package:ox_chat_ui/ox_chat_ui.dart';
 import 'package:ox_common/business_interface/ox_chat/custom_message_type.dart';
 

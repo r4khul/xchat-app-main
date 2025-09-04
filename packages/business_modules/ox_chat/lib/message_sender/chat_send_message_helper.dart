@@ -3,10 +3,10 @@ import 'dart:convert';
 
 import 'package:nostr_core_dart/nostr.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
-import 'package:ox_chat/manager/chat_message_helper.dart';
+import 'package:ox_chat/message_handler/chat_message_helper.dart';
 import 'package:ox_chat/model/constant.dart';
 import 'package:ox_chat/utils/chat_log_utils.dart';
-import 'package:ox_chat/utils/send_message/chat_strategy_factory.dart';
+import 'package:ox_chat/message_sender/chat_strategy_factory.dart';
 import 'package:ox_common/model/chat_session_model_isar.dart';
 import 'package:chatcore/chat-core.dart';
 
