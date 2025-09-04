@@ -69,7 +69,7 @@ class _HomePageState extends State<HomePage> {
         String showContent = 'ox_common.open_singer_app_error_content';
 
         try {
-          await LoginManager.instance.logout();
+          await LoginManager.instance.logoutAccount();
         } catch (e) {
           CommonToast.instance.show(context, e.toString());
         }

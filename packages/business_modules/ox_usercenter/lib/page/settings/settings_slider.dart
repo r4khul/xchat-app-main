@@ -382,7 +382,7 @@ class SettingSliderState extends State<SettingSlider> {
 
     if (shouldLogout == true) {
       try {
-        await LoginManager.instance.logout();
+        await LoginManager.instance.logoutAccount();
         OXNavigator.popToRoot(context);
       } catch (e) {
         CommonToast.instance.show(context, e.toString());
