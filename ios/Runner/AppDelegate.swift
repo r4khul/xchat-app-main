@@ -78,8 +78,6 @@ import ox_common
                 urlComponents.queryItems = queryItems
                 urlStr = urlComponents.url?.absoluteString ?? urlStr
             }
-        } else {
-            return true
         }
         
         let userDefault = UserDefaults.standard
