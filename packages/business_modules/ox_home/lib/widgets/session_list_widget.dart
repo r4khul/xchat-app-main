@@ -270,12 +270,11 @@ class _SessionListWidgetState extends State<SessionListWidget> {
           label: Localized.text('ox_chat.clear_history'),
           value: SessionDeleteAction.clearHistory,
         ),
-        if (_isInGroup(item))
-          CLPickerItem(
-            label: Localized.text('ox_chat.delete_group_item'),
-            value: SessionDeleteAction.groupDeleteForMe,
-            isDestructive: true,
-          ),
+        CLPickerItem(
+          label: Localized.text('ox_chat.delete_group_item'),
+          value: SessionDeleteAction.groupDeleteForMe,
+          isDestructive: true,
+        ),
       ],
     );
 
@@ -454,11 +453,17 @@ class _SessionListWidgetState extends State<SessionListWidget> {
           isDeleteForRemote: false,
         );
       case SessionDeleteAction.groupDeleteForMe:
-        await Groups.sharedInstance.leaveGroup(
-          groupId,
-          Localized.text('ox_chat.leave_group_system_message')
-              .replaceAll(r'${name}', LoginUserNotifier.instance.name$.value),
+        await controller.deleteSession(
+          viewModel: item,
+          isDeleteForRemote: false,
         );
+        if (_isInGroup(item)) {
+          await Groups.sharedInstance.leaveGroup(
+            groupId,
+            Localized.text('ox_chat.leave_group_system_message')
+                .replaceAll(r'${name}', LoginUserNotifier.instance.name$.value),
+          );
+        }
         return true;
       case SessionDeleteAction.groupDeleteForAll:
         Groups.sharedInstance.deleteAndLeave(
