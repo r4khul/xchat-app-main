@@ -143,6 +143,7 @@ class AccountModel {
     required this.encryptedPrivKey,
     required this.defaultPassword,
     required this.nostrConnectUri,
+    this.nostrConnectClientPrivkey,
     required this.circles,
     required this.createdAt,
     required this.lastLoginAt,
@@ -156,6 +157,7 @@ class AccountModel {
   final String encryptedPrivKey;     // Only has value for nesc login type
   final String defaultPassword;      // Used to decrypt private key
   final String nostrConnectUri;     // Only has value for remoteSigner login type
+  final String? nostrConnectClientPrivkey; // Only has value for remoteSigner login type
   final List<Circle> circles;
   final int createdAt;
   final int lastLoginAt;
@@ -170,6 +172,7 @@ class AccountModel {
     String? encryptedPrivKey,
     String? defaultPassword,
     String? nostrConnectUri,
+    String? nostrConnectClientPrivkey,
     List<Circle>? circles,
     int? createdAt,
     int? lastLoginAt,
@@ -183,6 +186,7 @@ class AccountModel {
       encryptedPrivKey: encryptedPrivKey ?? this.encryptedPrivKey,
       defaultPassword: defaultPassword ?? this.defaultPassword,
       nostrConnectUri: nostrConnectUri ?? this.nostrConnectUri,
+      nostrConnectClientPrivkey: nostrConnectClientPrivkey ?? this.nostrConnectClientPrivkey,
       circles: circles ?? this.circles,
       createdAt: createdAt ?? this.createdAt,
       lastLoginAt: lastLoginAt ?? this.lastLoginAt,
@@ -201,6 +205,7 @@ class AccountHelper {
   static const String keyEncryptedPrivKey = 'encrypted_priv_key';
   static const String keyDefaultPassword = 'default_password';
   static const String keyNostrConnectUri = 'nostr_connect_uri';
+  static const String keyNostrConnectClientPrivkey = 'nostr_connect_client_privkey';
   static const String keyCircles = 'circles';
   static const String keyCreatedAt = 'created_at';
   static const String keyLastLoginAt = 'last_login_at';
@@ -231,6 +236,10 @@ class AccountHelper {
       result.add(AccountDataISAR.createString(keyPushToken, account.pushToken!)..id = db.accountDataISARs.autoIncrement());
     }
     
+    if (account.nostrConnectClientPrivkey != null) {
+      result.add(AccountDataISAR.createString(keyNostrConnectClientPrivkey, account.nostrConnectClientPrivkey!)..id = db.accountDataISARs.autoIncrement());
+    }
+    
     return result;
   }
 
@@ -242,7 +251,7 @@ class AccountHelper {
     try {
       final accountData = await accountDb.accountDataISARs.where()
         .anyOf([keyPubkey, keyLoginType, keyEncryptedPrivKey, keyDefaultPassword, 
-               keyNostrConnectUri, keyCircles, keyCreatedAt, keyLastLoginAt, keyLastLoginCircleId, keyPushToken, keyHasUpload],
+               keyNostrConnectUri, keyNostrConnectClientPrivkey, keyCircles, keyCreatedAt, keyLastLoginAt, keyLastLoginCircleId, keyPushToken, keyHasUpload],
                (q, String key) => q.keyNameEqualTo(key))
         .findAll();
 
@@ -275,6 +284,7 @@ class AccountHelper {
       final encryptedPrivKey = dataMap[keyEncryptedPrivKey] as String?;
       final defaultPassword = dataMap[keyDefaultPassword] as String?;
       final nostrConnectUri = dataMap[keyNostrConnectUri] as String?;
+      final nostrConnectClientPrivkey = dataMap[keyNostrConnectClientPrivkey] as String?;
       final hasUpload = dataMap[keyHasUpload] as bool? ?? false;
       if (pubkey == null ||
           loginTypeRaw == null ||
@@ -290,6 +300,7 @@ class AccountHelper {
         encryptedPrivKey: encryptedPrivKey,
         defaultPassword: defaultPassword,
         nostrConnectUri: nostrConnectUri,
+        nostrConnectClientPrivkey: nostrConnectClientPrivkey,
         circles: circles,
         createdAt: dataMap[keyCreatedAt] as int? ?? DateTime.now().millisecondsSinceEpoch,
         lastLoginAt: dataMap[keyLastLoginAt] as int? ?? DateTime.now().millisecondsSinceEpoch,

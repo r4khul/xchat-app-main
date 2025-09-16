@@ -297,6 +297,7 @@ extension LoginManagerAccount on LoginManager {
       if (account == null) {
         return false; // No account data found
       }
+        account = account.copyWith(nostrConnectClientPrivkey: _generateClientPrivkey());
 
       // Update login state
       final loginState = LoginState(account: account);
@@ -430,6 +431,7 @@ extension LoginManagerAccount on LoginManager {
           lastLoginAt: now,
           db: accountDb,
         );
+          account = account.copyWith(nostrConnectClientPrivkey: _generateClientPrivkey());
       }
 
       // 3. Save account info to DB.
