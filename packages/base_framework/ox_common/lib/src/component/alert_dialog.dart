@@ -140,7 +140,11 @@ class CLAlertDialog {
   ) {
     return models
         .map((m) => TextButton(
-              onPressed: () => Navigator.of(ctx).pop(m.value),
+              onPressed: () {
+                if (Navigator.of(ctx).canPop()) {
+                  Navigator.of(ctx).pop(m.value);
+                }
+              },
               style: m.isDestructiveAction
                   ? TextButton.styleFrom(foregroundColor: ColorToken.error.of(ctx))
                   : null,
@@ -157,7 +161,11 @@ class CLAlertDialog {
         .map((m) => CupertinoDialogAction(
               isDefaultAction: m.isDefaultAction,
               isDestructiveAction: m.isDestructiveAction,
-              onPressed: () => Navigator.of(ctx).pop(m.value),
+              onPressed: () {
+                if (Navigator.of(ctx).canPop()) {
+                  Navigator.of(ctx).pop(m.value);
+                }
+              },
               child: CLText(m.label),
             ))
         .toList();

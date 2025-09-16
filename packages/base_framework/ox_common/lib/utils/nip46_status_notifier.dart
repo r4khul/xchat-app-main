@@ -84,6 +84,7 @@ class NIP46StatusNotifier {
     Duration duration = const Duration(seconds: 3),
   }) async {
     final completer = Completer<void>();
+    bool isDismissed = false;
 
     CLAlertDialog.show(
       context: context,
@@ -98,14 +99,16 @@ class NIP46StatusNotifier {
       ],
       barrierDismissible: false,
     ).then((result) {
-      if (!completer.isCompleted) {
+      if (!isDismissed && !completer.isCompleted) {
+        isDismissed = true;
         completer.complete();
       }
       _isDialogShowing = false;
     });
 
     Future.delayed(duration, () {
-      if (!completer.isCompleted) {
+      if (!isDismissed && !completer.isCompleted) {
+        isDismissed = true;
         completer.complete();
         _isDialogShowing = false;
         if (Navigator.of(context).canPop()) {
@@ -118,10 +121,8 @@ class NIP46StatusNotifier {
   }
 
   void _dismissCurrentDialogIfNeeded(BuildContext context) {
-    if (_isDialogShowing) {
-      if (Navigator.of(context).canPop()) {
-        OXNavigator.pop(context);
-      }
+    if (_isDialogShowing && Navigator.of(context).canPop()) {
+      OXNavigator.pop(context);
       _isDialogShowing = false;
     }
   }
