@@ -5,7 +5,6 @@ import 'package:chatcore/chat-core.dart';
 import 'package:ox_cache_manager/ox_cache_manager.dart';
 import 'package:isar/isar.dart';
 import 'package:nostr_core_dart/nostr.dart';
-import 'package:nostr_core_dart/src/signer/external_signer_tool.dart';
 import 'package:convert/convert.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/push/push_integration.dart';
@@ -1043,6 +1042,10 @@ extension LoginManagerDatabase on LoginManager {
 
   /// Set up signer configuration for specific pubkey
   Future<void> _setupSignerForPubkey(String pubkey) async {
+      debugPrint('AutoLogin: External signer not supported on this platform');
+      return;
+    }
+    
     try {
       final signerKey = await getSignerForPubkey(pubkey);
       if (signerKey != null) {
