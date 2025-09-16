@@ -290,14 +290,21 @@ extension LoginManagerAccount on LoginManager {
       }
 
       // Load account model
-      final account = await AccountHelper.fromAccountDataList(
+      AccountModel? account = await AccountHelper.fromAccountDataList(
         accountDb,
         lastPubkey,
       );
       if (account == null) {
         return false; // No account data found
       }
+      
+      // Update account with missing nostrConnectClientPrivkey if needed
+      if (account.loginType == LoginType.remoteSigner && 
+          account.nostrConnectUri.isNotEmpty && 
+          account.nostrConnectClientPrivkey == null) {
         account = account.copyWith(nostrConnectClientPrivkey: _generateClientPrivkey());
+        await account.saveToDB();
+      }
 
       // Update login state
       final loginState = LoginState(account: account);
@@ -426,12 +433,16 @@ extension LoginManagerAccount on LoginManager {
           encryptedPrivKey: encryptedPrivKey,
           defaultPassword: defaultPassword,
           nostrConnectUri: nostrConnectUri ?? '',
+          nostrConnectClientPrivkey: loginType == LoginType.remoteSigner ? _generateClientPrivkey() : null,
           circles: [],
           createdAt: now,
           lastLoginAt: now,
           db: accountDb,
         );
+      } else {
+        if(account.nostrConnectUri.isNotEmpty && account.nostrConnectClientPrivkey == null){
           account = account.copyWith(nostrConnectClientPrivkey: _generateClientPrivkey());
+        }
       }
 
       // 3. Save account info to DB.
@@ -873,6 +884,7 @@ extension LoginManagerCircle on LoginManager {
           if (nostrConnectUri.isNotEmpty) {
             return Account.sharedInstance.loginWithNip46URI(
               nostrConnectUri,
+              clientPrivkey: account.nostrConnectClientPrivkey,
             );
           }
           break;
@@ -1044,6 +1056,8 @@ extension LoginManagerDatabase on LoginManager {
 
   /// Set up signer configuration for specific pubkey
   Future<void> _setupSignerForPubkey(String pubkey) async {
+    // Only set up external signer on Android
+    if (!Platform.isAndroid) {
       debugPrint('AutoLogin: External signer not supported on this platform');
       return;
     }
@@ -1068,6 +1082,12 @@ extension LoginManagerDatabase on LoginManager {
   }
 
   /// Get encryption password from account
+  String _generateClientPrivkey() {
+    // Generate a new client private key for NIP46 connections
+    final keychain = Keychain.generate();
+    return keychain.private;
+  }
+
   Future<String> _getEncryptionPassword(AccountModel account) async {
     // Use database encryption key from DBKeyManager
     return await DBKeyManager.getKey();
