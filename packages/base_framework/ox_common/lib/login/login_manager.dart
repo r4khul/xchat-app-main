@@ -7,6 +7,7 @@ import 'package:isar/isar.dart';
 import 'package:nostr_core_dart/nostr.dart';
 import 'package:convert/convert.dart';
 import 'package:ox_common/component.dart';
+import 'package:nostr_core_dart/src/signer/signer_config.dart';
 import 'package:ox_common/push/push_integration.dart';
 import 'package:ox_common/push/push_notification_manager.dart';
 import 'package:ox_common/utils/extension.dart';
@@ -210,8 +211,8 @@ extension LoginManagerAccount on LoginManager {
     try {
       debugPrint('LoginWithSigner: Starting login with signer: $signerKey');
       // Initialize and set signer configuration
-      ExternalSignerTool.initialize();
-      ExternalSignerTool.setSigner(signerKey);
+      await ExternalSignerTool.initialize();
+      await ExternalSignerTool.setSigner(signerKey);
       
       final config = ExternalSignerTool.getCurrentConfig();
       debugPrint('LoginWithSigner: Config found: ${config?.displayName} (${config?.packageName})');
@@ -224,14 +225,20 @@ extension LoginManagerAccount on LoginManager {
         return false;
       }
 
-      // Check if signer app is installed
+      // Check if signer app is installed (without requiring QUERY_ALL_PACKAGES permission)
       bool isInstalled = await CoreMethodChannel.isAppInstalled(config.packageName);
       if (!isInstalled) {
-        _notifyLoginFailure(LoginFailure(
-          type: LoginFailureType.errorEnvironment,
-          message: '${config.displayName} app is not installed',
-        ));
-        return false;
+        // Fallback: Check if nostrsigner scheme is supported by any app
+        bool isNostrSignerSupported = await CoreMethodChannel.isNostrSignerSupported();
+        if (!isNostrSignerSupported) {
+          _notifyLoginFailure(LoginFailure(
+            type: LoginFailureType.errorEnvironment,
+            message: '${config.displayName} app is not installed',
+          ));
+          return false;
+        }
+        // If nostrsigner scheme is supported but specific package check failed,
+        // continue with the login attempt as the app might be installed
       }
 
       // Get public key from signer
@@ -458,6 +465,9 @@ extension LoginManagerAccount on LoginManager {
       // 6. Persist signer selection if provided
       if (signerKey != null) {
         await _persistSignerInfo(pubkey, signerKey);
+        // Also set the signer in ExternalSignerTool for immediate use
+        await ExternalSignerTool.setSigner(signerKey);
+        debugPrint('LoginManager: Set signer mapping $pubkey -> $signerKey');
       }
 
       // 6. Try to login to last circle or first circle
@@ -1066,18 +1076,73 @@ extension LoginManagerDatabase on LoginManager {
       final signerKey = await getSignerForPubkey(pubkey);
       if (signerKey != null) {
         debugPrint('AutoLogin: Setting up signer $signerKey for pubkey $pubkey');
-        ExternalSignerTool.initialize();
-        ExternalSignerTool.setSigner(signerKey);
+        await ExternalSignerTool.initialize();
+        await ExternalSignerTool.setSigner(signerKey);
       } else {
-        debugPrint('AutoLogin: No saved signer for pubkey $pubkey, using default');
-        ExternalSignerTool.initialize();
-        ExternalSignerTool.setSigner('amber'); // Default fallback
+        debugPrint('AutoLogin: No saved signer for pubkey $pubkey, trying to detect available signer');
+        await ExternalSignerTool.initialize();
+        // Try to detect which signer is available instead of defaulting to amber
+        await _detectAndSetAvailableSigner();
+        // Set the detected signer for this pubkey
+        final detectedSigner = ExternalSignerTool.getCurrentConfig()?.packageName;
+        if (detectedSigner != null) {
+          // Find the signer key for this package name
+          final signerKeys = SignerConfigs.getAvailableSigners();
+          for (final signerKey in signerKeys) {
+            final config = SignerConfigs.getConfig(signerKey);
+            if (config?.packageName == detectedSigner) {
+              await ExternalSignerTool.setSigner(signerKey);
+              break;
+            }
+          }
+        }
       }
     } catch (e) {
       debugPrint('AutoLogin: Error setting up signer for pubkey $pubkey: $e');
-      // Fallback to default
-      ExternalSignerTool.initialize();
-      ExternalSignerTool.setSigner('amber');
+      // Fallback to detecting available signer
+      await ExternalSignerTool.initialize();
+      await _detectAndSetAvailableSigner();
+    }
+  }
+
+  /// Detect and set available signer based on installed apps
+  Future<void> _detectAndSetAvailableSigner() async {
+    try {
+      // Get all available signer configurations
+      final signerKeys = SignerConfigs.getAvailableSigners();
+      
+      // Check which signers are installed
+      for (final signerKey in signerKeys) {
+        try {
+          final config = SignerConfigs.getConfig(signerKey);
+          if (config != null) {
+            final isInstalled = await CoreMethodChannel.isAppInstalled(config.packageName);
+            if (isInstalled) {
+              debugPrint('AutoLogin: Found available signer: $signerKey (${config.displayName})');
+              ExternalSignerTool.setSigner(signerKey);
+              // Note: We don't have the pubkey here, so we can't set the mapping
+              // This will be handled by the caller
+              return;
+            }
+          }
+        } catch (e) {
+          debugPrint('AutoLogin: Error checking signer $signerKey: $e');
+        }
+      }
+      
+      // If no specific signer found, check if nostrsigner scheme is supported
+      final isNostrSignerSupported = await CoreMethodChannel.isNostrSignerSupported();
+      if (isNostrSignerSupported) {
+        debugPrint('AutoLogin: NostrSigner scheme supported, using first available signer');
+        // Use the first available signer as fallback
+        if (signerKeys.isNotEmpty) {
+          ExternalSignerTool.setSigner(signerKeys.first);
+        }
+      } else {
+        debugPrint('AutoLogin: No signer apps found');
+      }
+    } catch (e) {
+      debugPrint('AutoLogin: Error detecting available signer: $e');
     }
   }
 

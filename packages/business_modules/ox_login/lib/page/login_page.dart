@@ -259,6 +259,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _buildSignerOption(String signerKey, String displayName, String packageName, String iconName) {
     return ListTile(
+      contentPadding: EdgeInsets.zero, // Remove default padding to align left
       leading: Container(
         width: 40.px,
         height: 40.px,
