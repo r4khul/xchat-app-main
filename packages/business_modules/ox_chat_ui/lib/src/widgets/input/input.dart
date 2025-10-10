@@ -5,10 +5,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:keyboard_height_plugin/keyboard_height_plugin.dart';
 import 'package:ox_common/component.dart';
+import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/utils/platform_utils.dart';
 import 'package:ox_common/utils/widget_tool.dart';
-import 'package:ox_common/widgets/common_image.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 
 import '../../models/giphy_image.dart';
@@ -172,15 +172,12 @@ class InputState extends State<Input> {
     widget.onFocusNodeInitialized?.call(_inputFocusNode);
     _keyboardHeightPlugin.onKeyboardHeightChanged((height) {
       if (!mounted) return;
+      if (!OXNavigator.isCurrentPage(context)) return;
       if (height < 1) return;
 
       if (_pluginKeyboardHeight != height) _pluginKeyboardHeight = height;
 
-      // Only change input type to text mode if this input field has focus
-      // This prevents the keyboard background from showing in other pages
-      if (_inputFocusNode.hasFocus) {
-        changeInputType(InputType.inputTypeText);
-      }
+      changeInputType(InputType.inputTypeText);
     });
   }
 
@@ -460,6 +457,8 @@ class InputState extends State<Input> {
       inputType = type;
       if (type != InputType.inputTypeText && _inputFocusNode.hasFocus) {
         _inputFocusNode.unfocus();
+      } else if (type == InputType.inputTypeText && !_inputFocusNode.hasFocus) {
+        _inputFocusNode.requestFocus();
       }
     });
   }

@@ -229,6 +229,10 @@ class OXNavigator extends Navigator {
       builder: builder,
     );
   }
+
+  static bool isCurrentPage(BuildContext context) {
+    return ModalRoute.of(context)?.isCurrent ?? false;
+  }
 }
 
 class OXRouteSettings extends RouteSettings {
