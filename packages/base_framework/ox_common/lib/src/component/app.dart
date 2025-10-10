@@ -13,6 +13,7 @@ class CLApp extends StatelessWidget {
     this.navigatorObservers = const [],
     this.localizationsDelegates,
     this.supportedLocales = const <Locale>[Locale('en', 'US')],
+    this.locale,
     this.themeData,
     this.themeMode,
     this.home,
@@ -24,6 +25,7 @@ class CLApp extends StatelessWidget {
 
   final Iterable<LocalizationsDelegate<dynamic>>? localizationsDelegates;
   final Iterable<Locale> supportedLocales;
+  final Locale? locale;
 
   final CLThemeData? themeData;
   final ThemeMode? themeMode;
@@ -42,6 +44,7 @@ class CLApp extends StatelessWidget {
         debugShowCheckedModeBanner: debugShowCheckedModeBanner,
         localizationsDelegates: localizationsDelegates,
         supportedLocales: supportedLocales,
+        locale: locale,
         themeMode: themeMode,
         theme: themeData?.materialLight,
         darkTheme: themeData?.materialDark,
@@ -69,6 +72,7 @@ class CLApp extends StatelessWidget {
         debugShowCheckedModeBanner: debugShowCheckedModeBanner,
         localizationsDelegates: localizationsDelegates,
         supportedLocales: supportedLocales,
+        locale: locale,
         theme: theme,
         home: home,
         builder: builder,

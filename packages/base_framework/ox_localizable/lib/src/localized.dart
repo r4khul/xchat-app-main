@@ -114,6 +114,41 @@ extension LocaleTypeExtension on LocaleType{
         }
     }
 
+    Locale get asLocale {
+        switch (this) {
+            case LocaleType.ar: return const Locale('ar', 'SA');
+            case LocaleType.az: return const Locale('az', 'AZ');
+            case LocaleType.bg: return const Locale('bg', 'BG');
+            case LocaleType.ca: return const Locale('ca', 'ES');
+            case LocaleType.cs: return const Locale('cs', 'CZ');
+            case LocaleType.da: return const Locale('da', 'DK');
+            case LocaleType.de: return const Locale('de', 'DE');
+            case LocaleType.el: return const Locale('el', 'GR');
+            case LocaleType.es: return const Locale('es', 'ES');
+            case LocaleType.et: return const Locale('et', 'EE');
+            case LocaleType.fa: return const Locale('fa', 'IR');
+            case LocaleType.fr: return const Locale('fr', 'FR');
+            case LocaleType.hi: return const Locale('hi', 'IN');
+            case LocaleType.hu: return const Locale('hu', 'HU');
+            case LocaleType.id: return const Locale('id', 'ID');
+            case LocaleType.it: return const Locale('it', 'IT');
+            case LocaleType.ja: return const Locale('ja', 'JP');
+            case LocaleType.ko: return const Locale('ko', 'KR');
+            case LocaleType.lv: return const Locale('lv', 'LV');
+            case LocaleType.nl: return const Locale('nl', 'NL');
+            case LocaleType.pl: return const Locale('pl', 'PL');
+            case LocaleType.pt: return const Locale('pt', 'PT');
+            case LocaleType.ru: return const Locale('ru', 'RU');
+            case LocaleType.sv: return const Locale('sv', 'SE');
+            case LocaleType.th: return const Locale('th', 'TH');
+            case LocaleType.tr: return const Locale('tr', 'TR');
+            case LocaleType.uk: return const Locale('uk', 'UA');
+            case LocaleType.vi: return const Locale('vi', 'VN');
+            case LocaleType.zh_tw: return const Locale('zh', 'TW');
+            case LocaleType.en: return const Locale('en', 'US');
+            case LocaleType.zh: return const Locale('zh', 'CN');
+        }
+    }
 
     int symbol(){
 
@@ -336,7 +371,8 @@ class Localized {
     Map<String, String> moduleAssetPaths = {};
     String _defaultLanguage = ui.window.locale.languageCode;
 
-    static Iterable<Locale> supportedLocales() => LocaleType.values.map<Locale>((lang) => new Locale(lang.value(), ''));
+    static Iterable<Locale> supportedLocales() =>
+        LocaleType.values.map<Locale>((lang) => lang.asLocale);
 
     List<VoidCallback> _onLocaleChangedCallbackList = <VoidCallback>[];
 

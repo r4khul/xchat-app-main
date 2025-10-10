@@ -197,6 +197,7 @@ class MainState extends State<MainApp>
         CupertinoLocalizationsDelegate()
       ],
       supportedLocales: Localized.supportedLocales(),
+      locale: Localized.getCurrentLanguage().asLocale,
       builder: (BuildContext context, Widget? child) {
         return OXLoading.init()(
           context,

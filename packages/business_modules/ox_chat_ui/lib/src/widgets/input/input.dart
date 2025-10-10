@@ -327,6 +327,7 @@ class InputState extends State<Input> {
       child: TextField(
         enabled: widget.options.enabled,
         autocorrect: widget.options.autocorrect,
+        spellCheckConfiguration: const SpellCheckConfiguration(),
         enableSuggestions: widget.options.enableSuggestions,
         controller: _textController,
         cursorColor: ColorToken.primary.of(context),
