@@ -53,7 +53,7 @@ class _SessionListWidgetState extends State<SessionListWidget> {
   void didUpdateWidget(SessionListWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     // Reinitialize controller if ownerPubkey or circle changed
-    if (oldWidget.ownerPubkey != widget.ownerPubkey || 
+    if (oldWidget.ownerPubkey != widget.ownerPubkey ||
         oldWidget.circle.id != widget.circle.id) {
       _initializeController();
     }
@@ -90,7 +90,7 @@ class _SessionListWidgetState extends State<SessionListWidget> {
         if (value.isEmpty) {
           return _buildEmptyState(context);
         }
-        
+
         return ListView.separated(
           padding: EdgeInsets.only(bottom: Adapt.bottomSafeAreaHeightByKeyboard),
           itemBuilder: (context, index) => itemBuilder(context, value[index]),
@@ -111,16 +111,16 @@ class _SessionListWidgetState extends State<SessionListWidget> {
             buildDeleteAction(item),
           ],
           child: Builder(
-            builder: (context) {
-              return GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onTap: () {
-                  Slidable.of(context)?.close();
-                  widget.itemOnTap(item);
-                },
-                child: buildItemContent(item),
-              );
-            }
+              builder: (context) {
+                return GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: () {
+                    Slidable.of(context)?.close();
+                    widget.itemOnTap(item);
+                  },
+                  child: buildItemContent(item),
+                );
+              }
           ),
         );
       },
@@ -130,32 +130,221 @@ class _SessionListWidgetState extends State<SessionListWidget> {
   ItemAction buildMuteAction(SessionListViewModel item) {
     bool isMute = item.isMute;
     return ItemAction(
-      id: 'mute',
-      label: Localized.text(
-        isMute ? 'ox_chat.un_mute_item' : 'ox_chat.mute_item',
-      ),
-      icon: isMute ? CupertinoIcons.volume_up : CupertinoIcons.volume_off,
-      onTap: (_) async {
-        await ChatSessionUtils.setChatMute(item.sessionModel, !isMute);
-        item.rebuild();
-        return true;
-      }
+        id: 'mute',
+        label: Localized.text(
+          isMute ? 'ox_chat.un_mute_item' : 'ox_chat.mute_item',
+        ),
+        icon: isMute ? CupertinoIcons.volume_up : CupertinoIcons.volume_off,
+        onTap: (_) async {
+          await ChatSessionUtils.setChatMute(item.sessionModel, !isMute);
+          item.rebuild();
+          return true;
+        }
     );
   }
 
   ItemAction buildDeleteAction(SessionListViewModel item) {
     return ItemAction(
-      id: 'delete',
-      label: Localized.text('ox_chat.delete'),
-      icon: CupertinoIcons.delete_solid,
-      destructive: true,
-      onTap: (ctx) async {
-        await _showDeleteOptions(ctx, item);
-        return true;
-      }
+        id: 'delete',
+        label: Localized.text('ox_chat.delete'),
+        icon: CupertinoIcons.delete_solid,
+        destructive: true,
+        onTap: (ctx) async {
+          await _showDeleteOptions(ctx, item);
+          return true;
+        }
     );
   }
 
+
+  Widget buildItemContent(SessionListViewModel item) {
+    return ValueListenableBuilder(
+        valueListenable: item.entity$,
+        builder: (context, value, _) {
+          return Container(
+            padding: EdgeInsets.symmetric(horizontal: 16.px, vertical: 8.px),
+            child: Row(
+              children: [
+                _buildItemIcon(item),
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      vertical: 6.px,
+                      horizontal: 16.px,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CLText.bodyLarge(
+                          item.name,
+                          customColor: ColorToken.onSurface.of(context),
+                          maxLines: 1,
+                        ),
+                        _buildItemSubtitle(context, item),
+                      ],
+                    ),
+                  ),
+                ),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    CLText.labelSmall(
+                      item.updateTime,
+                    ).setPadding(EdgeInsets.symmetric(vertical: 4.px)),
+                    SizedBox(
+                      height: 20.px,
+                      child: Center(
+                        child: _buildUnreadWidget(context, item),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        }
+    );
+  }
+
+  Widget _buildItemIcon(SessionListViewModel item) {
+    return ValueListenableBuilder(
+        valueListenable: item.entity$,
+        builder: (context, entity, _) {
+          return ValueListenableBuilder(
+              valueListenable: item.groupMember$,
+              builder: (context, groupMember, _) {
+                final size = 40.px;
+                if (entity is UserDBISAR) {
+                  return OXUserAvatar(
+                    user: entity,
+                    size: size,
+                    isCircular: true,
+                  );
+                } else {
+                  return SmartGroupAvatar(
+                    groupId: item.sessionModel.groupId,
+                    size: size,
+                  );
+                }
+              }
+          );
+        }
+    );
+  }
+
+  Widget _buildItemSubtitle(BuildContext context, SessionListViewModel item) {
+    final style = Theme.of(context).textTheme.bodyMedium ?? const TextStyle();
+
+    String subtitle = item.subtitle;
+    final draft = item.draft;
+    final isMentioned = item.isMentioned;
+    if (!isMentioned && draft.isNotEmpty) {
+      subtitle = draft;
+    }
+
+    return RichText(
+      textAlign: TextAlign.left,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      text: TextSpan(
+        children: [
+          if (isMentioned)
+            TextSpan(
+              text: '[${Localized.text('ox_chat.session_content_mentioned')}] ',
+              style: style.copyWith(color: ColorToken.error.of(context)),
+            )
+          else if (draft.isNotEmpty)
+            TextSpan(
+              text: '[${Localized.text('ox_chat.session_content_draft')}] ',
+              style: style.copyWith(color: ColorToken.error.of(context)),
+            ),
+          TextSpan(
+            text: subtitle,
+            style: style.copyWith(color: ColorToken.onSecondaryContainer.of(context)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUnreadWidget(BuildContext context, SessionListViewModel item) {
+    if (item.isMute) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 5.px),
+        child: Badge(
+          smallSize: 10.px,
+          backgroundColor: ColorToken.primaryContainer.of(context),
+        ),
+      );
+    }
+    if (item.unreadCountText.isNotEmpty) {
+      return Badge(
+        label: Text(item.unreadCountText),
+        backgroundColor: ColorToken.error.of(context),
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
+  Widget separatorBuilder(BuildContext context, int index) {
+    if (PlatformStyle.isUseMaterial) return const SizedBox.shrink();
+    return Padding(
+      padding: EdgeInsets.only(left: 72.px),
+      child: Container(
+        height: 0.5,
+        color: CupertinoColors.separator,
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    return Transform.translate(
+      offset: Offset(0, -120.px),
+      child: Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 32.px),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Empty state icon using Material Icons
+              Icon(
+                Icons.forum_outlined,
+                size: 120.px,
+                color: PlatformStyle.isUseMaterial
+                    ? ColorToken.primary.of(context)
+                    : CupertinoTheme.of(context).textTheme.actionSmallTextStyle.color,
+              ),
+
+              SizedBox(height: 24.px),
+
+              // Title
+              CLText.titleMedium(
+                Localized.text('ox_chat.no_sessions_title'),
+                colorToken: ColorToken.onSurface,
+                textAlign: TextAlign.center,
+              ),
+
+              SizedBox(height: 8.px),
+
+              // Description
+              CLText.bodyMedium(
+                Localized.text('ox_chat.no_sessions_description'),
+                colorToken: ColorToken.onSurfaceVariant,
+                textAlign: TextAlign.center,
+                maxLines: 3,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+extension _SessionListWidgetStateEx on _SessionListWidgetState {
   Future<void> _showDeleteOptions(BuildContext context, SessionListViewModel item) async {
     final isSingleChat = item.isSingleChat;
     bool isGroupOwner = false;
@@ -179,8 +368,8 @@ class _SessionListWidgetState extends State<SessionListWidget> {
 
   bool _isInGroup(SessionListViewModel item) {
     final groupId = item.sessionModel.groupId;
-    return groupId != null && groupId.isNotEmpty && 
-           Groups.sharedInstance.checkInMyGroupList(groupId);
+    return groupId != null && groupId.isNotEmpty &&
+        Groups.sharedInstance.checkInMyGroupList(groupId);
   }
 
   Future<void> _showSelfChatDeleteOptions(BuildContext context, SessionListViewModel item) async {
@@ -207,7 +396,7 @@ class _SessionListWidgetState extends State<SessionListWidget> {
   Future<void> _showPrivateChatDeleteOptions(BuildContext context, SessionListViewModel item) async {
     final entity = item.entity$.value;
     String otherUserName = '';
-    
+
     if (entity is UserDBISAR) {
       otherUserName = entity.getUserShowName();
     }
@@ -284,9 +473,9 @@ class _SessionListWidgetState extends State<SessionListWidget> {
   }
 
   Future<void> _handleSessionDeleteAction(
-    SessionListViewModel item,
-    SessionDeleteAction action,
-  ) async {
+      SessionListViewModel item,
+      SessionDeleteAction action,
+      ) async {
     switch (action) {
       case SessionDeleteAction.selfChatDelete:
         if (!await _confirmDeleteSelfChat(item)) return;
@@ -345,7 +534,7 @@ class _SessionListWidgetState extends State<SessionListWidget> {
   Future<bool> _confirmDeleteForAll(SessionListViewModel item) async {
     final entity = item.entity$.value;
     String otherUserName = '';
-    
+
     if (entity is UserDBISAR) {
       otherUserName = entity.getUserShowName();
     }
@@ -472,191 +661,5 @@ class _SessionListWidgetState extends State<SessionListWidget> {
         );
         return true;
     }
-  }
-
-  Widget buildItemContent(SessionListViewModel item) {
-    return ValueListenableBuilder(
-      valueListenable: item.entity$,
-      builder: (context, value, _) {
-        return Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.px, vertical: 8.px),
-          child: Row(
-            children: [
-              _buildItemIcon(item),
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    vertical: 6.px,
-                    horizontal: 16.px,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      CLText.bodyLarge(
-                        item.name,
-                        customColor: ColorToken.onSurface.of(context),
-                        maxLines: 1,
-                      ),
-                      _buildItemSubtitle(context, item),
-                    ],
-                  ),
-                ),
-              ),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  CLText.labelSmall(
-                    item.updateTime,
-                  ).setPadding(EdgeInsets.symmetric(vertical: 4.px)),
-                  SizedBox(
-                    height: 20.px,
-                    child: Center(
-                      child: _buildUnreadWidget(context, item),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      }
-    );
-  }
-
-  Widget _buildItemIcon(SessionListViewModel item) {
-    return ValueListenableBuilder(
-      valueListenable: item.entity$,
-      builder: (context, entity, _) {
-        return ValueListenableBuilder(
-          valueListenable: item.groupMember$,
-          builder: (context, groupMember, _) {
-            final size = 40.px;
-            if (entity is UserDBISAR) {
-              return OXUserAvatar(
-                user: entity,
-                size: size,
-                isCircular: true,
-              );
-            } else {
-              return SmartGroupAvatar(
-                groupId: item.sessionModel.groupId,
-                size: size,
-              );
-            }
-          }
-        );
-      }
-    );
-  }
-
-  Widget _buildItemSubtitle(BuildContext context, SessionListViewModel item) {
-    final style = Theme.of(context).textTheme.bodyMedium ?? const TextStyle();
-
-    String subtitle = item.subtitle;
-    final draft = item.draft;
-    final isMentioned = item.isMentioned;
-    if (!isMentioned && draft.isNotEmpty) {
-      subtitle = draft;
-    }
-
-    return RichText(
-      textAlign: TextAlign.left,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      text: TextSpan(
-        children: [
-          if (isMentioned) 
-            TextSpan(
-              text: '[${Localized.text('ox_chat.session_content_mentioned')}] ',
-              style: style.copyWith(color: ColorToken.error.of(context)),
-            )
-          else if (draft.isNotEmpty)
-            TextSpan(
-              text: '[${Localized.text('ox_chat.session_content_draft')}] ',
-              style: style.copyWith(color: ColorToken.error.of(context)),
-            ),
-          TextSpan(
-            text: subtitle,
-            style: style.copyWith(color: ColorToken.onSecondaryContainer.of(context)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildUnreadWidget(BuildContext context, SessionListViewModel item) {
-    if (item.isMute) {
-      return Padding(
-        padding: EdgeInsets.symmetric(vertical: 5.px),
-        child: Badge(
-          smallSize: 10.px,
-          backgroundColor: ColorToken.primaryContainer.of(context),
-        ),
-      );
-    }
-    if (item.unreadCountText.isNotEmpty) {
-      return Badge(
-        label: Text(item.unreadCountText),
-        backgroundColor: ColorToken.error.of(context),
-      );
-    }
-    return const SizedBox.shrink();
-  }
-
-  Widget separatorBuilder(BuildContext context, int index) {
-    if (PlatformStyle.isUseMaterial) return const SizedBox.shrink();
-    return Padding(
-      padding: EdgeInsets.only(left: 72.px),
-      child: Container(
-        height: 0.5,
-        color: CupertinoColors.separator,
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(BuildContext context) {
-    return Transform.translate(
-      offset: Offset(0, -120.px),
-      child: Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 32.px),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Empty state icon using Material Icons
-              Icon(
-                Icons.forum_outlined,
-                size: 120.px,
-                color: PlatformStyle.isUseMaterial
-                    ? ColorToken.primary.of(context)
-                    : CupertinoTheme.of(context).textTheme.actionSmallTextStyle.color,
-              ),
-
-              SizedBox(height: 24.px),
-
-              // Title
-              CLText.titleMedium(
-                Localized.text('ox_chat.no_sessions_title'),
-                colorToken: ColorToken.onSurface,
-                textAlign: TextAlign.center,
-              ),
-
-              SizedBox(height: 8.px),
-
-              // Description
-              CLText.bodyMedium(
-                Localized.text('ox_chat.no_sessions_description'),
-                colorToken: ColorToken.onSurfaceVariant,
-                textAlign: TextAlign.center,
-                maxLines: 3,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }
