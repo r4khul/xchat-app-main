@@ -147,7 +147,7 @@ class ChatSessionUtils {
         }
         break;
     }
-    OXChatBinding.sharedInstance.sessionUpdate();
+    OXChatBinding.sharedInstance.notifySessionUpdate(model);
   }
 
   static void leaveConfirmWidget(BuildContext context, int chatType, String groupId, {bool isGroupOwner = false, bool isGroupMember = false, bool hasDeleteGroupPermission = false}) {

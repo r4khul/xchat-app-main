@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import 'package:ox_common/component.dart';
 
@@ -46,7 +47,7 @@ class CLAlertDialog {
   /// Show alert dialog and return the [value] of the button tapped.
   /// If dismissed by other ways, returns null.
   static Future<T?> show<T>({
-    required BuildContext context,
+    BuildContext? context,
     String? title,
     String? content,
     required List<CLAlertAction<T>> actions,
@@ -56,7 +57,7 @@ class CLAlertDialog {
 
     if (PlatformStyle.isUseMaterial) {
       return showDialog<T>(
-        context: context,
+        context: context ?? OXNavigator.rootContext,
         barrierDismissible: barrierDismissible,
         builder: (ctx) => AlertDialog(
           title: _buildTitle(displayTitle),
@@ -67,7 +68,7 @@ class CLAlertDialog {
     }
 
     return showCupertinoDialog<T>(
-      context: context,
+      context: context ?? OXNavigator.rootContext,
       barrierDismissible: barrierDismissible,
       builder: (ctx) => CupertinoAlertDialog(
         title: _buildTitle(displayTitle),

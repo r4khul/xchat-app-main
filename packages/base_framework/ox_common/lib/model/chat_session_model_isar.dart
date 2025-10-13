@@ -43,7 +43,9 @@ class ChatSessionModelISAR {
 
   bool alwaysTop;
 
-  bool isArchived;
+  bool? isArchived;
+  @ignore
+  bool get isArchivedSafe => isArchived ?? false;
 
   String? draft;
   String? replyMessageId;

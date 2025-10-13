@@ -4,6 +4,22 @@ import 'package:chatcore/chat-core.dart';
 import 'package:ox_common/model/chat_session_model_isar.dart';
 import 'package:ox_common/utils/ox_chat_observer.dart';
 
+typedef UpdateSessionFn = Future<bool> Function(String chatId, {
+  String? chatName,
+  String? content,
+  String? pic,
+  int? unreadCount,
+  bool? alwaysTop,
+  bool? isArchived,
+  String? draft,
+  String? replyMessageId,
+  int? messageKind,
+  bool? isMentioned,
+  int? expiration,
+  int? lastMessageTime,
+  int? lastActivityTime,
+});
+
 class OXChatBinding {
   static final OXChatBinding sharedInstance = OXChatBinding._internal();
 
@@ -25,20 +41,7 @@ class OXChatBinding {
   ChatSessionModelISAR? getSessionModel(String chatId) =>
       sessionModelFetcher?.call(chatId);
 
-  Future<bool> Function(String chatId, {
-    String? chatName,
-    String? content,
-    String? pic,
-    int? unreadCount,
-    bool? alwaysTop,
-    String? draft,
-    String? replyMessageId,
-    int? messageKind,
-    bool? isMentioned,
-    int? expiration,
-    int? lastMessageTime,
-    int? lastActivityTime,
-  })? updateChatSessionFn;
+  List<UpdateSessionFn> updateChatSessionFn = [];
 
   Future<bool> updateChatSession(String chatId, {
     String? chatName,
@@ -46,6 +49,7 @@ class OXChatBinding {
     String? pic,
     int? unreadCount,
     bool? alwaysTop,
+    bool? isArchived,
     String? draft,
     String? replyMessageId,
     int? messageKind,
@@ -53,21 +57,29 @@ class OXChatBinding {
     int? expiration,
     int? lastMessageTime,
     int? lastActivityTime,
-  }) async => await updateChatSessionFn?.call(
-    chatId,
-    chatName: chatName,
-    content: content,
-    pic: pic,
-    unreadCount: unreadCount,
-    alwaysTop: alwaysTop,
-    draft: draft,
-    replyMessageId: replyMessageId,
-    messageKind: messageKind,
-    isMentioned: isMentioned,
-    expiration: expiration,
-    lastMessageTime: lastMessageTime,
-    lastActivityTime: lastActivityTime,
-  ) ?? true;
+  }) async {
+    for (var fn in updateChatSessionFn) {
+      final result = await fn.call(
+        chatId,
+        chatName: chatName,
+        content: content,
+        pic: pic,
+        unreadCount: unreadCount,
+        alwaysTop: alwaysTop,
+        isArchived: isArchived,
+        draft: draft,
+        replyMessageId: replyMessageId,
+        messageKind: messageKind,
+        isMentioned: isMentioned,
+        expiration: expiration,
+        lastMessageTime: lastMessageTime,
+        lastActivityTime: lastActivityTime,
+      );
+      if (result) return true;
+    }
+
+    return false;
+  }
 
   void addReactionMessage(String chatId, String messageId) {
     for (OXChatObserver observer in _observers) {
@@ -195,9 +207,9 @@ class OXChatBinding {
     }
   }
 
-  void sessionUpdate() {
+  void notifySessionUpdate(ChatSessionModelISAR session) {
     for (OXChatObserver observer in _observers) {
-      observer.didSessionUpdate();
+      observer.didSessionUpdate(session);
     }
   }
 

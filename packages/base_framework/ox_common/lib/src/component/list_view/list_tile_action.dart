@@ -30,8 +30,8 @@ class CLListTileActions extends StatelessWidget {
     this.startActions,
     this.endActions,
     this.semanticLabel,
-    this.cupertinoExtentRatio = 0.44,
-    this.cupertinoMotion = const ScrollMotion(),
+    this.cupertinoExtentRatio = 0.6,
+    this.cupertinoMotion = const DrawerMotion(),
   });
 
   final Widget child;
@@ -51,7 +51,7 @@ class CLListTileActions extends StatelessWidget {
   final double cupertinoExtentRatio;
 
   /// iOS only: motion for the action pane.
-  final ScrollMotion cupertinoMotion;
+  final Widget cupertinoMotion;
 
   @override
   Widget build(BuildContext context) {

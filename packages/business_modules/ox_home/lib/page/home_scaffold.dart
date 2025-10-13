@@ -191,7 +191,6 @@ class _HomeScaffoldState extends State<HomeScaffold> {
         Widget body = loginCircle != null ? SessionListWidget(
           ownerPubkey: loginAccount.pubkey,
           circle: loginCircle,
-          itemOnTap: sessionItemOnTap,
         ) : CircleEmptyWidget(
           onJoinCircle: _handleJoinCircle,
           onCreatePaidCircle: _handleCreatePaidCircle,
@@ -211,17 +210,6 @@ class _HomeScaffoldState extends State<HomeScaffold> {
 
         return body;
       },
-    );
-  }
-
-  void sessionItemOnTap(SessionListViewModel item) {
-    final session = item.sessionModel;
-    final unreadMessageCount = session.unreadCount;
-
-    ChatMessagePage.open(
-      context: context,
-      communityItem: session,
-      unreadMessageCount: unreadMessageCount,
     );
   }
 

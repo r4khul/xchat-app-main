@@ -31,10 +31,8 @@ abstract mixin class OXChatObserver {
 
   void didGroupsUpdatedCallBack() {}
 
-  void didSessionUpdate() {}
-
-  void didSessionInfoUpdate(List<ChatSessionModelISAR> updatedSession) {}
-
+  void didSessionUpdate(ChatSessionModelISAR session) {}
+  
   void didSecretChatMessageCallBack(MessageDBISAR message) {}
 
   void didOfflinePrivateMessageFinishCallBack() {}
