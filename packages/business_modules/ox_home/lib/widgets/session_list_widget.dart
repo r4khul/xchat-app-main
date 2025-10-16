@@ -70,14 +70,13 @@ class _SessionListWidgetState extends State<SessionListWidget> {
     return ValueListenableBuilder(
       valueListenable: controller!.sessionList$,
       builder: (context, sessionList, _) {
-        // Show empty state when no sessions
-        if (sessionList.isEmpty) {
-          return _buildEmptyState(context);
-        }
-
         return ValueListenableBuilder(
           valueListenable: controller!.hasArchivedChats$,
           builder: (context, hasArchived, _) {
+            if (sessionList.isEmpty && !hasArchived) {
+              return _buildEmptyState(context);
+            }
+
             return ListView.separated(
               padding:
                   EdgeInsets.only(bottom: Adapt.bottomSafeAreaHeightByKeyboard),
