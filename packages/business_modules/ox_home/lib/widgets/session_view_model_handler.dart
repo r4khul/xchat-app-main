@@ -189,6 +189,10 @@ mixin SessionViewModelHandler on OXChatObserver {
 
     return true;
   }
+
+  void sessionListRebuild() {
+    sessionList$.value = [...sessionList$.value];
+  }
 }
 
 extension ChatSessionModelISARUpdateEx on ChatSessionModelISAR {

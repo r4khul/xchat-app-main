@@ -114,9 +114,10 @@ class _SessionListWidgetState extends State<SessionListWidget> {
   Widget buildSeparator(BuildContext context, int index, List<SessionListViewModel> sessionList) {
     if (PlatformStyle.isUseMaterial) return const SizedBox.shrink();
 
+    final currentItem = sessionList[index];
+
     // Is between pinned and unpinned items
     if (index < sessionList.length - 1) {
-      final currentItem = sessionList[index];
       final nextItem = sessionList[index + 1];
 
       // No separator between pinned and unpinned items
@@ -125,11 +126,14 @@ class _SessionListWidgetState extends State<SessionListWidget> {
       }
     }
 
-    return Padding(
-      padding: EdgeInsets.only(left: 72.px),
-      child: Container(
-        height: 0.5,
-        color: CupertinoColors.separator,
+    return Container(
+      color: currentItem.isAlwaysTop ? ColorToken.surfaceContainer.of(context) : null,
+      child: Padding(
+        padding: EdgeInsets.only(left: 72.px),
+        child: Container(
+          height: 0.5,
+          color: CupertinoColors.separator,
+        ),
       ),
     );
   }

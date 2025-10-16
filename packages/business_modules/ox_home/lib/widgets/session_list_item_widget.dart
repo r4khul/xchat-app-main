@@ -255,6 +255,7 @@ class SessionListItemWidget extends StatelessWidget {
             chatId: item.sessionModel.chatId,
             isPinned: !isPinned,
           );
+          sessionListController?.sessionListRebuild();
           return true;
         }
     );
