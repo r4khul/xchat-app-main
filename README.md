@@ -6,8 +6,8 @@ Secure messaging with end-to-end encryption. Connect with friends and family thr
 
 ### System Requirements
 
-- Flutter 3.0.0 or higher
-- Dart 2.17.0 or higher
+- Flutter 3.29.3
+- Dart 3.7.2 
 - iOS 12.0+ / Android 5.0+ / macOS 10.14+
 
 ### Installation
