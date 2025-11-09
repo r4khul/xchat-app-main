@@ -175,11 +175,6 @@ class CLUserPushNotificationManager implements PushPermissionChecker {
     return result ?? false;
   }
 
-  void dispose() {
-    _allowSendNotificationNotifier.dispose();
-    _allowReceiveNotificationNotifier.dispose();
-  }
-
   @override
   Future<bool> canReceiveNotification() async => allowReceiveNotification;
 

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -327,7 +328,7 @@ class InputState extends State<Input> {
       child: TextField(
         enabled: widget.options.enabled,
         autocorrect: widget.options.autocorrect,
-        spellCheckConfiguration: const SpellCheckConfiguration(),
+        spellCheckConfiguration: Platform.isIOS ? const SpellCheckConfiguration() : null,
         enableSuggestions: widget.options.enableSuggestions,
         controller: _textController,
         cursorColor: ColorToken.primary.of(context),

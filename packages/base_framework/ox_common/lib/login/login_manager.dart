@@ -665,7 +665,6 @@ extension LoginManagerCircle on LoginManager {
         await _stopBitchatService();
       }
       await Account.sharedInstance.logout();
-      CLUserPushNotificationManager.instance.dispose();
       CLCacheManager.clearCircleMemCacheById(originCircle.id);
       AccountPathManager.clearCircleTempFolder(
         currentState.account!.pubkey,
