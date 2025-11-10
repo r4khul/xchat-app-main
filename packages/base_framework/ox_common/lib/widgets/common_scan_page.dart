@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:ox_common/business_interface/ox_usercenter/interface.dart';
@@ -36,13 +38,43 @@ class CommonScanPageState extends State<CommonScanPage> {
         Adapt.screenH < 400)
         ? Adapt.px(160)
         : Adapt.px(260);
+    final Size? preferredResolution = _resolvePreferredCameraResolution();
     _scannerController = MobileScannerController(
       detectionSpeed: DetectionSpeed.normal,
       facing: CameraFacing.back,
       formats: const [BarcodeFormat.qrCode],
       autoStart: true,
+      cameraResolution: preferredResolution,
+      useNewCameraSelector: Platform.isAndroid,
     );
+  }
 
+  Size? _resolvePreferredCameraResolution() {
+    if (!(Platform.isAndroid || Platform.isIOS)) {
+      return null;
+    }
+    final Iterable<ui.FlutterView> views = WidgetsBinding.instance.platformDispatcher.views;
+    if (views.isEmpty) {
+      return null;
+    }
+    final ui.Size physicalSize = views.first.physicalSize;
+    if (physicalSize.width <= 0 || physicalSize.height <= 0) {
+      return null;
+    }
+    final double maxSide = math.max(physicalSize.width, physicalSize.height);
+    final double minSide = math.min(physicalSize.width, physicalSize.height);
+    final double normalizedWidth = _normalizeResolutionDimension(maxSide);
+    final double normalizedHeight = _normalizeResolutionDimension(minSide);
+    if (normalizedWidth <= 0 || normalizedHeight <= 0) {
+      return null;
+    }
+    return Size(normalizedWidth, normalizedHeight);
+  }
+
+  double _normalizeResolutionDimension(double value) {
+    const double alignmentUnit = 16.0;
+    final double rounded = (value / alignmentUnit).round() * alignmentUnit;
+    return math.max(alignmentUnit, rounded);
   }
 
   @override
@@ -69,69 +101,64 @@ class CommonScanPageState extends State<CommonScanPage> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Positioned.fill(top: 1, child: _buildQrView(context)),
+          Positioned.fill(
+            child: _buildCameraView(),
+          ),
+          Positioned.fill(
+            child: _ScannerOverlay(
+              cutOutSize: _scanArea,
+            ),
+          ),
           Positioned(
             width: MediaQuery.of(context).size.width,
             bottom: Adapt.px(56),
-            child: Container(
-              margin: EdgeInsets.only(left: Adapt.px(24), right: Adapt.px(24), top: Adapt.px(16)),
-              // height: Adapt.px(105),
-              width: double.infinity,
-              child: Row(
-                children: [
-                  Expanded(
-                      child: GestureDetector(
-                        child: Container(
-                          color: Colors.transparent,
-                          child: Column(
-                            children: [
-                              SizedBox(
-                                height: Adapt.px(20),
-                              ),
-                              _itemView('icon_business_card.png'),
-                              SizedBox(
-                                height: Adapt.px(7),
-                              ),
-                              CLText.labelSmall(
-                                'str_my_idcard'.commonLocalized(),
-                                colorToken: ColorToken.white,
-                              ),
-                            ],
-                          ),
-                        ),
-                        onTap: () {
-                          OXUserCenterInterface.pushQRCodeDisplayPage(context);
-                        },
-                      )),
-                  Container(
-                    width: 0.5,
-                    height: 80.px,
-                    color: ColorToken.white.of(context),
-                  ),
-                  Expanded(
-                      child: GestureDetector(
-                        child: Container(
-                          color: Colors.transparent,
-                          child: Column(
-                            children: [
-                              SizedBox(
-                                height: Adapt.px(20),
-                              ),
-                              _itemView('icon_scan_qr.png'),
-                              SizedBox(
-                                height: Adapt.px(7),
-                              ),
-                              CLText.labelSmall(
-                                'str_album'.commonLocalized(),
-                                colorToken: ColorToken.white,
-                              ),
-                            ],
-                          ),
-                        ),
-                        onTap: _onPicTap,
-                      )),
-                ],
-              ),
+            child: buildOptionWidget(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCameraView() {
+    return MobileScanner(
+      controller: _scannerController,
+      fit: BoxFit.cover,
+      onDetect: _handleBarcodeDetection,
+      errorBuilder: (context, error, child) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _handleScannerError(error);
+        });
+        return child ?? Container(color: Colors.black);
+      },
+    );
+  }
+
+  Widget buildOptionWidget() {
+    return Container(
+      margin: EdgeInsets.only(left: Adapt.px(24), right: Adapt.px(24), top: Adapt.px(16)),
+      // height: Adapt.px(105),
+      width: double.infinity,
+      child: Row(
+        children: [
+          Expanded(
+            child: buildOptionButton(
+              icon: 'icon_business_card.png',
+              label: 'str_my_idcard'.commonLocalized(),
+              onTap: () {
+                OXUserCenterInterface.pushQRCodeDisplayPage(context);
+              },
+            ),
+          ),
+          Container(
+            width: 0.5,
+            height: 80.px,
+            color: ColorToken.white.of(context),
+          ),
+          Expanded(
+            child: buildOptionButton(
+              icon: 'icon_scan_qr.png',
+              label: 'str_album'.commonLocalized(),
+              onTap: _onPicTap,
             ),
           ),
         ],
@@ -139,6 +166,33 @@ class CommonScanPageState extends State<CommonScanPage> {
     );
   }
 
+  Widget buildOptionButton({
+    required String icon,
+    required String label,
+    required GestureTapCallback onTap,
+  }) {
+    return GestureDetector(
+      child: Container(
+        color: Colors.transparent,
+        child: Column(
+          children: [
+            SizedBox(
+              height: Adapt.px(20),
+            ),
+            _itemView(icon),
+            SizedBox(
+              height: Adapt.px(7),
+            ),
+            CLText.labelSmall(
+              label,
+              colorToken: ColorToken.white,
+            ),
+          ],
+        ),
+      ),
+      onTap: onTap,
+    );
+  }
 
   Widget _itemView(String iconName) {
     return Stack(
@@ -216,28 +270,6 @@ class CommonScanPageState extends State<CommonScanPage> {
     } catch (e) {
       CommonToast.instance.show(context, "str_invalid_qr_code".commonLocalized());
     }
-  }
-
-  Widget _buildQrView(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        MobileScanner(
-          controller: _scannerController,
-          fit: BoxFit.cover,
-          onDetect: _handleBarcodeDetection,
-          errorBuilder: (context, error, child) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _handleScannerError(error);
-            });
-            return child ?? Container(color: Colors.black);
-          },
-        ),
-        _ScannerOverlay(
-          cutOutSize: _scanArea,
-        ),
-      ],
-    );
   }
 
   void _handleBarcodeDetection(BarcodeCapture capture) {
@@ -352,7 +384,6 @@ class _CornerBorder extends StatelessWidget {
   final double? left;
   final double? top;
   final double? right;
-  final double? bottom;
   final Border border;
 
   const _CornerBorder({
@@ -361,7 +392,6 @@ class _CornerBorder extends StatelessWidget {
     this.left,
     this.top,
     this.right,
-    this.bottom,
   });
 
   @override
@@ -370,7 +400,6 @@ class _CornerBorder extends StatelessWidget {
       left: left,
       top: top,
       right: right,
-      bottom: bottom,
       child: SizedBox(
         width: size,
         height: size,
