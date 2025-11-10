@@ -1,8 +1,8 @@
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import 'package:chatcore/chat-core.dart';
 import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:nostr_core_dart/nostr.dart';
@@ -70,10 +70,10 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
     super.initState();
     userNotifier = widget.otherUser ?? Account.sharedInstance.me!;
     userName = userNotifier.name ?? userNotifier.shortEncodedPubkey;
-    
+
     currentDecoration = createDecoration(currentStyle);
     previousDecoration = currentDecoration;
-    
+
     // Auto-generate permanent invite link when page loads (only for current user)
     if (widget.otherUser == null) {
       _generateInviteLink(InviteLinkType.permanent);
@@ -87,12 +87,12 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
 
   Future<void> _generateInviteLink(InviteLinkType linkType) async {
     if (widget.otherUser != null) return; // Only for current user
-    
+
     try {
       OXLoading.show();
-      
+
       KeyPackageEvent? keyPackageEvent;
-      
+
       if (linkType == InviteLinkType.oneTime) {
         keyPackageEvent = await Groups.sharedInstance.createOneTimeKeyPackage();
       } else {
@@ -100,7 +100,7 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
           Account.sharedInstance.getCurrentCircleRelay(),
         );
       }
-      
+
       if (keyPackageEvent == null) {
         await OXLoading.dismiss();
         CommonToast.instance.show(context, Localized.text('ox_usercenter.invite_link_generation_failed'));
@@ -121,13 +121,13 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
       if (linkType == InviteLinkType.oneTime || linkType == InviteLinkType.permanent) {
         // For one-time invites, include sender's pubkey
         final senderPubkey = Account.sharedInstance.currentPubkey;
-        
+
         // Try to compress the keypackage data
         String? compressedKeyPackage = await CompressionUtils.compressWithPrefix(keyPackageEvent.encoded_key_package);
         String keyPackageParam = compressedKeyPackage ?? keyPackageEvent.encoded_key_package;
-        
+
         currentInviteLink = '${AppConfig.inviteBaseUrl}?keypackage=$keyPackageParam&pubkey=${Uri.encodeComponent(senderPubkey)}&relay=${Uri.encodeComponent(relayUrl)}';
-        
+
         // Log compression results
         if (compressedKeyPackage != null) {
           double ratio = CompressionUtils.getCompressionRatio(keyPackageEvent.encoded_key_package, compressedKeyPackage);
@@ -140,7 +140,7 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
       // Update QR code data and current link type
       currentQrCodeData = currentInviteLink;
       currentLinkType = linkType;
-      
+
       // Initialize QR code and image with optimized settings for long URLs
       try {
         // Use lower error correction level for better readability with long URLs
@@ -168,16 +168,16 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
   Widget build(BuildContext context) {
     return CLScaffold(
       appBar: CLAppBar(
-        title: widget.otherUser != null 
+        title: widget.otherUser != null
             ? Localized.text('ox_usercenter.user_qr_code')
             : Localized.text('ox_usercenter.generate_invite_link'),
         previousPageTitle: widget.previousPageTitle,
         actions: widget.otherUser == null ? <Widget>[
           // Reload button with proper alignment
           CLButton.icon(
-            onTap: currentInviteLink != null ? _showRegenerateConfirmDialog : null,
-            tooltip: Localized.text('ox_usercenter.regenerate_invite_link'),
-            icon: Icons.refresh
+              onTap: currentInviteLink != null ? _showRegenerateConfirmDialog : null,
+              tooltip: Localized.text('ox_usercenter.regenerate_invite_link'),
+              icon: Icons.refresh
           ),
         ] : <Widget>[],
       ),
@@ -201,7 +201,7 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
               child: _buildQRCodeCard(),
             ),
           ),
-          
+
           // Action buttons (only for current user, only show when invite link is generated)
           if (widget.otherUser == null && currentInviteLink != null) ...[
             SizedBox(height: 24.px),
@@ -223,7 +223,7 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
               ),
             ),
           ],
-          
+
           SafeArea(child: SizedBox(height: 12.px))
         ],
       ),
@@ -276,7 +276,7 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
           // User Header
           _buildUserHeader(),
           SizedBox(height: 24.px),
-          
+
           // QR Code
           _buildQRCode(),
 
@@ -294,61 +294,96 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
   }
 
   Widget _buildQRCode() {
-    return Container(
-      padding: EdgeInsets.all(16.px),
-      decoration: BoxDecoration(
-        color: qrImage == null
-            ? ColorToken.surfaceContainer.of(context)
-            : Colors.white,
-        borderRadius: BorderRadius.circular(16.px),
-      ),
-      child: _buildStyledQRCode(),
+    final double containerPadding = 16.px;
+    final double innerDefaultExtent = 280.px;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double maxWidth = constraints.maxWidth.isFinite
+            ? constraints.maxWidth
+            : MediaQuery.of(context).size.width - (horizontal * 2);
+        final double targetContainerSize =
+            innerDefaultExtent + (containerPadding * 2);
+        final double containerSize = math.max(
+          0,
+          math.min(maxWidth, targetContainerSize),
+        );
+        final double qrCanvasSize = math.max(
+          0,
+          containerSize - (containerPadding * 2),
+        );
+
+        return Align(
+          alignment: Alignment.center,
+          child: Container(
+            padding: EdgeInsets.all(containerPadding),
+            decoration: BoxDecoration(
+              color: qrImage == null
+                  ? ColorToken.surfaceContainer.of(context)
+                  : Colors.white,
+              borderRadius: BorderRadius.circular(16.px),
+            ),
+            child: _buildStyledQRCode(qrCanvasSize),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildStyledQRCode() {
+  Widget _buildStyledQRCode(double size) {
+    final double qrPadding = 6.px;
+    final double qrSide = math.max(0, size - (qrPadding * 2));
+
+    if (size <= 0 || size.isNaN) {
+      return const SizedBox.shrink();
+    }
+
     if (qrImage == null) {
-      return Container(
-        width: 240.px,
-        height: 240.px,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.qr_code_2,
-              size: 64.px,
-              color: ColorToken.onSurfaceVariant.of(context),
-            ),
-            SizedBox(height: 16.px),
-            CLText.bodyMedium(
-              currentInviteLink == null 
-                  ? Localized.text('ox_usercenter.empty_invite_link')
-                  : Localized.text('ox_usercenter.qr_generation_failed'),
-              colorToken: ColorToken.onSurfaceVariant,
-              textAlign: TextAlign.center,
-            ),
-          ],
+      return SizedBox(
+        width: size,
+        height: size,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.qr_code_2,
+                size: 64.px,
+                color: ColorToken.onSurfaceVariant.of(context),
+              ),
+              SizedBox(height: 16.px),
+              CLText.bodyMedium(
+                currentInviteLink == null
+                    ? Localized.text('ox_usercenter.empty_invite_link')
+                    : Localized.text('ox_usercenter.qr_generation_failed'),
+                colorToken: ColorToken.onSurfaceVariant,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       );
     }
-    
-    return Container(
-      width: 280.px,
-      height: 280.px,
-      padding: EdgeInsets.all(6.px),
-      child: TweenAnimationBuilder<PrettyQrDecoration>(
-        tween: PrettyQrDecorationTween(
-          begin: previousDecoration,
-          end: currentDecoration,
+
+    return Padding(
+      padding: EdgeInsets.all(qrPadding),
+      child: SizedBox(
+        width: qrSide,
+        height: qrSide,
+        child: TweenAnimationBuilder<PrettyQrDecoration>(
+          tween: PrettyQrDecorationTween(
+            begin: previousDecoration,
+            end: currentDecoration,
+          ),
+          curve: Curves.ease,
+          duration: const Duration(milliseconds: 300),
+          builder: (context, decoration, child) {
+            return PrettyQrView(
+              qrImage: qrImage!,
+              decoration: decoration,
+            );
+          },
         ),
-        curve: Curves.ease,
-        duration: const Duration(milliseconds: 300),
-        builder: (context, decoration, child) {
-          return PrettyQrView(
-            qrImage: qrImage!,
-            decoration: decoration,
-          );
-        },
       ),
     );
   }
@@ -363,7 +398,7 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
 
   PrettyQrDecoration createDecoration(QRCodeStyle style) {
     Color color = ColorToken.primary.of(
-      OXNavigator.rootContext
+        OXNavigator.rootContext
     ).withValues(alpha: 0.8);
     double roundFactor = 1;
     PrettyQrShape shape;
@@ -405,19 +440,6 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
     );
   }
 
-  String _getStyleName(QRCodeStyle style) {
-    switch (style) {
-      case QRCodeStyle.defaultStyle:
-        return Localized.text('ox_usercenter.default');
-      case QRCodeStyle.classic:
-        return Localized.text('ox_usercenter.classic');
-      case QRCodeStyle.dots:
-        return Localized.text('ox_usercenter.dots');
-      case QRCodeStyle.gradient:
-        return Localized.text('ox_usercenter.gradient');
-    }
-  }
-
   Future<void> _saveQRCode() async {
     try {
       // Request appropriate permissions using existing utility method
@@ -425,7 +447,7 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
 
       if (!permissionGranted) {
         CommonToast.instance.show(
-          context, 
+          context,
           Localized.text('ox_usercenter.storage_permission_denied'),
         );
         return;
@@ -446,7 +468,7 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
       }
 
       final pngBytes = byteData.buffer.asUint8List();
-      
+
       // Save to gallery
       final result = await ImageGallerySaverPlus.saveImage(
         pngBytes,
@@ -458,7 +480,7 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
 
       if (result['isSuccess'] == true) {
         CommonToast.instance.show(
-          context, 
+          context,
           Localized.text('ox_usercenter.qr_code_saved'),
         );
       } else {
@@ -467,32 +489,9 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
     } catch (e) {
       await OXLoading.dismiss();
       CommonToast.instance.show(
-        context, 
+        context,
         Localized.text('ox_usercenter.save_failed'),
       );
-    }
-  }
-
-  void _showShareOptions() async {
-    final result = await CLPicker.show<String>(
-      context: context,
-      title: Localized.text('ox_usercenter.select_operation'),
-      items: [
-        CLPickerItem(
-          label: Localized.text('ox_usercenter.save_qr_code'),
-          value: 'save_qr_code',
-        ),
-        CLPickerItem(
-          label: Localized.text('ox_usercenter.share_invite_link'),
-          value: 'share_invite_link',
-        ),
-      ],
-    );
-
-    if (result == 'save_qr_code') {
-      _saveQRCode();
-    } else if (result == 'share_invite_link') {
-      _shareInvite();
     }
   }
 
@@ -505,7 +504,7 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
       );
     } catch (e) {
       CommonToast.instance.show(
-        context, 
+        context,
         '${Localized.text('ox_usercenter.share_failed')}: $e',
       );
     }
@@ -514,12 +513,12 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
   Future<void> _regenerateInviteLink() async {
     try {
       OXLoading.show();
-      
+
       // Recreate permanent keypackage
       KeyPackageEvent? keyPackageEvent = await Groups.sharedInstance.recreatePermanentKeyPackage(
         Account.sharedInstance.getCurrentCircleRelay(),
       );
-      
+
       if (keyPackageEvent == null) {
         await OXLoading.dismiss();
         CommonToast.instance.show(context, Localized.text('ox_usercenter.invite_link_generation_failed'));
@@ -535,7 +534,7 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
 
       // Update QR code data
       currentQrCodeData = currentInviteLink;
-      
+
       // Initialize QR code and image with optimized settings for long URLs
       try {
         // Use lower error correction level for better readability with long URLs
@@ -553,52 +552,12 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
 
       await OXLoading.dismiss();
       setState(() {});
-      
+
       CommonToast.instance.show(context, Localized.text('ox_usercenter.invite_link_regenerated'));
     } catch (e) {
       await OXLoading.dismiss();
       CommonToast.instance.show(context, '${Localized.text('ox_usercenter.invite_link_generation_failed')}: $e');
     }
-  }
-
-  void _showOneTimeConfirmDialog() {
-    CLAlertDialog.show<bool>(
-      context: context,
-      title: Localized.text('ox_usercenter.one_time_keypackage_confirm_title'),
-      content: Localized.text('ox_usercenter.one_time_keypackage_confirm_content'),
-      actions: [
-        CLAlertAction.cancel(),
-        CLAlertAction<bool>(
-          label: Localized.text('ox_common.confirm'),
-          value: true,
-          isDefaultAction: true,
-        ),
-      ],
-    ).then((value) {
-      if (value == true) {
-        _generateInviteLink(InviteLinkType.oneTime);
-      }
-    });
-  }
-
-  void _showPermanentConfirmDialog() {
-    CLAlertDialog.show<bool>(
-      context: context,
-      title: Localized.text('ox_usercenter.permanent_keypackage_confirm_title'),
-      content: Localized.text('ox_usercenter.permanent_keypackage_confirm_content'),
-      actions: [
-        CLAlertAction.cancel(),
-        CLAlertAction<bool>(
-          label: Localized.text('ox_common.confirm'),
-          value: true,
-          isDefaultAction: true,
-        ),
-      ],
-    ).then((value) {
-      if (value == true) {
-        _generateInviteLink(InviteLinkType.permanent);
-      }
-    });
   }
 
   void _showRegenerateConfirmDialog() {
@@ -620,4 +579,4 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
       }
     });
   }
-} 
+}
