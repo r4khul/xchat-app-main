@@ -1,4 +1,3 @@
-
 import 'package:flutter/widgets.dart';
 import 'package:chatcore/chat-core.dart';
 import 'package:ox_common/login/login_manager.dart';
@@ -8,6 +7,7 @@ import 'package:ox_common/widgets/common_loading.dart';
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import 'package:ox_usercenter/page/settings/single_setting_page.dart';
+import 'package:ox_usercenter/user_feedback/app_review_manager.dart';
 
 class NicknameSettingsPage extends StatelessWidget {
   const NicknameSettingsPage({
@@ -69,9 +69,9 @@ class NicknameSettingsPage extends StatelessWidget {
     } else {
       LoginUserNotifier.instance.name$.value = newNickname;
       OXNavigator.pop(context);
+      await AppReviewManager.instance.onProfileUpdated();
     }
   }
-
 
   void updateBitchatNickname(BuildContext context, String value) async {
     final newNickname = value;
@@ -89,5 +89,6 @@ class NicknameSettingsPage extends StatelessWidget {
     await BitchatService().updateNickname(newNickname: newNickname);
     LoginUserNotifier.instance.updateNickname(newNickname);
     OXNavigator.pop(context);
+    await AppReviewManager.instance.onProfileUpdated();
   }
 }

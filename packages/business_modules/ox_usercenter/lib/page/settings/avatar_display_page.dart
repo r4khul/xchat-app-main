@@ -23,6 +23,7 @@ import 'package:extended_image/extended_image.dart';
 import 'package:ox_common/utils/file_server_helper.dart';
 import 'package:ox_usercenter/page/settings/file_server_page.dart';
 import 'package:ox_common/navigator/navigator.dart';
+import 'package:ox_usercenter/user_feedback/app_review_manager.dart';
 
 class AvatarDisplayPage extends StatefulWidget {
   final String? avatarUrl;
@@ -294,6 +295,7 @@ class _AvatarDisplayPageState extends State<AvatarDisplayPage>
           _currentAvatarUrl = avatarUrl;
         });
         CommonToast.instance.show(context, 'Avatar updated successfully');
+        await AppReviewManager.instance.onProfileUpdated();
       } else {
         CommonToast.instance.show(context, 'Failed to update avatar');
       }
@@ -372,7 +374,7 @@ class _AvatarDisplayPageState extends State<AvatarDisplayPage>
     File? imgFile;
     Map<Permission, PermissionStatus> statuses = await [Permission.camera].request();
     
-    if (statuses[Permission.camera]!.isGranted) {
+    if (statuses[Permission.camera]?.isGranted ?? false) {
       try {
         Media? res = await ImagePickerUtils.openCamera(
           cameraMimeType: CameraMimeType.photo,

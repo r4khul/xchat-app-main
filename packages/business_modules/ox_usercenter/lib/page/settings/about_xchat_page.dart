@@ -4,6 +4,7 @@ import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import 'package:ox_module_service/ox_module_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:ox_usercenter/user_feedback/app_review_manager.dart';
 
 class AboutXChatPage extends StatefulWidget {
   final String previousPageTitle;
@@ -26,6 +27,9 @@ class _AboutXChatPageState extends State<AboutXChatPage> {
   void initState() {
     super.initState();
     _prepareData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AppReviewManager.instance.onEnterAboutPage();
+    });
   }
 
   void _prepareData() {
@@ -58,7 +62,10 @@ class _AboutXChatPageState extends State<AboutXChatPage> {
             header: Localized.text('ox_usercenter.about_xchat'),
             data: [
               LabelItemModel(
-                icon: ListViewIcon(iconName: 'icon_setting_version.png', package: 'ox_usercenter'),
+                icon: ListViewIcon(
+                  iconName: 'icon_setting_version.png',
+                  package: 'ox_usercenter',
+                ),
                 title: Localized.text('ox_usercenter.version'),
                 value$: versionItemNty,
               ),
@@ -85,7 +92,6 @@ class _AboutXChatPageState extends State<AboutXChatPage> {
   }
 
   void _contactUsOnTap() {
-    // TODO: Replace with actual contact URL
     const contactUrl = 'https://primal.net/p/nprofile1qqs9ajjs5p904ml92evlkayppdpx2n3zdrq6ejnw2wqphxrzmd62swswfwcse';
     
     try {
@@ -104,22 +110,22 @@ class _AboutXChatPageState extends State<AboutXChatPage> {
 
   void _termsOfServiceOnTap() {
     OXModuleService.invoke('ox_common', 'gotoWebView', [
-      context, 
-      'https://0xchat.com/protocols/xchat-terms-of-use.html', 
-      null, 
-      null, 
-      null, 
+      context,
+      'https://0xchat.com/protocols/xchat-terms-of-use.html',
+      null,
+      null,
+      null,
       null
     ]);
   }
 
   void _privacyPolicyOnTap() {
     OXModuleService.invoke('ox_common', 'gotoWebView', [
-      context, 
-      'https://0xchat.com/protocols/xchat-privacy-policy.html', 
-      null, 
-      null, 
-      null, 
+      context,
+      'https://0xchat.com/protocols/xchat-privacy-policy.html',
+      null,
+      null,
+      null,
       null
     ]);
   }

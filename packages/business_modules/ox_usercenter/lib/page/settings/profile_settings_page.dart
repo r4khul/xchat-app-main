@@ -25,7 +25,6 @@ class ProfileSettingsPage extends StatefulWidget {
 }
 
 class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
-
   late LoginUserNotifier userNotifier;
   bool _isRefreshing = false;
 
@@ -118,7 +117,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
       avatarUrl: Account.sharedInstance.me?.picture,
       showEditButton: true,
     );
-    
+
     // The page handles avatar updates internally, so we just refresh the UI
     if (mounted) {
       setState(() {});
@@ -135,14 +134,13 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
 
   void refreshProfile() async {
     if (_isRefreshing) return;
-    
+
     setState(() {
       _isRefreshing = true;
     });
 
     try {
       await ProfileRefreshUtils.showProfileRefreshDialog(context);
-
     } finally {
       if (mounted) {
         setState(() {

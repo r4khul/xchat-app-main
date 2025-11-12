@@ -1,4 +1,3 @@
-
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:chatcore/chat-core.dart';
@@ -6,6 +5,7 @@ import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/widgets/common_loading.dart';
 import 'package:ox_common/widgets/common_toast.dart';
+import 'package:ox_usercenter/user_feedback/app_review_manager.dart';
 
 import 'single_setting_page.dart';
 
@@ -54,6 +54,7 @@ class BioSettingsPage extends StatelessWidget {
     } else {
       LoginUserNotifier.instance.bio$.value = newBio;
       OXNavigator.pop(context);
+      await AppReviewManager.instance.onProfileUpdated();
     }
   }
 }
