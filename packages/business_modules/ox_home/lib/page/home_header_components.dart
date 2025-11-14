@@ -6,6 +6,7 @@ import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/utils/widget_tool.dart';
 import 'package:ox_common/widgets/avatar.dart';
 import 'package:ox_localizable/ox_localizable.dart';
+import 'package:ox_common/network/ping_helper.dart';
 import 'package:ox_common/utils/relay_latency_handler.dart';
 
 class CircleItem {
@@ -74,7 +75,6 @@ class HomeHeaderComponents {
   }
 
   void dispose() {
-    _latencyHandler.dispose();
     selectedCircle$.removeListener(selectedCircleChangedHandler);
   }
 
@@ -209,39 +209,59 @@ class HomeHeaderComponents {
 
   ListViewItem _circleItemListTileMapper(CircleItem item, CircleItem? selectedCircle) {
     final selected = item.id == selectedCircle?.id;
-
-    final latency$ = _latencyHandler.getLatencyNotifier(item.relayUrl);
+    final result$ = _latencyHandler.getPingResultNotifier(item.relayUrl);
+    final subtitle = _buildRelaySubtitle(
+      item: item,
+      selected: selected,
+      result$: result$,
+    );
 
     return CustomItemModel(
       leading: CircleAvatar(
         child: Text(item.name.isNotEmpty ? item.name[0] : '?'),
       ),
       titleWidget: CLText(item.name),
-      subtitleWidget: item.type == CircleType.bitchat ? null : ValueListenableBuilder(
-        valueListenable: latency$,
-        builder: (_, latencyStr, __) {
-          final latencyInt = int.tryParse(latencyStr) ?? -1;
-          final latencyColor = RelayLatencyHandler.latencyColor(latencyInt);
-
-          final latencyDisplay = latencyInt > 0 ? '${latencyInt}ms' : '--';
-          final TextStyle? latencyStyle = latencyInt > 0 ? TextStyle(color: latencyColor) : null;
-
-          return Text.rich(
-            TextSpan(
-              children: [
-                if (selected)
-                  TextSpan(text: '$latencyDisplay · ', style: latencyStyle),
-                TextSpan(text: item.relayUrl),
-              ],
-            ),
-          );
-        },
-      ),
+      subtitleWidget: subtitle,
       trailing: CLRadio(
         value: item.id,
         groupValue: selectedCircle?.id,
       ),
       onTap: () => onCircleSelected?.call(item),
+    );
+  }
+
+  Widget? _buildRelaySubtitle({
+    required CircleItem item,
+    required bool selected,
+    required ValueNotifier<PingResult> result$,
+  }) {
+    if (item.type == CircleType.bitchat) return null;
+    if (!selected) {
+      return Text(
+        item.relayUrl,
+        overflow: TextOverflow.ellipsis,
+      );
+    }
+
+    return ValueListenableBuilder<PingResult>(
+      valueListenable: result$,
+      builder: (_, result, __) {
+        final color = result.relayStatusColor;
+        final reachable = result.reachable && result.timeMs > 0;
+        final latencyText = reachable ? '${result.timeMs}ms' : '--';
+        final latencyStyle = reachable ? TextStyle(color: color) : null;
+
+        return Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(text: latencyText, style: latencyStyle),
+              const TextSpan(text: ' · '),
+              TextSpan(text: item.relayUrl),
+            ],
+          ),
+          overflow: TextOverflow.ellipsis,
+        );
+      },
     );
   }
 
@@ -287,7 +307,7 @@ class HomeHeaderComponents {
             },
             child: Container(
               height: Adapt.screenH,
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
             ),
           ),
         ),

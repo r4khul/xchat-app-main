@@ -1,13 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:chatcore/chat-core.dart';
 import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/login/login_models.dart';
+import 'package:ox_common/network/ping_helper.dart';
 import 'package:ox_common/utils/adapt.dart';
-import 'package:ox_common/utils/ping_utils.dart';
 import 'package:ox_localizable/ox_localizable.dart';
-import 'package:ox_common/utils/compression_utils.dart';
-import 'package:ox_module_service/ox_module_service.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/page/circle_introduction_page.dart';
@@ -389,15 +386,15 @@ class CircleJoinUtils {
       BuildContext context, String relayUrl) async {
     try {
       // Perform basic connectivity check
-      final host = Uri.parse(relayUrl).host;
-      if (host.isEmpty) {
+      final uri = Uri.tryParse(relayUrl);
+      if (uri == null) {
         return _PreflightCheckResult.failure(
             Localized.text('ox_common.invalid_relay_url_no_host'));
       }
 
       // Test network connectivity with shorter timeout for better UX
-      final pingLatency = await PingUtils.ping(host, count: 3);
-      if (pingLatency == null || pingLatency <= 0) {
+      final reachable = await PingHelper.reachable(uri);
+      if (!reachable) {
         final shouldContinue = await _showNetworkWarningDialog(
           context,
           relayUrl,

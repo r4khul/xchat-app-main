@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:ox_chat/page/session/chat_message_page.dart';
 import 'package:ox_chat/page/session/lite_new_message_page.dart';
 import 'package:ox_common/business_interface/ox_usercenter/interface.dart';
 import 'package:ox_common/component.dart';
@@ -16,7 +15,6 @@ import 'package:ox_theme/ox_theme.dart';
 
 import 'home_header_components.dart';
 import '../widgets/session_list_widget.dart';
-import '../widgets/session_view_model.dart';
 import '../widgets/circle_empty_widget.dart';
 import 'package:ox_common/utils/relay_latency_handler.dart';
 
@@ -47,6 +45,12 @@ class _HomeScaffoldState extends State<HomeScaffold> {
   void initState() {
     super.initState();
     _latencyHandler = RelayLatencyHandler(isExpanded$: isShowExtendBody$);
+  }
+
+  @override
+  void dispose() {
+    _latencyHandler.dispose();
+    super.dispose();
   }
 
   @override
@@ -276,12 +280,6 @@ class _HomeScaffoldState extends State<HomeScaffold> {
     } else {
       CommonToast.instance.show(context, failure.message);
     }
-  }
-
-  @override
-  void dispose() {
-    _latencyHandler.dispose();
-    super.dispose();
   }
 }
 

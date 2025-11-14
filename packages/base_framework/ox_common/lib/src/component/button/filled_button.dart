@@ -50,7 +50,6 @@ class CLFilledButton extends StatelessWidget {
               borderRadius: borderRadius,
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  // color: Colors.cyan,
                   gradient: gradient.toOpacity(layerOpacity),
                 ),
                 child: innerChild ?? const SizedBox.shrink(),

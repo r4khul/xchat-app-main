@@ -1,6 +1,45 @@
 import 'dart:async';
+import 'package:chatcore/chat-core.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:ox_common/utils/ping_utils.dart';
+import 'package:ox_common/network/ping_helper.dart';
+
+enum RelayNetworkStatus {
+  offline,
+  excellent,
+  normal,
+  poor,
+}
+
+extension PingResultRelayStatusX on PingResult {
+  RelayNetworkStatus get relayStatus {
+    if (!reachable) return RelayNetworkStatus.offline;
+
+    final int latency = timeMs;
+
+    if (latency <= 200) {
+      return RelayNetworkStatus.excellent;
+    }
+
+    if (latency <= 500) {
+      return RelayNetworkStatus.normal;
+    }
+
+    return RelayNetworkStatus.poor;
+  }
+
+  Color get relayStatusColor {
+    switch (relayStatus) {
+      case RelayNetworkStatus.excellent:
+        return CupertinoColors.systemGreen;
+      case RelayNetworkStatus.normal:
+        return CupertinoColors.systemYellow;
+      case RelayNetworkStatus.poor:
+        return CupertinoColors.systemRed;
+      case RelayNetworkStatus.offline:
+        return CupertinoColors.systemGrey;
+    }
+  }
+}
 
 /// RelayLatencyHandler encapsulates latency measurement of a relay (WebSocket) URL.
 /// It follows the workflow:
@@ -11,13 +50,14 @@ class RelayLatencyHandler {
   RelayLatencyHandler({required ValueNotifier<bool> isExpanded$})
       : _isExpanded$ = isExpanded$ {
     _isExpanded$.addListener(_restartRegularTimer);
+    _startRegularTimer();
   }
 
   // Expansion status of the UI, influences regular refresh interval
   final ValueNotifier<bool> _isExpanded$;
 
-  // Map of latency notifiers, one per relay URL
-  final Map<String, ValueNotifier<String>> _latencyMap = {};
+  // Map of ping result notifiers, one per relay URL
+  final Map<String, ValueNotifier<PingResult>> _resultMap = {};
 
   // Currently measured relay
   String? _currentRelay;
@@ -31,9 +71,14 @@ class RelayLatencyHandler {
   static const Duration _regularCollapsed = Duration(minutes: 1);
   static const Duration _regularExpanded = Duration(seconds: 5);
 
-  /// Get latency notifier for a relay URL ("--" when unknown).
-  ValueNotifier<String> getLatencyNotifier(String relayUrl) {
-    return _latencyMap.putIfAbsent(relayUrl, () => ValueNotifier<String>('--'));
+  /// Get ping result notifier for a relay URL.
+  ValueNotifier<PingResult> getPingResultNotifier(String relayUrl) {
+    return _resultMap.putIfAbsent(
+      relayUrl,
+      () => ValueNotifier<PingResult>(
+        PingResult.failure(),
+      ),
+    );
   }
 
   /// Switch to another relay to measure. Fast-retry will start automatically.
@@ -42,8 +87,8 @@ class RelayLatencyHandler {
 
     _currentRelay = relayUrl;
 
-    // Ensure notifier exists
-    getLatencyNotifier(relayUrl);
+    // Ensure notifier exists and reset to offline before measuring
+    getPingResultNotifier(relayUrl).value = PingResult.failure();
 
     _cancelTimers();
 
@@ -54,14 +99,6 @@ class RelayLatencyHandler {
   void dispose() {
     _isExpanded$.removeListener(_restartRegularTimer);
     _cancelTimers();
-  }
-
-  /// Static helper: map latency value to color.
-  static Color latencyColor(int latency) {
-    if (latency <= 0) return CupertinoColors.inactiveGray; // unknown / invalid
-    if (latency <= 200) return CupertinoColors.systemGreen; // good
-    if (latency <= 500) return CupertinoColors.systemYellow; // warning
-    return CupertinoColors.systemRed; // bad
   }
 
   /* ----------------------------- Internal ----------------------------- */
@@ -78,23 +115,32 @@ class RelayLatencyHandler {
   }
 
   Future<bool> _measureOnce(String relayUrl) async {
-    final host = Uri.parse(relayUrl).host.isNotEmpty
-        ? Uri.parse(relayUrl).host
-        : relayUrl.replaceAll(RegExp(r'^(wss?:\/\/)?'), '').split('/').first;
-    final latency = await PingUtils.ping(host, count: 3);
-    getLatencyNotifier(relayUrl).value =
-        (latency != null && latency > 0) ? '$latency' : '--';
-    return latency != null && latency > 0;
+    final uri = Uri.tryParse(relayUrl);
+    if (uri == null) return false;
+
+    PingResult result = await PingHelper.relayLatency(uri: uri);
+    LogUtils.i(() => 'RelayLatency result: $result');
+
+    getPingResultNotifier(relayUrl).value = result;
+    return result.reachable;
   }
 
   void _startRegularTimer() {
     _regularTimer?.cancel();
-    final interval = _isExpanded$.value ? _regularExpanded : _regularCollapsed;
-    _regularTimer = Timer.periodic(interval, (_) {
+
+    Future<void> scheduleNext() async {
       if (_currentRelay != null) {
-        _measureOnce(_currentRelay!);
+        await _measureOnce(_currentRelay!);
       }
-    });
+
+      final interval = _isExpanded$.value ? _regularExpanded : _regularCollapsed;
+
+      _regularTimer = Timer(interval, () {
+        scheduleNext();
+      });
+    }
+
+    scheduleNext();
   }
 
   void _restartRegularTimer() {
