@@ -180,11 +180,12 @@ class ParsedText extends StatelessWidget {
         return '';
       },
       onNonMatch: (String text) {
+        if (text.isEmpty) return '';
+
         widgets.add(TextSpan(
-          text: text.trim(),
+          text: text,
           style: this.style,
         ));
-
         return '';
       },
     );
