@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:ox_chat/message_handler/chat_message_helper.dart';
 import 'package:ox_chat/model/constant.dart';
-import 'package:ox_chat/message_handler/custom_message_utils.dart';
 import 'package:ox_chat/utils/general_handler/chat_general_handler.dart';
-import 'package:ox_common/business_interface/ox_chat/custom_message_type.dart';
-import 'package:ox_common/utils/string_utils.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import 'package:super_context_menu/super_context_menu.dart';
 
@@ -17,7 +14,7 @@ class MessageLongPressMenu {
     ChatGeneralHandler handler,
   ) {
     final List<MenuElement> menuItems = [];
-    
+
     // Quote action
     if (message.canReply) {
       menuItems.add(
@@ -72,7 +69,7 @@ class MessageLongPressMenu {
         ),
       );
     }
-    
+
     // Delete action with red color
     menuItems.add(
       MenuAction(
@@ -86,12 +83,12 @@ class MessageLongPressMenu {
         },
       ),
     );
-    
+
     return Menu(
       children: menuItems,
     );
   }
-  
+
   static Widget buildContextMenuWidget({
     required BuildContext context,
     required types.Message message,
@@ -101,6 +98,9 @@ class MessageLongPressMenu {
     return ContextMenuWidget(
       // liftBuilder: (BuildContext context, Widget child) => SizedBox(),
       menuProvider: (MenuRequest request) {
+        if (handler.inputFocusNode?.hasFocus ?? false) {
+          handler.inputFocusNode?.unfocus();
+        }
         return buildContextMenu(context, message, handler);
       },
       child: child,
