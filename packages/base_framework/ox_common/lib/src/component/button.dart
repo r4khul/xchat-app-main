@@ -79,7 +79,10 @@ class CLButton {
     double? height,
     EdgeInsetsGeometry? padding,
   }) {
-    child ??= _defaultText(text ?? '');
+    child ??= _defaultText(
+      text ?? '',
+      isDefaultUseThemeGradient ? Colors.white : null,
+    );
     child = _alignIfNeeded(child, alignment);
 
     Size? minimumSize;
