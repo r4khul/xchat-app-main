@@ -86,6 +86,14 @@ class CLPushIntegration with WidgetsBindingObserver {
     return _registerPushTokenCmp.future;
   }
 
+  Future<void> unregisterNotification() async {
+    if (Platform.isIOS) {
+      await OXCommon.unregisterNotification();
+    } else if (Platform.isAndroid) {
+      // TODO: Android implementation
+    }
+  }
+
   // Lifecycle
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {

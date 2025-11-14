@@ -49,13 +49,13 @@ class LoginUserNotifier {
 
   ValueNotifier<String> get avatarUrl$ => userInfo$
       .map((userInfo) => userInfo?.picture ?? '');
-  
+
   void updateUserSource(ValueNotifier<UserDBISAR?>? source) {
     if (_source != null) {
       _source!.removeListener(_onSrc);
       _source = null;
     }
-    
+
     _source = source;
     userInfo$.value = source?.value;
     source?.addListener(_onSrc);
@@ -104,7 +104,7 @@ class LoginManager {
     }
     return currentState.account?.pubkey ?? '';
   }
-  
+
   // Observer management
   final List<LoginManagerObserver> _observers = [];
 
@@ -213,7 +213,7 @@ extension LoginManagerAccount on LoginManager {
       // Initialize and set signer configuration
       await ExternalSignerTool.initialize();
       await ExternalSignerTool.setSigner(signerKey);
-      
+
       final config = ExternalSignerTool.getCurrentConfig();
       debugPrint('LoginWithSigner: Config found: ${config?.displayName} (${config?.packageName})');
       if (config == null) {
@@ -304,10 +304,10 @@ extension LoginManagerAccount on LoginManager {
       if (account == null) {
         return false; // No account data found
       }
-      
+
       // Update account with missing nostrConnectClientPrivkey if needed
-      if (account.loginType == LoginType.remoteSigner && 
-          account.nostrConnectUri.isNotEmpty && 
+      if (account.loginType == LoginType.remoteSigner &&
+          account.nostrConnectUri.isNotEmpty &&
           account.nostrConnectClientPrivkey == null) {
         account = account.copyWith(nostrConnectClientPrivkey: _generateClientPrivkey());
         await account.saveToDB();
@@ -338,9 +338,7 @@ extension LoginManagerAccount on LoginManager {
 
   // Throws an [Exception] if the logout operation fails
   Future<void> logoutAccount() async {
-    // Close the push notifications
-    final event = await NotificationHelper.sharedInstance.removeNotification();
-    if (!event.status) throw Exception('Push service error: ${event.message}');
+    await _cleanupPushNotificationsOnLogout();
 
     if (isLoginCircle) {
       await logoutCircle();
@@ -465,7 +463,7 @@ extension LoginManagerAccount on LoginManager {
 
       // 5. Persist login information
       await _persistLoginInfo(pubkey);
-      
+
       // 6. Persist signer selection if provided
       if (signerKey != null) {
         await _persistSignerInfo(pubkey, signerKey);
@@ -689,6 +687,28 @@ extension LoginManagerCircle on LoginManager {
     }
   }
 
+  Future<void> _cleanupPushNotificationsOnLogout() async {
+    try {
+      final event = await NotificationHelper.sharedInstance.removeNotification();
+      if (!event.status) {
+        debugPrint('Failed to clear push token on server: ${event.message}');
+        await _fallbackUnregisterPushToken('server rejection');
+      }
+    } catch (e) {
+      debugPrint('Exception while clearing push token: $e');
+      await _fallbackUnregisterPushToken('exception');
+    }
+  }
+
+  Future<void> _fallbackUnregisterPushToken(String reason) async {
+    debugPrint('Fallback unregister notification due to $reason');
+    try {
+      await CLPushIntegration.instance.unregisterNotification();
+    } catch (e) {
+      debugPrint('Fallback unregister notification failed: $e');
+    }
+  }
+
   /// Delete circle completely
   ///
   /// [circleId] Circle ID to delete
@@ -746,7 +766,7 @@ extension LoginManagerCircle on LoginManager {
 
       // Delete circle folder and all its contents directly
       final deleteSuccess = await AccountPathManager.deleteCircleFolder(
-        account.pubkey, 
+        account.pubkey,
         circleId,
       );
       if (!deleteSuccess) {
@@ -943,7 +963,7 @@ extension LoginManagerCircle on LoginManager {
       channelsUpdatedCallBack: Channels.sharedInstance.myChannelsUpdatedCallBack,
       groupsUpdatedCallBack: Groups.sharedInstance.myGroupsUpdatedCallBack,
       relayGroupsUpdatedCallBack: RelayGroup.sharedInstance.myGroupsUpdatedCallBack,
-      pushServerRelay: 'ws://www.0xchat.com:9090'
+      pushServerRelay: 'ws://www.0xchat.com:9090',
     );
     await ChatCoreManager().initChatCoreWithConfig(config);
     LoginUserNotifier.instance.updateUserSource(Account.sharedInstance.getUserNotifier(pubkey));
@@ -964,7 +984,7 @@ extension LoginManagerCircle on LoginManager {
 
     try {
       final bitchatService = BitchatService();
-      
+
       // Initialize the service
       await bitchatService.initialize();
       debugPrint('BitchatService initialized successfully');
@@ -1074,7 +1094,7 @@ extension LoginManagerDatabase on LoginManager {
       debugPrint('AutoLogin: External signer not supported on this platform');
       return;
     }
-    
+
     try {
       final signerKey = await getSignerForPubkey(pubkey);
       if (signerKey != null) {
@@ -1113,7 +1133,7 @@ extension LoginManagerDatabase on LoginManager {
     try {
       // Get all available signer configurations
       final signerKeys = SignerConfigs.getAvailableSigners();
-      
+
       // Check which signers are installed
       for (final signerKey in signerKeys) {
         try {
@@ -1132,7 +1152,7 @@ extension LoginManagerDatabase on LoginManager {
           debugPrint('AutoLogin: Error checking signer $signerKey: $e');
         }
       }
-      
+
       // If no specific signer found, check if nostrsigner scheme is supported
       final isNostrSignerSupported = await CoreMethodChannel.isNostrSignerSupported();
       if (isNostrSignerSupported) {

@@ -128,6 +128,9 @@ public class SwiftOXCCommonPlugin: NSObject, FlutterPlugin, UINavigationControll
             let isRotation = (call.arguments as? [String: Any])?["isRotation"] as? Bool ?? false
             registeNotification(isRotation: isRotation)
             result(nil)
+        case "unregisterNotification":
+            unregisterNotification()
+            result(nil)
         default:
             break;
         }
@@ -187,6 +190,12 @@ extension SwiftOXCCommonPlugin {
                 }
                 
             }
+        }
+    }
+
+    private func unregisterNotification() {
+        DispatchQueue.main.async {
+            UIApplication.shared.unregisterForRemoteNotifications()
         }
     }
 }

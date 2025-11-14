@@ -110,6 +110,10 @@ class OXCommon extends OXFlutterModule {
     await channel.invokeMethod('registeNotification', {'isRotation': isRotation});
   }
 
+  static Future<void> unregisterNotification() async {
+    await channel.invokeMethod('unregisterNotification');
+  }
+
   @override
   Future<T?>? navigateToPage<T>(BuildContext context, String pageName, Map<String, dynamic>? params) {
     return null;
