@@ -1,4 +1,4 @@
-package com.oxchat.nostr;
+package com.oxchat.lite;
 
 import android.app.ActivityManager;
 import android.app.Notification;
@@ -20,6 +20,7 @@ import java.util.List;
 import androidx.core.app.NotificationCompat;
 
 import com.oxchat.lite.R;
+import com.oxchat.nostr.MainActivity;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -502,18 +503,15 @@ public class PushNotificationService extends Service {
      */
     private void activateApp() {
         try {
-            // Get the launcher intent - same as clicking app icon
-            // This ensures Flutter app starts correctly
-            Intent intent = getPackageManager().getLaunchIntentForPackage(getPackageName());
-            if (intent == null) {
-                // Fallback to explicit MainActivity if launcher intent not found
-                intent = new Intent(this, MainActivity.class);
-                intent.setAction(Intent.ACTION_MAIN);
-                intent.addCategory(Intent.CATEGORY_LAUNCHER);
-            }
+            // Create a fresh Intent for MainActivity
+            // Use the same pattern as AndroidManifest launcher intent
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.setAction(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_LAUNCHER);
             // FLAG_ACTIVITY_NEW_TASK is required when starting from Service
-            // Don't use CLEAR_TOP as it might cause issues with Flutter
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            // FLAG_ACTIVITY_CLEAR_TOP with singleTop launchMode will reuse existing instance if on top
+            // or bring it to front if it exists in the stack
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             
             // Create PendingIntent for notification
             int flags = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT;

@@ -12,7 +12,7 @@ import androidx.annotation.NonNull;
 import com.oxchat.nostr.MultiEngineActivity;
 import com.oxchat.nostr.util.SharedPreUtils;
 import com.oxchat.nostr.VoiceCallService;
-import com.oxchat.nostr.PushNotificationService;
+import com.oxchat.lite.PushNotificationService;
 import java.util.HashMap;
 import java.util.List;
 

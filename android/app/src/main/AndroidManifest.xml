@@ -203,7 +203,7 @@
         <service android:name="com.oxchat.nostr.VoiceCallService"
             android:foregroundServiceType="mediaPlayback"/>
 
-        <service android:name="com.oxchat.nostr.PushNotificationService"
+        <service android:name="com.oxchat.lite.PushNotificationService"
             android:foregroundServiceType="dataSync"
             android:exported="false"/>
 
