@@ -5,12 +5,14 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 
 import androidx.annotation.NonNull;
 
 import com.oxchat.nostr.MultiEngineActivity;
 import com.oxchat.nostr.util.SharedPreUtils;
 import com.oxchat.nostr.VoiceCallService;
+import com.oxchat.nostr.PushNotificationService;
 import java.util.HashMap;
 import java.util.List;
 
@@ -36,12 +38,13 @@ public class AppPreferences implements MethodChannel.MethodCallHandler, FlutterP
     private Context mContext;
     private Activity mActivity;
     private MethodChannel.Result mMethodChannelResult;
+    private MethodChannel mChannel;
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
         mContext = binding.getApplicationContext();
-        MethodChannel channel = new MethodChannel(binding.getBinaryMessenger(), OX_PERFERENCES_CHANNEL);
-        channel.setMethodCallHandler(this);
+        mChannel = new MethodChannel(binding.getBinaryMessenger(), OX_PERFERENCES_CHANNEL);
+        mChannel.setMethodCallHandler(this);
     }
 
     @Override
@@ -99,6 +102,69 @@ public class AppPreferences implements MethodChannel.MethodCallHandler, FlutterP
             case "stopVoiceCallService" -> {
                 Intent serviceIntent = new Intent(mContext, VoiceCallService.class);
                 mContext.stopService(serviceIntent);
+            }
+            case "startPushNotificationService" -> {
+                String serverRelay = "";
+                String pubkey = "";
+                if (paramsMap != null) {
+                    if (paramsMap.containsKey("serverRelay")) {
+                        serverRelay = (String) paramsMap.get("serverRelay");
+                    }
+                    if (paramsMap.containsKey("pubkey")) {
+                        pubkey = (String) paramsMap.get("pubkey");
+                    }
+                }
+                // For Android, deviceId is optional, will use pubkey if not provided
+                Intent serviceIntent = new Intent(mContext, PushNotificationService.class);
+                serviceIntent.putExtra(PushNotificationService.EXTRA_SERVER_RELAY, serverRelay);
+                // deviceId is optional for Android, service will use pubkey if not provided
+                serviceIntent.putExtra(PushNotificationService.EXTRA_PUBKEY, pubkey);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    mContext.startForegroundService(serviceIntent);
+                } else {
+                    mContext.startService(serviceIntent);
+                }
+                result.success(true);
+            }
+            case "stopPushNotificationService" -> {
+                Intent serviceIntent = new Intent(mContext, PushNotificationService.class);
+                mContext.stopService(serviceIntent);
+                result.success(true);
+            }
+            case "sendAuthResponse" -> {
+                String authJson = "";
+                if (paramsMap != null && paramsMap.containsKey("authJson")) {
+                    authJson = (String) paramsMap.get("authJson");
+                }
+                // Send auth response to push service
+                Intent serviceIntent = new Intent(mContext, PushNotificationService.class);
+                serviceIntent.setAction("com.oxchat.nostr.SEND_AUTH");
+                serviceIntent.putExtra("authJson", authJson);
+                mContext.startService(serviceIntent);
+                result.success(true);
+            }
+            case "getPendingAuthChallenge" -> {
+                // Get pending AUTH challenge from SharedPreferences
+                android.content.SharedPreferences prefs = mContext.getSharedPreferences("push_service", Context.MODE_PRIVATE);
+                String challenge = prefs.getString("auth_challenge", "");
+                String relay = prefs.getString("auth_relay", "");
+                if (!challenge.isEmpty() && !relay.isEmpty()) {
+                    HashMap<String, String> resultMap = new HashMap<>();
+                    resultMap.put("challenge", challenge);
+                    resultMap.put("relay", relay);
+                    result.success(resultMap);
+                } else {
+                    result.success(null);
+                }
+            }
+            case "clearPendingAuthChallenge" -> {
+                // Clear pending AUTH challenge
+                android.content.SharedPreferences prefs = mContext.getSharedPreferences("push_service", Context.MODE_PRIVATE);
+                prefs.edit()
+                    .remove("auth_challenge")
+                    .remove("auth_relay")
+                    .apply();
+                result.success(true);
             }
             case "getAppOpenURL" -> {
                 SharedPreferences preferences = mContext.getSharedPreferences(SharedPreUtils.SP_NAME, Context.MODE_PRIVATE);

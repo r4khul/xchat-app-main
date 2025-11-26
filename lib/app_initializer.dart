@@ -23,7 +23,6 @@ import 'package:ox_theme/ox_theme.dart';
 import 'package:ox_usercenter/ox_usercenter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_socks_proxy/socks_proxy.dart';
-import 'package:dart_ping_ios/dart_ping_ios.dart';
 import 'package:nostr_mls_package/nostr_mls_package.dart';
 import 'main.reflectable.dart';
 
@@ -81,7 +80,6 @@ class AppInitializer {
     await _setupModules();
 
     ThemeManager.addOnThemeChangedCallback(onThemeStyleChange);
-    DartPingIOS.register();
   }
 
   /// User-level initialization including auto login

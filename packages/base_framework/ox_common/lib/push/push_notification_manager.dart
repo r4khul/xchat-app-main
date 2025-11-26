@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:ox_common/push/core/local_push_kit.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:ox_common/component.dart';
@@ -9,13 +11,44 @@ import 'package:ox_common/login/login_models.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import 'package:chatcore/chat-core.dart';
+import 'package:ox_common/log_util.dart';
 
 import 'push_integration.dart';
 
 class CLUserPushNotificationManager implements PushPermissionChecker {
   static final CLUserPushNotificationManager instance = CLUserPushNotificationManager._internal();
+  static const MethodChannel _authChannel = MethodChannel('com.oxchat.global/perferences');
+  Timer? _authCheckTimer;
+  
   CLUserPushNotificationManager._internal() {
     NotificationHelper.sharedInstance.permissionChecker = this;
+    _setupAuthHandler();
+    _startAuthCheckTimer();
+  }
+
+  void _setupAuthHandler() {
+    // Listen for AUTH requests from Android push service
+    _authChannel.setMethodCallHandler((call) async {
+      if (call.method == 'requestAuthJson') {
+        final challenge = call.arguments['challenge'] as String?;
+        final relay = call.arguments['relay'] as String?;
+        
+        if (challenge != null && relay != null) {
+          try {
+            final authJson = await NotificationHelper.generateAuthJson(challenge, relay);
+            if (authJson.isNotEmpty) {
+              // Send authJson back to Android service
+              await _authChannel.invokeMethod('sendAuthResponse', {
+                'authJson': authJson,
+              });
+            }
+          } catch (e) {
+            print('Error generating authJson: $e');
+          }
+        }
+      }
+      return null;
+    });
   }
 
   final ValueNotifier<bool> _allowSendNotificationNotifier = ValueNotifier<bool>(false);
@@ -44,9 +77,86 @@ class CLUserPushNotificationManager implements PushPermissionChecker {
     }
 
     await checkAndUpdatePermissionStatus();
+    
+    // Check for pending AUTH challenges from Android push service
+    if (Platform.isAndroid) {
+      _checkPendingAuth();
+      await _ensureAndroidPushServiceStarted();
+    }
+  }
+
+  Future<void> _ensureAndroidPushServiceStarted() async {
+    if (!Platform.isAndroid || !allowReceiveNotification) return;
+
+    final currentState = LoginManager.instance.currentState;
+    final account = currentState.account;
+    if (account == null || account.pubkey.isEmpty) return;
+
+    final serverRelay = NotificationHelper.sharedInstance.serverRelay;
+    if (serverRelay.isEmpty) return;
+
+    try {
+      final event = await NotificationHelper.sharedInstance
+          .updateNotificationDeviceId(account.pubkey);
+      if (!event.status) {
+      LogUtil.e('ensurePushService update device failed: ${event.message}');
+        return;
+      }
+
+      const MethodChannel channel = MethodChannel('com.oxchat.global/perferences');
+      await channel.invokeMethod('startPushNotificationService', {
+        'serverRelay': serverRelay,
+        'pubkey': account.pubkey,
+      });
+    } catch (e) {
+      LogUtil.e('ensurePushService failed to start service: $e');
+    }
+  }
+
+  // Start timer to periodically check for pending AUTH challenges
+  void _startAuthCheckTimer() {
+    if (Platform.isAndroid) {
+      _authCheckTimer?.cancel();
+      _authCheckTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+        _checkPendingAuth();
+      });
+    }
+  }
+
+  // Check for pending AUTH challenges and process them
+  Future<void> _checkPendingAuth() async {
+    try {
+      final result = await _authChannel.invokeMethod('getPendingAuthChallenge');
+      if (result != null && result is Map) {
+        final challenge = result['challenge'] as String?;
+        final relay = result['relay'] as String?;
+        
+        if (challenge != null && relay != null && challenge.isNotEmpty) {
+          try {
+            final authJson = await NotificationHelper.generateAuthJson(challenge, relay);
+            if (authJson.isNotEmpty) {
+              await _authChannel.invokeMethod('sendAuthResponse', {
+                'authJson': authJson,
+              });
+              // Clear the pending challenge
+              await _authChannel.invokeMethod('clearPendingAuthChallenge');
+            }
+          } catch (e) {
+            print('Error generating authJson: $e');
+          }
+        }
+      }
+    } catch (e) {
+      // No pending challenge or error
+    }
   }
 
   Future<String?> updatePushTokenIfNeeded() async {
+    // For Android, skip getting pushToken
+    if (Platform.isAndroid) {
+      return null;
+    }
+
     final account = LoginManager.instance.currentState.account;
     if (account == null) return null;
     return CLPushIntegration.instance
@@ -95,30 +205,75 @@ class CLUserPushNotificationManager implements PushPermissionChecker {
         return null;
       }
 
-      pushToken ??= currentState.account?.pushToken;
-      if (pushToken == null || pushToken.isEmpty) {
-        // Try to register pushToken again
-        pushToken = await CLPushIntegration.instance
-            .registerNotification()
-            .timeout(Duration(seconds: 15), onTimeout: () => '')
-            .then((token) {
-          if (token.isEmpty) return '';
-          LoginManager.instance.savePushToken(token);
-          return token;
-        });
+      // For Android, use pubkey as deviceId and register on server before starting service
+      if (Platform.isAndroid) {
+        final account = currentState.account;
+        if (account == null || account.pubkey.isEmpty) {
+          return Localized.text('ox_common.account_not_found');
+        }
+
+        final serverRelay = NotificationHelper.sharedInstance.serverRelay;
+        if (serverRelay.isEmpty) {
+          return 'Server relay not configured';
+        }
+
+        try {
+          final event = await NotificationHelper.sharedInstance
+              .updateNotificationDeviceId(account.pubkey);
+          if (!event.status) {
+            return event.message;
+          }
+
+          const MethodChannel channel = MethodChannel('com.oxchat.global/perferences');
+          await channel.invokeMethod('startPushNotificationService', {
+            'serverRelay': serverRelay,
+            'pubkey': account.pubkey,
+          });
+        } catch (e) {
+          return 'Failed to start push service: $e';
+        }
+      } else {
+        // For iOS, use the original flow with pushToken
+        pushToken ??= currentState.account?.pushToken;
         if (pushToken == null || pushToken.isEmpty) {
-          return Localized.text('ox_common.push_token_is_null');
+          // Try to register pushToken again
+          pushToken = await CLPushIntegration.instance
+              .registerNotification()
+              .timeout(Duration(seconds: 15), onTimeout: () => '')
+              .then((token) {
+            if (token.isEmpty) return '';
+            LoginManager.instance.savePushToken(token);
+            return token;
+          });
+          if (pushToken == null || pushToken.isEmpty) {
+            return Localized.text('ox_common.push_token_is_null');
+          }
+        }
+
+        final event = await NotificationHelper.sharedInstance.updateNotificationDeviceId(pushToken);
+        if (!event.status) {
+          return event.message;
         }
       }
-
-      final event = await NotificationHelper.sharedInstance.updateNotificationDeviceId(pushToken);
-      if (!event.status) {
-        return event.message;
-      }
     } else {
-      final event = await NotificationHelper.sharedInstance.removeNotification();
-      if (!event.status) {
-        return event.message;
+      // Stop push service for Android
+      if (Platform.isAndroid) {
+        try {
+          const MethodChannel channel = MethodChannel('com.oxchat.global/perferences');
+          await channel.invokeMethod('stopPushNotificationService');
+        } catch (e) {
+          // Ignore errors when stopping service
+        }
+
+        final event = await NotificationHelper.sharedInstance.removeNotification();
+        if (!event.status) {
+          return event.message;
+        }
+      } else {
+        final event = await NotificationHelper.sharedInstance.removeNotification();
+        if (!event.status) {
+          return event.message;
+        }
       }
     }
 
