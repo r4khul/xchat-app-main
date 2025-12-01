@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:ox_module_service/ox_module_service.dart';
-import 'utils/login_flow_manager.dart';
 import 'page/profile_setup_page.dart';
 
 /// OXLogin module service interface
@@ -16,9 +15,7 @@ class OXLoginModuleService extends OXFlutterModule {
   }
 
   @override
-  Map<String, Function> get interfaces => {
-    'getLoginFlowManager': _getLoginFlowManager,
-  };
+  Map<String, Function> get interfaces => {};
 
   @override
   Future<T?>? navigateToPage<T>(BuildContext context, String pageName, Map<String, dynamic>? params) {
@@ -26,10 +23,5 @@ class OXLoginModuleService extends OXFlutterModule {
       default:
         return null;
     }
-  }
-
-  /// Get LoginFlowManager instance
-  dynamic _getLoginFlowManager() {
-    return LoginFlowManager.instance;
   }
 }

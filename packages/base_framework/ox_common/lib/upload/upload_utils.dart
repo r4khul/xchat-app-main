@@ -5,7 +5,6 @@ import 'package:minio/minio.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/log_util.dart';
 import 'package:ox_common/model/file_server_model.dart';
-import 'package:ox_common/upload/file_type.dart';
 import 'package:ox_common/upload/minio_uploader.dart';
 import 'package:ox_common/upload/upload_exception.dart';
 import 'package:ox_common/upload/uploader.dart';
@@ -15,6 +14,9 @@ import 'package:ox_common/widgets/common_loading.dart';
 import 'package:http/http.dart';
 import 'package:dio/dio.dart';
 import 'package:uuid/uuid.dart';
+
+import 'file_type.dart';
+export 'file_type.dart';
 
 class UploadUtils {
   static Future<UploadResult> uploadFile({

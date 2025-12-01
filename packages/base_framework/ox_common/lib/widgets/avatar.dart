@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'dart:io';
 import 'package:chatcore/chat-core.dart';
@@ -9,7 +8,6 @@ import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/utils/string_utils.dart';
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_module_service/ox_module_service.dart';
-import 'package:ox_localizable/ox_localizable.dart';
 
 import 'avatar_generator.dart';
 

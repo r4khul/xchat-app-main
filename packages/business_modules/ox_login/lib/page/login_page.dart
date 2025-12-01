@@ -12,7 +12,7 @@ import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 // ox_login
 import 'package:ox_login/page/account_key_login_page.dart';
-import 'package:ox_login/page/create_account_page.dart';
+import 'package:ox_login/page/profile_setup_page.dart';
 import 'package:nostr_core_dart/src/channel/core_method_channel.dart';
 import 'package:nostr_core_dart/src/signer/signer_config.dart';
 
@@ -85,10 +85,11 @@ class _LoginPageState extends State<LoginPage> {
         const Spacer(),
         Column(
           children: [
-            buildCreateAccountButton().setPaddingOnly(bottom: 18.px),
-            buildLoginButton().setPaddingOnly(bottom: 18.px),
-            // buildQrCodeLoginWidget().setPaddingOnly(bottom: 18.px),
-            // buildPrivacyWidget().setPaddingOnly(bottom: 18.px),
+            // Primary button: Quick start for regular users
+            _buildQuickStartButton().setPaddingOnly(bottom: 18.px),
+            // Secondary button: For existing Nostr users
+            _buildExistingAccountButton().setPaddingOnly(bottom: 18.px),
+            // Signer login for Android
             if(Platform.isAndroid) buildAmberLoginWidget(),
           ],
         ).setPadding(EdgeInsets.symmetric(horizontal: 32.px)),
@@ -97,18 +98,20 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget buildCreateAccountButton() => CLButton.filled(
-    onTap: _createAccount,
+  /// Primary action: Quick start for new users
+  Widget _buildQuickStartButton() => CLButton.filled(
+    onTap: _quickStart,
     height: 48.py,
     expanded: true,
-    text: Localized.text('ox_login.create_account'),
+    text: Localized.text('ox_login.get_started'),
   );
 
-  Widget buildLoginButton() => CLButton.tonal(
+  /// Secondary action: For users with existing Nostr account
+  Widget _buildExistingAccountButton() => CLButton.tonal(
     onTap: _login,
     height: 48.py,
     expanded: true,
-    text: Localized.text('ox_login.login_button'),
+    text: Localized.text('ox_login.have_account'),
   );
 
   Widget buildAmberLoginWidget() {
@@ -153,14 +156,13 @@ class _LoginPageState extends State<LoginPage> {
 
   // ========== Event Handlers ==========
 
-  void _createAccount() {
-    OXNavigator.pushPage(context, (context) => CreateAccountPage());
+  void _quickStart() {
+    OXNavigator.pushPage(context, (context) => const ProfileSetupPage());
   }
 
   void _login() {
     OXNavigator.pushPage(context, (context) => AccountKeyLoginPage());
   }
-
 
   void _showSignerSelectionDialog() async {
     // Check which signers are installed

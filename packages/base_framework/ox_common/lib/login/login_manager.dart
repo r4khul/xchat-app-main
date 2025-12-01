@@ -719,7 +719,7 @@ extension LoginManagerCircle on LoginManager {
       final currentState = this.currentState;
       final account = currentState.account;
       if (account == null) {
-        _notifyCircleChangeFailed(const LoginFailure(
+        _notifyCircleChange(false, const LoginFailure(
           type: LoginFailureType.errorEnvironment,
           message: 'No account logged in',
         ));
@@ -727,7 +727,7 @@ extension LoginManagerCircle on LoginManager {
       }
 
       if (circleId.isEmpty) {
-        _notifyCircleChangeFailed(LoginFailure(
+        _notifyCircleChange(false, LoginFailure(
           type: LoginFailureType.errorEnvironment,
           message: 'Circle ID cannot be empty',
           circleId: circleId,
@@ -737,7 +737,7 @@ extension LoginManagerCircle on LoginManager {
 
       final circleToDelete = account.circles.where((c) => c.id == circleId).firstOrNull;
       if (circleToDelete == null) {
-        _notifyCircleChangeFailed(LoginFailure(
+        _notifyCircleChange(false, LoginFailure(
           type: LoginFailureType.errorEnvironment,
           message: 'Circle not found',
           circleId: circleId,
@@ -756,7 +756,7 @@ extension LoginManagerCircle on LoginManager {
         if (isCurrentCircle) {
           final switchResult = await switchToCircle(nextCircle);
           if (switchResult != null) {
-            _notifyCircleChangeFailed(switchResult);
+            _notifyCircleChange(false, switchResult);
             return false;
           }
         }
@@ -790,7 +790,7 @@ extension LoginManagerCircle on LoginManager {
 
       return true;
     } catch (e) {
-      _notifyCircleChangeFailed(LoginFailure(
+      _notifyCircleChange(false, LoginFailure(
         type: LoginFailureType.circleDbFailed,
         message: 'Failed to delete circle: $e',
         circleId: circleId,
@@ -821,7 +821,7 @@ extension LoginManagerCircle on LoginManager {
     try {
       final account = loginState.account;
       if (account == null) {
-        _notifyCircleChangeFailed(LoginFailure(
+        _notifyCircleChange(false, LoginFailure(
           type: LoginFailureType.errorEnvironment,
           message: 'Account is null',
           circleId: circle.id,
@@ -835,7 +835,7 @@ extension LoginManagerCircle on LoginManager {
         circle,
       );
       if (circleDb == null) {
-        _notifyCircleChangeFailed(LoginFailure(
+        _notifyCircleChange(false, LoginFailure(
           type: LoginFailureType.circleDbFailed,
           message: 'Failed to initialize circle database',
           circleId: circle.id,
@@ -859,7 +859,7 @@ extension LoginManagerCircle on LoginManager {
       // Perform circle-level login based on account login type
       final user = await _performNostrLogin(account);
       if (user == null) {
-        _notifyCircleChangeFailed(LoginFailure(
+        _notifyCircleChange(false, LoginFailure(
           type: LoginFailureType.circleDbFailed,
           message: 'Circle-level login failed',
           circleId: circle.id,
@@ -875,14 +875,11 @@ extension LoginManagerCircle on LoginManager {
 
       _loginCircleSuccessHandler(account, circle);
 
-      // Notify circle change success
-      for (final observer in _observers) {
-        observer.onCircleChanged(circle);
-      }
+      _notifyCircleChange(true);
 
       return true;
     } catch (e) {
-      _notifyCircleChangeFailed(LoginFailure(
+      _notifyCircleChange(false, LoginFailure(
         type: LoginFailureType.circleDbFailed,
         message: 'Failed to login to circle: $e',
         circleId: circle.id,
@@ -930,10 +927,15 @@ extension LoginManagerCircle on LoginManager {
     }
   }
 
-  /// Notify circle change failure
-  void _notifyCircleChangeFailed(LoginFailure failure) {
+  void _notifyCircleChange(bool isSuccess, [LoginFailure? failure]) {
     for (final observer in _observers) {
-      observer.onCircleChangeFailed(failure);
+      observer.onCircleChange(isSuccess, failure);
+    }
+  }
+
+  void _notifyCircleConnectedChange(bool isConnected) {
+    for (final observer in _observers) {
+      observer.onCircleConnected(isConnected);
     }
   }
 
@@ -959,6 +961,12 @@ extension LoginManagerCircle on LoginManager {
       circleId: circle.id,
       isLite: true,
       circleRelay: circle.relayUrl,
+      circleConnectCallback: (isConnected) {
+        if (isConnected) {
+          Account.sharedInstance.reloadProfileFromRelay(pubkey);
+        }
+        _notifyCircleConnectedChange(isConnected);
+      },
       contactUpdatedCallBack: Contacts.sharedInstance.contactUpdatedCallBack,
       channelsUpdatedCallBack: Channels.sharedInstance.myChannelsUpdatedCallBack,
       groupsUpdatedCallBack: Groups.sharedInstance.myGroupsUpdatedCallBack,
@@ -967,7 +975,6 @@ extension LoginManagerCircle on LoginManager {
     );
     await ChatCoreManager().initChatCoreWithConfig(config);
     LoginUserNotifier.instance.updateUserSource(Account.sharedInstance.getUserNotifier(pubkey));
-    Account.sharedInstance.reloadProfileFromRelay(pubkey);
     Account.sharedInstance.syncFollowingListFromRelay(pubkey, relay: circle.relayUrl);
 
     initializePushCore();

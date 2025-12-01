@@ -110,7 +110,8 @@ class CircleJoinUtils {
         // showHintIcon: true,
         // onHintIconTap: () => _showCircleIntroduction(context),
         onConfirm: (input) async {
-          return await processJoinInput(context, input);
+          await processJoinCircle(input: input, context: context);
+          return true;
         },
         belowInputBuilder: (ctx, controller) => _buildHintWidget(ctx, controller),
       );
@@ -211,13 +212,22 @@ class CircleJoinUtils {
   }
 
   /// Process join input (either URL or short name)
-  static Future<bool> processJoinInput(
-      BuildContext context, String input) async {
+  static Future<void> processJoinCircle({
+    required String input,
+    BuildContext? context,
+    bool supportInvite = false,
+    bool usePreCheck = true,
+  }) async {
     final trimmedInput = input.trim();
 
     // Check if input is an invite link
-    if (trimmedInput.startsWith('https://0xchat.com/x/invite') || trimmedInput.startsWith('https://www.0xchat.com/x/invite') || trimmedInput.startsWith('https://0xchat.com/lite/invite') || trimmedInput.startsWith('https://www.0xchat.com/lite/invite')) {
-      return await _processInviteLink(context, trimmedInput);
+    if (supportInvite) {
+      if (trimmedInput.startsWith('https://0xchat.com/x/invite')
+          || trimmedInput.startsWith('https://www.0xchat.com/x/invite')
+          || trimmedInput.startsWith('https://0xchat.com/lite/invite')
+          || trimmedInput.startsWith('https://www.0xchat.com/lite/invite')) {
+        return _processInviteLink(trimmedInput);
+      }
     }
 
     // Determine CircleConfig based on input
@@ -231,35 +241,33 @@ class CircleJoinUtils {
     }
 
     // Perform pre-checks based on circle type
-    final preCheckResult = await _performPreChecks(context, circleConfig);
-    if (!preCheckResult.isSuccess) {
-      throw preCheckResult.errorMessage;
+    if (usePreCheck) {
+      if (context == null) throw 'Context is null';
+      final preCheckResult = await _performPreChecks(context, circleConfig);
+      if (!preCheckResult.isSuccess) {
+        throw preCheckResult.errorMessage;
+      }
     }
 
     // Join circle through LoginManager
-    final failure = await LoginManager.instance
-        .joinCircle(circleConfig.relayUrl ?? '', type: circleConfig.type);
+    final failure = await LoginManager.instance.joinCircle(
+      circleConfig.relayUrl ?? '',
+      type: circleConfig.type,
+    );
     if (failure != null) {
       throw failure.message;
     }
-
-    return true;
   }
 
   /// Process invite link input
-  static Future<bool> _processInviteLink(BuildContext context, String inviteLink) async {
-    try {
-        // Use post frame callback to ensure navigation happens after current frame
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          final globalContext = OXNavigator.navigatorKey.currentContext;
-          if (globalContext != null) {
-            ScanUtils.analysis(globalContext, inviteLink);
-          }
-        });
-        return true;
-    } catch (e) {
-      return false;
-    }
+  static void _processInviteLink(String inviteLink) {
+    // Use post frame callback to ensure navigation happens after current frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final globalContext = OXNavigator.navigatorKey.currentContext;
+      if (globalContext != null) {
+        ScanUtils.analysis(globalContext, inviteLink);
+      }
+    });
   }
 
   /// Check if circle already exists based on circle type
@@ -321,7 +329,7 @@ class CircleJoinUtils {
       case CircleType.relay:
         return await _performRelayPreChecks(context, config.relayUrl);
       case CircleType.bitchat:
-        return await _performBitchatPreChecks(context);
+        return await _performBitchatPreChecks();
     }
   }
 
@@ -344,8 +352,7 @@ class CircleJoinUtils {
   }
 
   /// Perform pre-checks for bitchat type circles
-  static Future<_PreflightCheckResult> _performBitchatPreChecks(
-      BuildContext context) async {
+  static Future<_PreflightCheckResult> _performBitchatPreChecks() async {
     // Currently no pre-checks for bitchat type
     return const _PreflightCheckResult.success();
   }

@@ -12,9 +12,10 @@ import 'package:ox_common/component.dart';
 // plugin
 import 'package:ox_localizable/ox_localizable.dart';
 import 'package:chatcore/chat-core.dart';
-import 'package:ox_module_service/ox_module_service.dart';
 
 // local
+import '../controller/onboarding_controller.dart';
+import 'circle_selection_page.dart';
 import 'nostr_introduction_page.dart';
 
 class AccountKeyLoginPage extends StatefulWidget {
@@ -25,6 +26,8 @@ class AccountKeyLoginPage extends StatefulWidget {
 }
 
 class _AccountKeyLoginPageState extends State<AccountKeyLoginPage> with LoginManagerObserver {
+  final OnboardingController _onboardingController = OnboardingController(isCreateNewAccount: false);
+
   TextEditingController _accountKeyEditingController = new TextEditingController();
   bool _isShowLoginBtn = false;
   String _accountKeyInput = '';
@@ -40,6 +43,7 @@ class _AccountKeyLoginPageState extends State<AccountKeyLoginPage> with LoginMan
   @override
   void dispose() {
     LoginManager.instance.removeObserver(this);
+    _onboardingController.dispose();
     _accountKeyEditingController.dispose();
     super.dispose();
   }
@@ -62,7 +66,7 @@ class _AccountKeyLoginPageState extends State<AccountKeyLoginPage> with LoginMan
         ListView(
           padding: EdgeInsets.fromLTRB(30.px, 32.px, 30.px, 120.px), // bottom padding to avoid overlap with button
           children: [
-            buildKeyInputView(),
+            _buildKeyInputView(),
           ]
         ),
         Positioned(
@@ -72,7 +76,7 @@ class _AccountKeyLoginPageState extends State<AccountKeyLoginPage> with LoginMan
           child: SafeArea(
             child: CLButton.filled(
               text: _isLoggingIn ? Localized.text('ox_common.loading') : Localized.text('ox_login.login_button'),
-              onTap: _isShowLoginBtn && !_isLoggingIn ? _loginWithKey : null,
+              onTap: _isShowLoginBtn && !_isLoggingIn ? _loginButtonOnTap : null,
               expanded: true,
               height: 48.px,
             ),
@@ -82,7 +86,7 @@ class _AccountKeyLoginPageState extends State<AccountKeyLoginPage> with LoginMan
     );
   }
 
-  Widget buildKeyInputView() {
+  Widget _buildKeyInputView() {
     final inputStr = _accountKeyEditingController.text;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -103,7 +107,7 @@ class _AccountKeyLoginPageState extends State<AccountKeyLoginPage> with LoginMan
           onSubmitted: (_) {
             _checkAccountKey();
             if (_accountKeyInput.isNotEmpty && !_isLoggingIn) {
-              _loginWithKey();
+              _loginButtonOnTap();
             }
           },
         ),
@@ -156,30 +160,45 @@ class _AccountKeyLoginPageState extends State<AccountKeyLoginPage> with LoginMan
     setState(() {});
   }
 
-  void _loginWithKey() async {
+  void _loginButtonOnTap() async {
     if (_isLoggingIn || _accountKeyInput.isEmpty) return;
-
     FocusScope.of(context).unfocus();
+
     setState(() {
       _isLoggingIn = true;
     });
 
-    bool success = false;
-    
-    if (_accountKeyInput.startsWith('bunker://')) {
-      // Handle NIP-46 login
-      success = await _loginWithNip46();
-    } else {
-      // Handle private key login with LoginManager
-      success = await LoginManager.instance.loginWithPrivateKey(_accountKeyInput);
-    }
-    
-    if (!success) {
+    final isSuccess = await _loginWithKey();
+    if (mounted && !isSuccess) {
       setState(() {
         _isLoggingIn = false;
       });
-      // Error handling done in LoginManagerObserver callbacks for private key
-      // For NIP-46, errors are handled in _loginWithNip46 method
+    }
+  }
+
+  Future<void> loginHandler() async {
+    final account = LoginManager.instance.currentState.account;
+    if (account == null || account.circles.isNotEmpty) {
+      OXNavigator.popToRoot(context);
+      return;
+    }
+
+    _onboardingController.loginAction = _loginWithKey;
+    OXNavigator.pushPage(
+      context,
+          (_) => CircleSelectionPage(
+        controller: _onboardingController,
+      ),
+    );
+  }
+
+  Future<bool> _loginWithKey() async {
+    if (_accountKeyInput.startsWith('bunker://')) {
+      // Handle NIP-46 login
+      return _loginWithNip46();
+    } else {
+      // Handle private key login with LoginManager
+      return LoginManager.instance.loginWithPrivateKey(_accountKeyInput);
     }
   }
 
@@ -206,45 +225,8 @@ class _AccountKeyLoginPageState extends State<AccountKeyLoginPage> with LoginMan
     setState(() {
       _isLoggingIn = false;
     });
-    
-    // Start post-login flow instead of going directly to home
-    if (mounted) {
-      _startPostLoginFlow();
-    }
-  }
-  
-  /// Start the post-login flow
-  Future<void> _startPostLoginFlow() async {
-    try {
-      // Import and use LoginFlowManager
-      final flowManager = await _getLoginFlowManager();
-      if (flowManager != null) {
-        await flowManager.startPostLoginFlow(context, isNewAccount: false);
-      } else {
-        // Fallback: go directly to home
-        if (mounted) {
-          OXNavigator.popToRoot(context);
-        }
-      }
-    } catch (e) {
-      debugPrint('Error starting post-login flow: $e');
-      // Fallback: go directly to home
-      if (mounted) {
-        OXNavigator.popToRoot(context);
-      }
-    }
-  }
-  
-  /// Get LoginFlowManager instance
-  Future<dynamic> _getLoginFlowManager() async {
-    try {
-      // Use dynamic import to avoid circular dependency
-      final flowManager = await OXModuleService.invoke('ox_login', 'getLoginFlowManager', []);
-      return flowManager;
-    } catch (e) {
-      debugPrint('Error getting LoginFlowManager: $e');
-      return null;
-    }
+
+    loginHandler();
   }
 
   @override
