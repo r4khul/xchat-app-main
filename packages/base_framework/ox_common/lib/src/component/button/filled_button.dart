@@ -13,6 +13,7 @@ class CLFilledButton extends StatelessWidget {
     this.padding,
     this.onTap,
     required this.useThemeGradient,
+    this.backgroundColor,
   });
 
   final Widget child;
@@ -20,6 +21,7 @@ class CLFilledButton extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
   final VoidCallback? onTap;
   final bool useThemeGradient;
+  final Color? backgroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +32,7 @@ class CLFilledButton extends StatelessWidget {
           padding: padding,
           minimumSize: minimumSize,
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          backgroundColor: useThemeGradient ? Colors.transparent : null,
+          backgroundColor: backgroundColor ?? (useThemeGradient ? Colors.transparent : null),
           backgroundBuilder: (BuildContext context, Set<WidgetState> states, Widget? innerChild) {
             if (!useThemeGradient) return innerChild ?? SizedBox();
 
@@ -61,6 +63,7 @@ class CLFilledButton extends StatelessWidget {
       );
     } else {
       return CLCupertinoButton.filled(
+        color: backgroundColor,
         padding: padding,
         minSize: minimumSize?.height,
         gradient: useThemeGradient ? CLThemeData.themeGradientOf(context) : null,

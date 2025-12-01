@@ -32,6 +32,15 @@ class CLThemeData {
     }
   }
 
+  static Gradient pageBgThemeGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [
+      Color(0xFFC084FC),
+      Color(0xFF818CF8),
+    ],
+  );
+
   static Gradient themeGradientLight = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,

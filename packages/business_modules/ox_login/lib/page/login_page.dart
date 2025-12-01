@@ -27,7 +27,12 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return CLScaffold(
-      body: SafeArea(child: _body()),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: CLThemeData.pageBgThemeGradient,
+        ),
+        child: SafeArea(child: _body()),
+      ),
     );
   }
 
@@ -103,14 +108,17 @@ class _LoginPageState extends State<LoginPage> {
     onTap: _quickStart,
     height: 48.py,
     expanded: true,
+    backgroundColor: ColorToken.white.of(context),
+    foregroundColor: ColorToken.xChat.of(context),
     text: Localized.text('ox_login.get_started'),
   );
 
   /// Secondary action: For users with existing Nostr account
-  Widget _buildExistingAccountButton() => CLButton.tonal(
+  Widget _buildExistingAccountButton() => CLButton.text(
     onTap: _login,
     height: 48.py,
     expanded: true,
+    color: ColorToken.white.of(context),
     text: Localized.text('ox_login.have_account'),
   );
 

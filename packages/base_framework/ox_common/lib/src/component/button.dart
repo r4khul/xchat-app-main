@@ -78,10 +78,13 @@ class CLButton {
     double? width,
     double? height,
     EdgeInsetsGeometry? padding,
+    Color? backgroundColor,
+    Color? foregroundColor,
   }) {
+    final isUseThemeGradient = backgroundColor == null ? isDefaultUseThemeGradient : false;
     child ??= _defaultText(
       text ?? '',
-      isDefaultUseThemeGradient ? Colors.white : null,
+      foregroundColor ?? (isUseThemeGradient ? Colors.white : null),
     );
     child = _alignIfNeeded(child, alignment);
 
@@ -94,7 +97,8 @@ class CLButton {
       CLFilledButton(
         minimumSize: minimumSize,
         padding: padding,
-        useThemeGradient: isDefaultUseThemeGradient,
+        useThemeGradient: isUseThemeGradient,
+        backgroundColor: backgroundColor,
         onTap: onTap,
         child: child,
       ),

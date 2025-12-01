@@ -103,7 +103,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
   }
 
   Widget _buildIndicator() {
-    final activeColor = ColorToken.onPrimaryContainer.of(context);
+    final activeColor = ColorToken.white.of(context);
     final inactiveColor = activeColor.withValues(alpha: 0.15);
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -164,6 +164,7 @@ class _ParallaxPage extends StatelessWidget {
                 offset: Offset(delta * width * 0.4 * offsetScale, 0),
                 child: CLText.headlineSmall(
                   item.title,
+                  colorToken: ColorToken.white,
                   maxLines: 1,
                 ),
               ),
@@ -171,7 +172,7 @@ class _ParallaxPage extends StatelessWidget {
                 offset: Offset(delta * width * 0.4 * offsetScale, 0),
                 child: CLText.titleMedium(
                   item.text,
-                  colorToken: ColorToken.onSurface,
+                  colorToken: ColorToken.white,
                   textAlign: TextAlign.center,
                   maxLines: 2,
                 ),
