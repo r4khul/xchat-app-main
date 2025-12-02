@@ -224,10 +224,10 @@ class SettingSliderState extends State<SettingSlider> {
                   margin: EdgeInsets.symmetric(horizontal: CLLayout.horizontalPadding),
                   child: hasCircle
                     ? ValueListenableBuilder(
-                        valueListenable: userNotifier.avatarUrl$,
-                        builder: (context, avatarUrl, _) {
+                        valueListenable: userNotifier.userInfo$,
+                        builder: (context, userInfo, _) {
                           return OXUserAvatar(
-                            imageUrl: avatarUrl,
+                            user: userInfo,
                             size: 60.px,
                           );
                         }

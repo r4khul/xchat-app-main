@@ -47,9 +47,6 @@ class LoginUserNotifier {
   ValueNotifier<String> get bio$ => userInfo$
       .map((userInfo) => userInfo?.about ?? '');
 
-  ValueNotifier<String> get avatarUrl$ => userInfo$
-      .map((userInfo) => userInfo?.picture ?? '');
-
   void updateUserSource(ValueNotifier<UserDBISAR?>? source) {
     if (_source != null) {
       _source!.removeListener(_onSrc);

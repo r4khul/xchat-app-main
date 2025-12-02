@@ -83,12 +83,12 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
     return Column(
       children: [
         ValueListenableBuilder(
-          valueListenable: userNotifier.avatarUrl$,
-          builder: (context, avatarUrl, _) {
+          valueListenable: userNotifier.userInfo$,
+          builder: (context, userInfo, _) {
             return Hero(
               tag: 'profile_avatar_hero',
               child: OXUserAvatar(
-                imageUrl: avatarUrl,
+                user: userInfo,
                 size: 80.px,
                 onTap: editPhotoOnTap,
               ),

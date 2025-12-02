@@ -56,7 +56,6 @@ class HomeHeaderComponents {
   GestureTapCallback? joinOnTap;
   GestureTapCallback? paidOnTap;
 
-  LoginUserNotifier user = LoginUserNotifier.instance;
   ValueNotifier<bool> isShowExtendBody$;
   Duration extendBodyDuration;
 
@@ -131,10 +130,10 @@ class HomeHeaderComponents {
       child: Padding(
         padding: EdgeInsets.all(12.px),
         child: ValueListenableBuilder(
-          valueListenable: user.avatarUrl$,
-          builder: (_, avatarUrl, __) {
+          valueListenable: LoginUserNotifier.instance.userInfo$,
+          builder: (_, userInfo, __) {
             return OXUserAvatar(
-              imageUrl: avatarUrl,
+              user: userInfo,
               size: 32.px,
             );
           },
