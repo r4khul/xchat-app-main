@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/navigator/navigator.dart';
+import 'package:ox_common/page/circle_introduction_page.dart';
 import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/widgets/common_loading.dart';
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import '../controller/onboarding_controller.dart';
-import 'nostr_relay_introduction_page.dart';
 
 class CircleSelectionPage extends StatefulWidget {
   const CircleSelectionPage({
@@ -266,7 +266,7 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
   void _showLearnMore() {
     OXNavigator.pushPage(
       context,
-          (context) => const NostrRelayIntroductionPage(),
+          (context) => const CircleIntroductionPage(),
       type: OXPushPageType.present,
     );
   }
