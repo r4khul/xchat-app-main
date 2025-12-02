@@ -306,11 +306,17 @@ class CLCachedNetworkImage extends StatelessWidget {
   /// How to inscribe the image into the space during layout
   final BoxFit? fit;
 
-  /// The width of the image
+  /// The width of the widget
   final double? width;
 
-  /// The height of the image
+  /// The height of the widget
   final double? height;
+
+  /// The width of the image
+  final int? imageWidth;
+
+  /// The height of the image
+  final int? imageHeight;
 
   /// Widget displayed while the image is loading
   final PlaceholderWidgetBuilder? placeholder;
@@ -341,6 +347,8 @@ class CLCachedNetworkImage extends StatelessWidget {
     this.fit,
     this.width,
     this.height,
+    this.imageWidth,
+    this.imageHeight,
     this.placeholder,
     this.errorWidget,
     this.useCircleCache = true,
@@ -384,6 +392,8 @@ class CLCachedNetworkImage extends StatelessWidget {
         url: imageUrl,
         decryptKey: decryptKey,
         decryptNonce: decryptNonce,
+        cacheWidth: imageWidth,
+        cacheHeight: imageHeight,
       ),
       fit: fit,
       width: width,
@@ -402,13 +412,13 @@ class CLCachedNetworkImage extends StatelessWidget {
 
     // Calculate memory cache dimensions for better performance
     int? memCacheWidth;
-    if (width != null && width != double.infinity && width!.isValid()) {
-      memCacheWidth = (width! * ratio).round();
+    if (imageWidth != null && imageWidth != double.infinity && imageWidth!.isValid()) {
+      memCacheWidth = (imageWidth! * ratio).round();
     }
 
     int? memCacheHeight;
-    if (height != null && height != double.infinity && height!.isValid()) {
-      memCacheHeight = (height! * ratio).round();
+    if (imageHeight != null && imageHeight != double.infinity && imageHeight!.isValid()) {
+      memCacheHeight = (imageHeight! * ratio).round();
     }
 
     // Generate cache key and disk cache dimensions for thumbnails

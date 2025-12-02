@@ -27,7 +27,6 @@ export 'src/widgets/message/message.dart';
 export 'src/widgets/message/message_status.dart';
 export 'src/widgets/message/system_message.dart';
 export 'src/widgets/message/text_message.dart';
-export 'src/widgets/message/user_avatar.dart';
 export 'src/widgets/message/user_name.dart';
 export 'src/widgets/pop_menu/custom_pop_up_menu.dart';
 export 'src/widgets/typing_indicator.dart';

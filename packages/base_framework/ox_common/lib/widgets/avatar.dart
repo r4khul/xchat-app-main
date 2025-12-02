@@ -152,20 +152,6 @@ class OXUserAvatarState extends State<OXUserAvatar> {
   @override
   Widget build(BuildContext context) {
     final imageUrl = widget.user?.picture ?? widget.imageUrl ?? '';
-    if (OXUserAvatar.isClientAvatar(imageUrl)) {
-      final npub = imageUrl.replaceFirst(OXUserAvatar._clientAvatarPrefix, '');
-      if (npub.isNotEmpty) {
-        return ClientAvatar(
-          npub: npub,
-          size: widget.size,
-          isCircular: widget.isCircular,
-          isClickable: widget.onTap != null || widget.isClickable,
-          onTap: userAvatarOnTap,
-          onLongPress: widget.onLongPress,
-        );
-      }
-    }
-
     final displayName = widget.user?.getUserShowName();
     final pubkey = widget.user?.pubKey;
     return BaseAvatarWidget(
