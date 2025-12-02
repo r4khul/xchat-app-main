@@ -149,15 +149,10 @@ class _SessionListWidgetState extends State<SessionListWidget> {
             mainAxisSize: MainAxisSize.min,
             children: [
               // Empty state icon using Material Icons
-              Icon(
-                Icons.forum_outlined,
+              CLIcon(
+                icon: Icons.forum_outlined,
                 size: 120.px,
-                color: PlatformStyle.isUseMaterial
-                    ? ColorToken.primary.of(context)
-                    : CupertinoTheme.of(context)
-                        .textTheme
-                        .actionSmallTextStyle
-                        .color,
+                color: ColorToken.xChat.of(context),
               ),
 
               SizedBox(height: 24.px),
