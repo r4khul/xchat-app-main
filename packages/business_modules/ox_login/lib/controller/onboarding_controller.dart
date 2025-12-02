@@ -8,6 +8,7 @@ import 'package:ox_common/login/login_models.dart';
 import 'package:ox_common/utils/circle_join_utils.dart';
 import 'package:ox_common/upload/upload_utils.dart';
 import 'package:ox_common/utils/file_server_helper.dart';
+import 'package:ox_common/repository/file_server_repository.dart';
 
 class OnboardingResult {
   final bool success;
@@ -31,7 +32,8 @@ class OnboardingController with LoginManagerObserver {
   File? avatarFile;
 
   String get fullName {
-    return '$_firstName$_lastName';
+    if (_lastName.isEmpty) return _firstName;
+    return '$_firstName $_lastName';
   }
 
   Future<bool> Function()? loginAction;
@@ -67,10 +69,16 @@ extension OnboardingControllerProfileEx on OnboardingController {
 
 extension OnboardingControllerCircleEx on OnboardingController {
   Future<OnboardingResult> joinPublicCircle() async {
-    return _joinCircle(
+    final result = await _joinCircle(
       relayUrl: 'wss://relay.0xchat.com',
       forceJoin: true,
     );
+
+    if (result.success) {
+      await _setupDefaultFileServer();
+    }
+
+    return result;
   }
 
   /// Join private/self-hosted circle with normal network checks
@@ -160,5 +168,21 @@ extension _NewAccountEx on OnboardingController {
       fileServer: FileServerHelper.defaultFileServer,
     );
   }
-}
 
+  Future<void> _setupDefaultFileServer() async {
+    final circle = LoginManager.instance.currentCircle;
+    if (circle == null) return;
+
+    final defaultServer = FileServerHelper.defaultFileServer;
+    final repo = FileServerRepository(DBISAR.sharedInstance.isar);
+
+    final existingServers = await repo.watchAll().first;
+    final serverExists = existingServers.any((e) => e.url == defaultServer.url);
+
+    if (!serverExists) {
+      await repo.create(defaultServer);
+    }
+
+    await circle.updateSelectedFileServerUrl(defaultServer.url);
+  }
+}

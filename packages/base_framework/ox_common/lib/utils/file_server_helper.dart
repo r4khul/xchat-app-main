@@ -13,6 +13,7 @@ class FileServerHelper {
       FileServerModel(
         id: 0,
         type: FileServerType.blossom,
+        name: 'blossom.band',
         url: 'https://blossom.band',
       );
 
