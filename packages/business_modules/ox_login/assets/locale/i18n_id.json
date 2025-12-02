@@ -74,5 +74,8 @@
   "how_to_use_title": "Cara Menggunakan",
   "how_to_use_step_1": "Masukkan kunci pribadi nsec Anda untuk login langsung",
   "how_to_use_step_2": "Atau gunakan bunker:// URI untuk login melalui penandatangan jarak jauh",
-  "how_to_use_step_3": "Aplikasi akan terhubung dengan aman dan mengautentikasi Anda"
+  "how_to_use_step_3": "Aplikasi akan terhubung dengan aman dan mengautentikasi Anda",
+  
+  "select_avatar": "Pilih Avatar",
+  "camera": "Kamera"
 }

@@ -7,6 +7,7 @@ import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/login/login_models.dart';
 import 'package:ox_common/utils/circle_join_utils.dart';
 import 'package:ox_common/upload/upload_utils.dart';
+import 'package:ox_common/utils/file_server_helper.dart';
 
 class OnboardingResult {
   final bool success;
@@ -156,6 +157,7 @@ extension _NewAccountEx on OnboardingController {
       fileType: FileType.image,
       file: avatarFile,
       filename: 'avatar_${DateTime.now().millisecondsSinceEpoch}.png',
+      fileServer: FileServerHelper.defaultFileServer,
     );
   }
 }

@@ -74,5 +74,8 @@
   "how_to_use_title": "Como usar",
   "how_to_use_step_1": "Digite sua chave privada nsec para login direto",
   "how_to_use_step_2": "Ou use bunker:// URI para login com assinante remoto",
-  "how_to_use_step_3": "O aplicativo conectará com segurança e autenticará você"
+  "how_to_use_step_3": "O aplicativo conectará com segurança e autenticará você",
+  
+  "select_avatar": "Selecionar Avatar",
+  "camera": "Câmera"
 }

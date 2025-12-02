@@ -74,5 +74,8 @@
   "how_to_use_title": "Hoe te gebruiken",
   "how_to_use_step_1": "Voer je nsec privésleutel in voor directe login",
   "how_to_use_step_2": "Of gebruik bunker:// URI voor login via externe ondertekenaar",
-  "how_to_use_step_3": "De app maakt veilig verbinding en authenticeert je"
+  "how_to_use_step_3": "De app maakt veilig verbinding en authenticeert je",
+  
+  "select_avatar": "Avatar selecteren",
+  "camera": "Camera"
 }

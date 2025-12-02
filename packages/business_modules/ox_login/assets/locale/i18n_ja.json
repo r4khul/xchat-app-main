@@ -74,5 +74,8 @@
   "how_to_use_title": "使用方法",
   "how_to_use_step_1": "直接ログインのためにnsec秘密鍵を入力",
   "how_to_use_step_2": "またはリモート署名者ログインのためにbunker:// URIを使用",
-  "how_to_use_step_3": "アプリは安全に接続し、あなたを認証します"
+  "how_to_use_step_3": "アプリは安全に接続し、あなたを認証します",
+  
+  "select_avatar": "アバターを選択",
+  "camera": "カメラ"
 }

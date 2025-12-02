@@ -74,5 +74,8 @@
   "how_to_use_title": "Wie man es verwendet",
   "how_to_use_step_1": "Geben Sie Ihren nsec-Privatschlüssel für die direkte Anmeldung ein",
   "how_to_use_step_2": "Oder verwenden Sie bunker:// URI für die Remote-Signer-Anmeldung",
-  "how_to_use_step_3": "Die App verbindet sich sicher und authentifiziert Sie"
+  "how_to_use_step_3": "Die App verbindet sich sicher und authentifiziert Sie",
+  
+  "select_avatar": "Avatar auswählen",
+  "camera": "Kamera"
 }

@@ -9,6 +9,13 @@ import 'package:ox_localizable/ox_localizable.dart';
 class FileServerHelper {
   FileServerHelper._();
 
+  static FileServerModel get defaultFileServer =>
+      FileServerModel(
+        id: 0,
+        type: FileServerType.blossom,
+        url: 'https://blossom.band',
+      );
+
   /// Returns the current circle's selected [FileServerModel] asynchronously.
   /// Returns `null` when no server is configured.
   static Future<FileServerModel?> currentFileServer() async {

@@ -74,5 +74,8 @@
   "how_to_use_title": "Cómo usar",
   "how_to_use_step_1": "Ingresa tu clave privada nsec para inicio de sesión directo",
   "how_to_use_step_2": "O usa bunker:// URI para inicio de sesión con firmante remoto",
-  "how_to_use_step_3": "La aplicación se conectará de forma segura y te autenticará"
+  "how_to_use_step_3": "La aplicación se conectará de forma segura y te autenticará",
+  
+  "select_avatar": "Seleccionar avatar",
+  "camera": "Cámara"
 }

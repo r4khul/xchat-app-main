@@ -74,5 +74,8 @@
   "how_to_use_title": "Comment utiliser",
   "how_to_use_step_1": "Entrez votre clé privée nsec pour une connexion directe",
   "how_to_use_step_2": "Ou utilisez bunker:// URI pour une connexion via signataire distant",
-  "how_to_use_step_3": "L'application se connectera en toute sécurité et vous authentifiera"
+  "how_to_use_step_3": "L'application se connectera en toute sécurité et vous authentifiera",
+  
+  "select_avatar": "Sélectionner un avatar",
+  "camera": "Caméra"
 }

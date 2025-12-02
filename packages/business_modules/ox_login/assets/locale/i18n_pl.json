@@ -74,5 +74,8 @@
   "how_to_use_title": "Jak używać",
   "how_to_use_step_1": "Wprowadź swój klucz prywatny nsec do bezpośredniego logowania",
   "how_to_use_step_2": "Lub użyj bunker:// URI do logowania przez zdalnego sygnatariusza",
-  "how_to_use_step_3": "Aplikacja bezpiecznie się połączy i uwierzytelni Cię"
+  "how_to_use_step_3": "Aplikacja bezpiecznie się połączy i uwierzytelni Cię",
+  
+  "select_avatar": "Wybierz awatar",
+  "camera": "Aparat"
 }

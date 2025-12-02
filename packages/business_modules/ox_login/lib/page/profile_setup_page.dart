@@ -1,9 +1,20 @@
+import 'dart:io';
+
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/navigator/navigator.dart';
+import 'package:ox_common/ox_common.dart';
 import 'package:ox_common/utils/adapt.dart';
+import 'package:ox_common/utils/image_picker_utils.dart';
+import 'package:ox_common/utils/permission_utils.dart';
+import 'package:ox_common/utils/platform_utils.dart';
+import 'package:ox_common/utils/file_utils.dart';
+import 'package:ox_common/utils/string_utils.dart';
 import 'package:ox_common/widgets/avatar.dart';
+import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_localizable/ox_localizable.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../controller/onboarding_controller.dart';
 import 'circle_selection_page.dart';
 
@@ -14,6 +25,8 @@ class ProfileSetupPage extends StatefulWidget {
   State<ProfileSetupPage> createState() => _ProfileSetupPageState();
 }
 
+enum _AvatarAction { gallery, camera }
+
 class _ProfileSetupPageState extends State<ProfileSetupPage> {
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
@@ -21,6 +34,7 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
   final OnboardingController _onboardingController = OnboardingController(isCreateNewAccount: true);
   
   bool _hasValidInput = false;
+  File? _avatarFile;
 
   @override
   void initState() {
@@ -99,34 +113,157 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
 
   Widget _buildAvatarPreview() {
     return Center(
-      child: Column(
-        children: [
-          Container(
-            width: 100.px,
-            height: 100.px,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: ColorToken.primary.of(context).withValues(alpha: 0.2),
-                  blurRadius: 20,
-                  spreadRadius: 2,
+      child: GestureDetector(
+        onTap: _showAvatarPicker,
+        child: Container(
+          width: 80.px,
+          height: 80.px,
+          child: Stack(
+            children: [
+              OXUserAvatar(
+                imageUrl: _avatarFile?.path,
+                size: 80.px,
+                isFile: true,
+              ),
+              Positioned(
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  width: 24.px,
+                  height: 24.px,
+                  decoration: BoxDecoration(
+                    color: ColorToken.primary.of(context),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: ColorToken.surface.of(context),
+                      width: 2,
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.camera_alt,
+                    size: 14.px,
+                    color: ColorToken.onPrimary.of(context),
+                  ),
                 ),
-              ],
-            ),
-            child: OXUserAvatar(
-              imageUrl: _onboardingController.avatarFile?.path,
-              size: 100.px,
-            ),
+              ),
+            ],
           ),
-          SizedBox(height: 12.px),
-          CLText.bodySmall(
-            Localized.text('ox_login.profile_setup_avatar_hint'),
-            colorToken: ColorToken.onSurfaceVariant,
-          ),
-        ],
+        ),
       ),
     );
+  }
+
+  Future<void> _showAvatarPicker() async {
+    final result = await CLPicker.show<_AvatarAction>(
+      context: context,
+      title: Localized.text('ox_login.select_avatar'),
+      items: [
+        CLPickerItem(
+          label: 'str_album'.commonLocalized(),
+          value: _AvatarAction.gallery,
+        ),
+        if (PlatformUtils.isMobile)
+          CLPickerItem(
+            label: Localized.text('ox_login.camera'),
+            value: _AvatarAction.camera,
+          ),
+      ],
+    );
+
+    if (result != null) {
+      await _handleAvatarAction(result);
+    }
+  }
+
+  Future<void> _handleAvatarAction(_AvatarAction action) async {
+    File? imgFile;
+    switch (action) {
+      case _AvatarAction.gallery:
+        imgFile = await _openGallery();
+        break;
+      case _AvatarAction.camera:
+        imgFile = await _openCamera();
+        break;
+    }
+
+    if (imgFile != null) {
+      setState(() {
+        _avatarFile = imgFile;
+      });
+      _onboardingController.setAvatarFile(imgFile);
+    }
+  }
+
+  Future<File?> _openGallery() async {
+    File? imgFile;
+    DeviceInfoPlugin plugin = DeviceInfoPlugin();
+    bool storagePermission = false;
+
+    if (Platform.isAndroid && (await plugin.androidInfo).version.sdkInt >= 34) {
+      Map<String, bool> result = await OXCommon.request34MediaPermission(1);
+      bool readMediaImagesGranted = result['READ_MEDIA_IMAGES'] ?? false;
+      bool readMediaVisualUserSelectedGranted = result['READ_MEDIA_VISUAL_USER_SELECTED'] ?? false;
+
+      if (readMediaImagesGranted) {
+        storagePermission = true;
+      } else if (readMediaVisualUserSelectedGranted) {
+        final filePaths = await OXCommon.select34MediaFilePaths(1);
+        if (filePaths.isNotEmpty) {
+          return File(filePaths[0]);
+        }
+        return null;
+      }
+    } else {
+      storagePermission = await PermissionUtils.getPhotosPermission(context);
+    }
+
+    if (!storagePermission) return null;
+
+    try {
+      if (PlatformUtils.isDesktop) {
+        List<Media>? list = await FileUtils.importClientFile(1);
+        if (list != null && list.isNotEmpty) {
+          imgFile = File(list[0].path ?? '');
+        }
+      } else {
+        final res = await ImagePickerUtils.pickerPaths(
+          galleryMode: GalleryMode.image,
+          selectCount: 1,
+          showGif: false,
+          compressSize: 2048,
+        );
+        if (res.isNotEmpty) {
+          imgFile = (res[0].path == null) ? null : File(res[0].path ?? '');
+        }
+      }
+    } catch (e) {
+      CommonToast.instance.show(context, 'Failed to select image: $e');
+    }
+
+    return imgFile;
+  }
+
+  Future<File?> _openCamera() async {
+    File? imgFile;
+    Map<Permission, PermissionStatus> statuses = await [Permission.camera].request();
+
+    if (statuses[Permission.camera]?.isGranted ?? false) {
+      try {
+        Media? res = await ImagePickerUtils.openCamera(
+          cameraMimeType: CameraMimeType.photo,
+          compressSize: 1024,
+        );
+        if (res != null) {
+          imgFile = File(res.path ?? '');
+        }
+      } catch (e) {
+        CommonToast.instance.show(context, 'Failed to take photo: $e');
+      }
+    } else {
+      PermissionUtils.showPermission(context, statuses);
+    }
+
+    return imgFile;
   }
 
   Widget _buildNameInput() {

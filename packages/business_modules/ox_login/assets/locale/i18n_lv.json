@@ -74,5 +74,8 @@
   "how_to_use_title": "Kā lietot",
   "how_to_use_step_1": "Ievadiet savu nsec privāto atslēgu tiešai pieteikšanās",
   "how_to_use_step_2": "Vai izmantojiet bunker:// URI pieteikšanās caur attālo parakstītāju",
-  "how_to_use_step_3": "Lietotne droši izveidos savienojumu un autentificēs jūs"
+  "how_to_use_step_3": "Lietotne droši izveidos savienojumu un autentificēs jūs",
+  
+  "select_avatar": "Izvēlēties avataru",
+  "camera": "Kamera"
 }

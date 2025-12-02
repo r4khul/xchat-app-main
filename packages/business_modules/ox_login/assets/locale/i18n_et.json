@@ -74,5 +74,8 @@
   "how_to_use_title": "Kuidas kasutada",
   "how_to_use_step_1": "Sisesta oma nsec privaatvõti otseseks sisselogimiseks",
   "how_to_use_step_2": "Või kasuta bunker:// URI-d kaugallkirjastaja kaudu sisselogimiseks",
-  "how_to_use_step_3": "Rakendus ühendub turvaliselt ja autentib sind"
+  "how_to_use_step_3": "Rakendus ühendub turvaliselt ja autentib sind",
+  
+  "select_avatar": "Vali avatar",
+  "camera": "Kaamera"
 }

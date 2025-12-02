@@ -74,5 +74,8 @@
   "how_to_use_title": "如何使用",
   "how_to_use_step_1": "輸入您的 nsec 私鑰進行直接登入",
   "how_to_use_step_2": "或使用 bunker:// URI 進行遠端簽名器登入",
-  "how_to_use_step_3": "應用程式將安全連線並驗證您"
+  "how_to_use_step_3": "應用程式將安全連線並驗證您",
+  
+  "select_avatar": "選擇頭像",
+  "camera": "相機"
 }

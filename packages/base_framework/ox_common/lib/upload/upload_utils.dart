@@ -21,18 +21,18 @@ export 'file_type.dart';
 class UploadUtils {
   static Future<UploadResult> uploadFile({
     BuildContext? context,
-    params,
     String? encryptedKey,
     String? encryptedNonce,
     required File file,
     required String filename,
     required FileType fileType,
+    FileServerModel? fileServer,
     bool showLoading = false,
     bool autoStoreImage = true,
     Function(double progress)? onProgress,
   }) async {
     File uploadFile = file;
-    final fileServer = await FileServerHelper.currentFileServer();
+    fileServer ??= await FileServerHelper.currentFileServer();
     if (fileServer == null) {
       return UploadResult.error('No file server configured.');
     }

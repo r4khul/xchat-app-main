@@ -74,5 +74,8 @@
   "how_to_use_title": "Nasıl Kullanılır",
   "how_to_use_step_1": "Doğrudan giriş için nsec özel anahtarınızı girin",
   "how_to_use_step_2": "Veya uzak imzalayıcı girişi için bunker:// URI kullanın",
-  "how_to_use_step_3": "Uygulama güvenli bir şekilde bağlanacak ve sizi doğrulayacak"
+  "how_to_use_step_3": "Uygulama güvenli bir şekilde bağlanacak ve sizi doğrulayacak",
+  
+  "select_avatar": "Avatar seç",
+  "camera": "Kamera"
 }

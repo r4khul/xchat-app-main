@@ -74,5 +74,8 @@
   "how_to_use_title": "사용 방법",
   "how_to_use_step_1": "직접 로그인을 위해 nsec 개인키 입력",
   "how_to_use_step_2": "또는 원격 서명자 로그인을 위해 bunker:// URI 사용",
-  "how_to_use_step_3": "앱이 안전하게 연결하고 여러분을 인증합니다"
+  "how_to_use_step_3": "앱이 안전하게 연결하고 여러분을 인증합니다",
+  
+  "select_avatar": "아바타 선택",
+  "camera": "카메라"
 }

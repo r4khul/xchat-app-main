@@ -74,5 +74,8 @@
   "how_to_use_title": "Használat",
   "how_to_use_step_1": "Adja meg nsec privát kulcsát a közvetlen bejelentkezéshez",
   "how_to_use_step_2": "Vagy használja a bunker:// URI-t a távoli aláírón keresztüli bejelentkezéshez",
-  "how_to_use_step_3": "Az alkalmazás biztonságosan csatlakozik és hitelesíti Önt"
+  "how_to_use_step_3": "Az alkalmazás biztonságosan csatlakozik és hitelesíti Önt",
+  
+  "select_avatar": "Avatar kiválasztása",
+  "camera": "Kamera"
 }

@@ -74,5 +74,8 @@
   "how_to_use_title": "Hur man använder",
   "how_to_use_step_1": "Ange din nsec privata nyckel för direkt inloggning",
   "how_to_use_step_2": "Eller använd bunker:// URI för inloggning via fjärrsignerare",
-  "how_to_use_step_3": "Appen ansluter säkert och autentiserar dig"
+  "how_to_use_step_3": "Appen ansluter säkert och autentiserar dig",
+  
+  "select_avatar": "Välj avatar",
+  "camera": "Kamera"
 }

@@ -74,5 +74,8 @@
   "how_to_use_title": "Jak používat",
   "how_to_use_step_1": "Zadejte svůj soukromý klíč nsec pro přímé přihlášení",
   "how_to_use_step_2": "Nebo použijte bunker:// URI pro přihlášení přes vzdáleného podepisujícího",
-  "how_to_use_step_3": "Aplikace se bezpečně připojí a ověří vás"
+  "how_to_use_step_3": "Aplikace se bezpečně připojí a ověří vás",
+  
+  "select_avatar": "Vybrat avatar",
+  "camera": "Kamera"
 }

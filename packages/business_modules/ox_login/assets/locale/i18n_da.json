@@ -74,5 +74,8 @@
   "how_to_use_title": "Sådan bruges det",
   "how_to_use_step_1": "Indtast din nsec private nøgle til direkte login",
   "how_to_use_step_2": "Eller brug bunker:// URI til login via fjernunderskriver",
-  "how_to_use_step_3": "Appen opretter sikker forbindelse og autentificerer dig"
+  "how_to_use_step_3": "Appen opretter sikker forbindelse og autentificerer dig",
+  
+  "select_avatar": "Vælg avatar",
+  "camera": "Kamera"
 }

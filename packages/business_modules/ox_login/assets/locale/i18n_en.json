@@ -74,5 +74,8 @@
   "how_to_use_title": "How to Use",
   "how_to_use_step_1": "Enter your nsec private key for direct login",
   "how_to_use_step_2": "Or use a bunker:// URI for remote signer login",
-  "how_to_use_step_3": "The app will securely connect and authenticate you"
+  "how_to_use_step_3": "The app will securely connect and authenticate you",
+  
+  "select_avatar": "Select Avatar",
+  "camera": "Camera"
 }

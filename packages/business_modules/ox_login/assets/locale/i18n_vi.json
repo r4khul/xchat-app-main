@@ -74,5 +74,8 @@
   "how_to_use_title": "Cách sử dụng",
   "how_to_use_step_1": "Nhập khóa riêng nsec để đăng nhập trực tiếp",
   "how_to_use_step_2": "Hoặc sử dụng bunker:// URI để đăng nhập qua người ký từ xa",
-  "how_to_use_step_3": "Ứng dụng sẽ kết nối an toàn và xác thực bạn"
+  "how_to_use_step_3": "Ứng dụng sẽ kết nối an toàn và xác thực bạn",
+  
+  "select_avatar": "Chọn avatar",
+  "camera": "Máy ảnh"
 }

@@ -74,5 +74,8 @@
   "how_to_use_title": "Come usare",
   "how_to_use_step_1": "Inserisci la tua chiave privata nsec per l'accesso diretto",
   "how_to_use_step_2": "O usa bunker:// URI per l'accesso tramite firmatario remoto",
-  "how_to_use_step_3": "L'app si connetterà in sicurezza e ti autenticherà"
+  "how_to_use_step_3": "L'app si connetterà in sicurezza e ti autenticherà",
+  
+  "select_avatar": "Seleziona avatar",
+  "camera": "Fotocamera"
 }
