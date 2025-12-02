@@ -211,11 +211,15 @@ class _SmartGroupAvatarState extends State<SmartGroupAvatar> {
   }
 
   Widget _buildDefaultAvatar() {
+    final groupName = widget.group?.name ?? '';
+    final groupId = widget.groupId ?? widget.group?.privateGroupId ?? '';
     return BaseAvatarWidget(
       defaultImageName: _defaultGroupImageName,
       size: effectiveSize,
       imageUrl: '',
       isCircular: widget.isCircular,
+      displayName: groupName,
+      pubkey: groupId,
     );
   }
 } 

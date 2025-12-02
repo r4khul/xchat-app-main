@@ -2,12 +2,13 @@ import 'dart:async';
 import 'dart:io';
 import 'package:chatcore/chat-core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:ox_common/component.dart';
+import 'package:ox_common/src/component/gradient_token.dart';
 import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/utils/string_utils.dart';
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_module_service/ox_module_service.dart';
+import 'package:ox_common/business_interface/ox_chat/utils.dart';
 
 import 'avatar_generator.dart';
 
@@ -16,19 +17,25 @@ class BaseAvatarWidget extends StatelessWidget {
     required this.imageUrl,
     required this.defaultImageName,
     required this.size,
+    this.isFile = false,
     this.isCircular = false,
     this.isClickable = false,
     this.onTap,
     this.onLongPress,
+    this.displayName,
+    this.pubkey,
   });
 
   final String imageUrl;
   final String defaultImageName;
   final double size;
+  final bool isFile;
   final bool isCircular;
   final bool isClickable;
   final GestureTapCallback? onTap;
   final GestureLongPressCallback? onLongPress;
+  final String? displayName;
+  final String? pubkey;
 
   @override
   Widget build(BuildContext context) {
@@ -45,28 +52,61 @@ class BaseAvatarWidget extends StatelessWidget {
 
 
   Widget _buildAvatar() {
-    if (imageUrl.isNotEmpty) {
-      return CLCachedNetworkImage(
-        errorWidget: (context, url, error) => _defaultImage(defaultImageName, size),
-        placeholder: (context, url) => _defaultImage(defaultImageName, size),
-        fit: BoxFit.cover,
-        imageUrl: imageUrl,
+    if (imageUrl.isEmpty) return _defaultImage(defaultImageName, size);
+
+    if (isFile) {
+      final file = File(imageUrl);
+      return Image.file(
+        file,
         width: size,
         height: size,
-        isThumb: true,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => _defaultImage(defaultImageName, size),
       );
-    } else {
-      return _defaultImage(defaultImageName, size);
     }
+
+    // Network image - use cached network image
+    return CLCachedNetworkImage(
+      errorWidget: (context, url, error) => _defaultImage(defaultImageName, size),
+      placeholder: (context, url) => _defaultImage(defaultImageName, size),
+      fit: BoxFit.cover,
+      imageUrl: imageUrl,
+      width: size,
+      height: size,
+      isThumb: true,
+    );
   }
 
-  Image _defaultImage(String imageName, double size) => Image.asset(
-    'assets/images/$imageName',
-    fit: BoxFit.contain,
-    width: size,
-    height: size,
-    package: 'ox_common',
-  );
+  Widget _defaultImage(String imageName, double size) {
+    // If displayName is provided and not empty, use custom avatar generator
+    if (displayName != null && displayName!.trim().isNotEmpty) {
+      final name = displayName!.trim();
+      final validName = _extractValidName(name);
+      if (validName.isNotEmpty) {
+        final identifier = pubkey ?? displayName ?? '';
+        return _DefaultAvatarGenerator(
+          displayName: validName,
+          identifier: identifier,
+          size: size,
+        );
+      }
+    }
+
+    // Fallback to original default image
+    return Image.asset(
+      'assets/images/$imageName',
+      fit: BoxFit.contain,
+      width: size,
+      height: size,
+      package: 'ox_common',
+    );
+  }
+
+  String _extractValidName(String name) {
+    // Remove emojis and special characters, keep letters, numbers, and spaces
+    final regex = RegExp(r'[^\p{L}\p{N}\s]', unicode: true);
+    return name.replaceAll(regex, '').trim();
+  }
 }
 
 class OXUserAvatar extends StatefulWidget {
@@ -77,6 +117,7 @@ class OXUserAvatar extends StatefulWidget {
     this.imageUrl,
     this.chatId,
     double? size,
+    this.isFile = false,
     this.isCircular = true,
     this.isClickable = false,
     this.onReturnFromNextPage,
@@ -89,6 +130,7 @@ class OXUserAvatar extends StatefulWidget {
   final String? imageUrl;
   final String? chatId;
   final double size;
+  final bool isFile;
   final bool isCircular;
   final bool isClickable;
   final VoidCallback? onReturnFromNextPage;
@@ -124,14 +166,19 @@ class OXUserAvatarState extends State<OXUserAvatar> {
       }
     }
 
+    final displayName = widget.user?.getUserShowName();
+    final pubkey = widget.user?.pubKey;
     return BaseAvatarWidget(
       imageUrl: imageUrl,
       defaultImageName: defaultImageName,
       size: widget.size,
+      isFile: widget.isFile,
       isCircular: widget.isCircular,
       isClickable: widget.onTap != null || widget.isClickable,
       onTap: userAvatarOnTap,
       onLongPress: widget.onLongPress,
+      displayName: displayName,
+      pubkey: pubkey,
     );
   }
 
@@ -217,6 +264,8 @@ class OXGroupAvatarState extends State<OXGroupAvatar> {
       future: _imageLoader,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done || _avatars.isEmpty) {
+          final groupName = widget.group?.name ?? '';
+          final groupId = widget.groupId ?? widget.group?.privateGroupId ?? '';
           return BaseAvatarWidget(
             defaultImageName: defaultImageName,
             size: widget.size,
@@ -224,6 +273,8 @@ class OXGroupAvatarState extends State<OXGroupAvatar> {
             isCircular: widget.isCircular,
             isClickable: widget.isClickable,
             onTap: _onTap,
+            displayName: groupName,
+            pubkey: groupId,
           );
         }
         return GroupedAvatar(
@@ -316,6 +367,8 @@ class GroupedAvatar extends StatelessWidget {
       defaultImageName: defaultImageName,
       size: size,
       isCircular: isCircular,
+      displayName: null,
+      pubkey: null,
     );
   }
 
@@ -327,6 +380,8 @@ class GroupedAvatar extends StatelessWidget {
       imageUrl: '',
       isCircular: isCircular,
       isClickable: isClickable,
+      displayName: null,
+      pubkey: null,
     );
   }
 }
@@ -393,5 +448,83 @@ class _ClientAvatarState extends State<ClientAvatar> {
         ),
       ),
     );
+  }
+}
+
+/// Default avatar generator with gradient background and name initials
+class _DefaultAvatarGenerator extends StatelessWidget {
+  const _DefaultAvatarGenerator({
+    required this.displayName,
+    required this.identifier,
+    required this.size,
+  });
+
+  final String displayName;
+  final String identifier;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final gradient = _getGradientForIdentifier(identifier);
+    final initials = _getInitials(displayName);
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        gradient: gradient,
+        borderRadius: BorderRadius.circular(size),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+          initials,
+          style: TextStyle(
+            fontSize: size * 0.4,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            letterSpacing: 0.5,
+          )
+      ),
+    );
+  }
+
+  /// Get gradient based on identifier (pubkey or displayName)
+  Gradient _getGradientForIdentifier(String identifier) {
+    final gradients = CLGradient.defaults;
+    final hash = _hashString(identifier);
+    final index = hash.abs() % gradients.length;
+    return gradients[index];
+  }
+
+  /// Get name initials using firstAndLast logic
+  /// For single word: returns first character
+  /// For multiple words: returns first character of first and last word
+  String _getInitials(String name) {
+    if (name.isEmpty) return '?';
+
+    final parts = name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    if (parts.isEmpty) return '?';
+
+    if (parts.length == 1) {
+      // Single word: take first character
+      final word = parts[0];
+      if (word.isEmpty) return '?';
+      return word[0].toUpperCase();
+    } else {
+      // Multiple words: take first character of first and last word
+      final first = parts[0];
+      final last = parts[parts.length - 1];
+      if (first.isEmpty || last.isEmpty) return '?';
+      return '${first[0].toUpperCase()}${last[0].toUpperCase()}';
+    }
+  }
+
+  /// Hash function for consistent mapping
+  int _hashString(String input) {
+    int hash = 0;
+    for (int i = 0; i < input.length; i++) {
+      hash = ((hash << 5) - hash + input.codeUnitAt(i)) & 0xFFFFFFFF;
+    }
+    return hash;
   }
 }
