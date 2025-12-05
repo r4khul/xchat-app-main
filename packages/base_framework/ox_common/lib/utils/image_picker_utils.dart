@@ -1,6 +1,13 @@
 
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ox_common/ox_common.dart';
+import 'package:ox_common/navigator/navigator.dart';
+import 'package:wechat_assets_picker/wechat_assets_picker.dart';
+import 'package:photo_manager/photo_manager.dart';
+import 'package:path_provider/path_provider.dart';
 
 ///Title: image_picker_utils
 ///Description: TODO(Take a photo or select an image from an album)
@@ -46,58 +53,230 @@ class ImagePickerUtils {
     int videoSelectMaxSecond = 120,
     int videoSelectMinSecond = 1,
     Language language = Language.system,
+    BuildContext? context,
   }) async {
+    // Get context from navigator if not provided
+    final BuildContext? pickerContext = context ?? 
+        (OXNavigator.navigatorKey.currentContext != null 
+            ? OXNavigator.navigatorKey.currentContext 
+            : null);
+    
+    if (pickerContext == null) {
+      throw Exception('Context is required for wechat_assets_picker');
+    }
+
+    // Request permission first
+    final PermissionState ps = await PhotoManager.requestPermissionExtend();
+    if (!ps.hasAccess) {
+      return [];
+    }
+
     Color uiColor = UIConfig.defUiThemeColor;
     if (uiConfig != null) {
       uiColor = uiConfig.uiThemeColor;
     }
 
-    bool enableCrop = false;
-    int width = -1;
-    int height = -1;
-    if (cropConfig != null) {
-      enableCrop = cropConfig.enableCrop;
-      width = cropConfig.width <= 0 ? -1 : cropConfig.width;
-      height = cropConfig.height <= 0 ? -1 : cropConfig.height;
+    // Crop configuration (for future implementation)
+    // Note: wechat_assets_picker doesn't have built-in crop support
+    // You may need to use a separate crop library like image_cropper
+    // bool enableCrop = false;
+    // int width = -1;
+    // int height = -1;
+    // if (cropConfig != null) {
+    //   enableCrop = cropConfig.enableCrop;
+    //   width = cropConfig.width <= 0 ? -1 : cropConfig.width;
+    //   height = cropConfig.height <= 0 ? -1 : cropConfig.height;
+    // }
+
+    // Convert GalleryMode to RequestType
+    final RequestType requestType;
+    switch (galleryMode) {
+      case GalleryMode.image:
+        requestType = RequestType.image;
+        break;
+      case GalleryMode.video:
+        requestType = RequestType.video;
+        break;
+      case GalleryMode.all:
+        requestType = RequestType.all;
+        break;
     }
 
-    final Map<String, dynamic> params = <String, dynamic>{
-      'galleryMode': galleryMode.name,
-      'showGif': showGif,
-      'uiColor': {
-        "a": 255,
-        "r": uiColor.red,
-        "g": uiColor.green,
-        "b": uiColor.blue,
-        "l": (uiColor.computeLuminance() * 255).toInt()
-      },
-      'selectCount': selectCount,
-      'showCamera': showCamera,
-      'enableCrop': enableCrop,
-      'width': width,
-      'height': height,
-      'compressSize': compressSize < 50 ? 50 : compressSize,
-      'videoRecordMaxSecond': videoRecordMaxSecond,
-      'videoRecordMinSecond': videoRecordMinSecond,
-      'videoSelectMaxSecond': videoSelectMaxSecond,
-      'videoSelectMinSecond': videoSelectMinSecond,
-      'language': language.name,
-    };
-    final List<dynamic> paths =
-    await OXCommon.channel.invokeMethod('getPickerPaths', params);
+    // Configure filter options
+    final FilterOptionGroup filterOptionGroup = FilterOptionGroup(
+      imageOption: const FilterOption(
+        sizeConstraint: SizeConstraint(ignoreSize: true),
+      ),
+      videoOption: FilterOption(
+        durationConstraint: DurationConstraint(
+          min: Duration(seconds: videoSelectMinSecond),
+          max: Duration(seconds: videoSelectMaxSecond),
+        ),
+      ),
+    );
+
+    // Configure picker config
+    // According to documentation:
+    // - textDelegate will be automatically determined from BuildContext locale if not provided
+    // - themeColor is simpler than pickerTheme for basic theming
+    // - Most parameters have sensible defaults
+    final AssetPickerConfig pickerConfig = AssetPickerConfig(
+      selectedAssets: <AssetEntity>[],
+      maxAssets: selectCount,
+      requestType: requestType,
+      filterOptions: filterOptionGroup,
+      themeColor: uiColor, // Use themeColor for simple theme configuration
+      // Set default language to English
+      // If language is system, use English as default instead of auto-detecting from BuildContext
+      textDelegate: language == Language.system 
+          ? const EnglishAssetPickerTextDelegate()
+          : _getTextDelegate(language),
+      // Add camera item as special item if needed
+      specialItems: showCamera 
+          ? [
+              SpecialItem<AssetPathEntity>(
+                position: SpecialItemPosition.prepend,
+                builder: _buildCameraItem,
+              ),
+            ]
+          : const <SpecialItem<AssetPathEntity>>[],
+    );
+
+    // Pick assets
+    // The picker will automatically handle Android navigation bar with SafeArea
+    // It uses BuildContext to determine locale for text display
+    final List<AssetEntity>? result = await AssetPicker.pickAssets(
+      pickerContext,
+      pickerConfig: pickerConfig,
+    );
+
+    if (result == null || result.isEmpty) {
+      return [];
+    }
+
+    // Convert AssetEntity to Media
     List<Media> medias = [];
-    paths.forEach((data) {
+    for (final AssetEntity entity in result) {
       Media media = Media();
-      media.thumbPath = data["thumbPath"];
-      media.path = data["path"];
-      if(media.path == media.thumbPath){
+      
+      // Get file path
+      final File? file = await entity.file;
+      if (file != null) {
+        media.path = file.path;
+      }
+
+      // Handle compression for images
+      if (entity.type == AssetType.image && compressSize > 0) {
+        final Uint8List? imageData = await entity.originBytes;
+        if (imageData != null) {
+          final int sizeInKB = imageData.length ~/ 1024;
+          if (sizeInKB > compressSize) {
+            // Compress image
+            final Uint8List? compressedData = await entity.thumbnailDataWithSize(
+              const ThumbnailSize(200, 200),
+              quality: 85,
+            );
+            if (compressedData != null) {
+              // Save compressed image to temp file
+              final Directory tempDir = await getTemporaryDirectory();
+              final String compressedPath = 
+                  '${tempDir.path}/compressed_${DateTime.now().millisecondsSinceEpoch}.jpg';
+              final File compressedFile = File(compressedPath);
+              await compressedFile.writeAsBytes(compressedData);
+              media.path = compressedPath;
+            }
+          }
+        }
+      }
+
+      // Get thumbnail for videos
+      if (entity.type == AssetType.video) {
+        final Uint8List? thumbnailData = await entity.thumbnailDataWithSize(
+          const ThumbnailSize(200, 200),
+          quality: 100,
+        );
+        if (thumbnailData != null) {
+          final Directory tempDir = await getTemporaryDirectory();
+          final String thumbPath = 
+              '${tempDir.path}/thumb_${DateTime.now().millisecondsSinceEpoch}.jpg';
+          final File thumbFile = File(thumbPath);
+          await thumbFile.writeAsBytes(thumbnailData);
+          media.thumbPath = thumbPath;
+        }
+      } else {
+        // For images, thumbPath is same as path
+        media.thumbPath = media.path;
+      }
+
+      // Set gallery mode
+      if (entity.type == AssetType.image) {
         media.galleryMode = GalleryMode.image;
-      }else{
+      } else if (entity.type == AssetType.video) {
         media.galleryMode = GalleryMode.video;
       }
+
       medias.add(media);
-    });
+    }
+
     return medias;
+  }
+
+  // Helper method to get text delegate based on language
+  static AssetPickerTextDelegate _getTextDelegate(Language language) {
+    switch (language) {
+      case Language.chinese:
+        // Use TraditionalChinese as fallback for simplified Chinese
+        return const TraditionalChineseAssetPickerTextDelegate();
+      case Language.traditional_chinese:
+        return const TraditionalChineseAssetPickerTextDelegate();
+      case Language.english:
+        return const EnglishAssetPickerTextDelegate();
+      case Language.japanese:
+        return const JapaneseAssetPickerTextDelegate();
+      case Language.france:
+        return const FrenchAssetPickerTextDelegate();
+      case Language.german:
+        return const GermanAssetPickerTextDelegate();
+      case Language.russian:
+        return const RussianAssetPickerTextDelegate();
+      case Language.vietnamese:
+        return const VietnameseAssetPickerTextDelegate();
+      case Language.korean:
+        return const KoreanAssetPickerTextDelegate();
+      case Language.portuguese:
+        // Portuguese not available, use English as fallback
+        return const EnglishAssetPickerTextDelegate();
+      case Language.spanish:
+        // Spanish not available, use English as fallback
+        return const EnglishAssetPickerTextDelegate();
+      case Language.arabic:
+        return const ArabicAssetPickerTextDelegate();
+      default:
+        return const AssetPickerTextDelegate();
+    }
+  }
+
+  // Build camera item widget
+  // Note: This is a placeholder. For actual camera functionality,
+  // you should integrate wechat_camera_picker or use ImagePicker.openCamera
+  static Widget? _buildCameraItem(
+    BuildContext context,
+    AssetPathEntity? path,
+    PermissionState permissionState,
+  ) {
+    return GestureDetector(
+      onTap: () {
+        // Handle camera tap - you can integrate wechat_camera_picker here
+        // For now, just close the picker
+        Navigator.of(context).pop();
+      },
+      child: Container(
+        color: Colors.grey[300],
+        child: const Center(
+          child: Icon(Icons.camera_alt, size: 48),
+        ),
+      ),
+    );
   }
 
   /// Return information of the selected picture or video

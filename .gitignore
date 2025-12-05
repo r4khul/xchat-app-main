@@ -121,3 +121,4 @@ Podfile.lock
 **/*.jks
 /testautocorrect
 /nostr-java-main
+/zapstore
