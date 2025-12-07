@@ -140,7 +140,9 @@ class AccountModel {
   AccountModel({
     required this.pubkey,
     required this.loginType,
+    this.privateKey,
     required this.encryptedPrivKey,
+    this.encryptedPrivKeyFuture,
     required this.defaultPassword,
     required this.nostrConnectUri,
     this.nostrConnectClientPrivkey,
@@ -154,7 +156,10 @@ class AccountModel {
 
   final String pubkey;
   final LoginType loginType;
-  final String encryptedPrivKey;     // Only has value for nesc login type
+  String? privateKey;
+  String encryptedPrivKey;     // Only has value for nesc login type
+  Future<String>? encryptedPrivKeyFuture;
+
   final String defaultPassword;      // Used to decrypt private key
   final String nostrConnectUri;     // Only has value for remoteSigner login type
   final String? nostrConnectClientPrivkey; // Only has value for remoteSigner login type
@@ -183,7 +188,9 @@ class AccountModel {
     return AccountModel(
       pubkey: pubkey ?? this.pubkey,
       loginType: loginType ?? this.loginType,
+      privateKey: this.privateKey,
       encryptedPrivKey: encryptedPrivKey ?? this.encryptedPrivKey,
+      encryptedPrivKeyFuture: this.encryptedPrivKeyFuture,
       defaultPassword: defaultPassword ?? this.defaultPassword,
       nostrConnectUri: nostrConnectUri ?? this.nostrConnectUri,
       nostrConnectClientPrivkey: nostrConnectClientPrivkey ?? this.nostrConnectClientPrivkey,
@@ -313,27 +320,6 @@ class AccountHelper {
       return null;
     }
   }
-
-  /// Save AccountModel to database
-  static Future<void> _saveAccount(AccountModel account) async {
-    final db = account.db;
-    final accountDataList = toAccountDataList(account);
-    await db.writeAsync((accountDb) {
-      accountDb.accountDataISARs.putAll(accountDataList);
-    });
-  }
-
-  /// Update last login time
-  static Future<void> updateLastLoginTime(Isar accountDb, String pubkey) async {
-    final now = DateTime.now().millisecondsSinceEpoch;
-    await accountDb.writeAsync((accountDb) {
-      final loginTimeData = AccountDataISAR.createInt(keyLastLoginAt, now);
-      if (loginTimeData.id == 0) {
-        loginTimeData.id = accountDb.accountDataISARs.autoIncrement();
-      }
-      accountDb.accountDataISARs.put(loginTimeData);
-    });
-  }
 }
 
 extension AccountHelperEx on AccountModel {
@@ -371,23 +357,5 @@ extension AccountHelperEx on AccountModel {
       'password': defaultPassword,
     };
     return await compute(_decodeAndEncodePrivkey, params);
-  }
-
-  void updateLastLoginCircle(String? circleId) {
-    if (lastLoginCircleId == circleId) return;
-
-    lastLoginCircleId = circleId;
-    saveToDB();
-  }
-
-  void updatePushToken(String? token) {
-    if (pushToken == token) return;
-
-    pushToken = token;
-    saveToDB();
-  }
-
-  Future saveToDB() {
-    return AccountHelper._saveAccount(this);
   }
 }

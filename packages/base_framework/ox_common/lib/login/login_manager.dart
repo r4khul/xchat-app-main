@@ -306,8 +306,7 @@ extension LoginManagerAccount on LoginManager {
       if (account.loginType == LoginType.remoteSigner &&
           account.nostrConnectUri.isNotEmpty &&
           account.nostrConnectClientPrivkey == null) {
-        account = account.copyWith(nostrConnectClientPrivkey: _generateClientPrivkey());
-        await account.saveToDB();
+        await updateNostrConnectClientPrivkey(_generateClientPrivkey());
       }
 
       // Update login state
@@ -379,17 +378,6 @@ extension LoginManagerAccount on LoginManager {
     return await AccountPathManager.deleteAccountFolder(pubkey);
   }
 
-  Future<bool> savePushToken(String token) async {
-    if (token.isEmpty) return false;
-
-    final account = currentState.account;
-    if (account == null) return false;
-
-    account.pushToken = token;
-    await account.saveToDB();
-    return true;
-  }
-
   // ============ Private Authentication Methods ============
 
   /// Unified account login interface
@@ -422,9 +410,9 @@ extension LoginManagerAccount on LoginManager {
         lastLoginAt: now,
       );
 
+      Future<String>? encryptedPrivKey;
       if (account == null) {
         // Generate default password and encrypt private key for nesc login
-        String encryptedPrivKey = '';
         String defaultPassword = '';
 
         if (loginType == LoginType.nesc) {
@@ -436,7 +424,9 @@ extension LoginManagerAccount on LoginManager {
         account = AccountModel(
           pubkey: pubkey,
           loginType: loginType,
-          encryptedPrivKey: encryptedPrivKey,
+          privateKey: privateKey,
+          encryptedPrivKey: '',
+          encryptedPrivKeyFuture: encryptedPrivKey,
           defaultPassword: defaultPassword,
           nostrConnectUri: nostrConnectUri ?? '',
           nostrConnectClientPrivkey: loginType == LoginType.remoteSigner ? _generateClientPrivkey() : null,
@@ -452,8 +442,12 @@ extension LoginManagerAccount on LoginManager {
       }
 
       // 3. Save account info to DB.
-      await account.saveToDB();
-
+      _saveAccount(account).then((_) async {
+        final account = currentState.account;
+        if (encryptedPrivKey != null && account != null) {
+          updateEncryptedPrivKey(await encryptedPrivKey);
+        }
+      });
       // 4. Update login state
       final loginState = LoginState(account: account);
       _state$.value = loginState;
@@ -514,9 +508,22 @@ extension LoginManagerAccount on LoginManager {
   }
 
   /// Encrypt private key using password
-  String _encryptPrivateKey(String privateKey, String password) {
+  static Future<String> _encryptPrivateKey(String privateKey, String password) {
+    return compute(_encryptTask, {
+      "privateKey": privateKey,
+      "password": password,
+    });
+  }
+
+  static String _encryptTask(Map data) {
+    final privateKey = data['privateKey'] as String;
+    final password   = data['password'] as String;
+
     final privateKeyBytes = hex.decode(privateKey);
-    final encryptedBytes = encryptPrivateKey(Uint8List.fromList(privateKeyBytes), password);
+    final encryptedBytes = encryptPrivateKey(
+      Uint8List.fromList(privateKeyBytes),
+      password,
+    );
     return hex.encode(encryptedBytes);
   }
 
@@ -620,28 +627,13 @@ extension LoginManagerCircle on LoginManager {
       );
 
       // Add circle to account's circle list
-      final updatedCircles = [...account.circles, newCircle];
-      final updatedAccount = account.copyWith(
-        circles: updatedCircles,
-      );
-      await updatedAccount.saveToDB();
-
-      // Update state with new account (but not current circle yet)
-      _state$.value = currentState.copyWith(
-        account: updatedAccount,
-      );
+      final originCircles = [...account.circles];
+      await updatedCircles([...originCircles, newCircle]);
 
       final switchResult = await switchToCircle(newCircle);
       if (switchResult != null) {
         // Switch failed, remove the circle from the list
-        final revertedCircles = [...account.circles]; // original circles
-        final revertedAccount = account.copyWith(
-          circles: revertedCircles,
-        );
-        await revertedAccount.saveToDB();
-        _state$.value = currentState.copyWith(
-          account: revertedAccount,
-        );
+        await updatedCircles([...originCircles]);
         return switchResult;
       }
 
@@ -770,20 +762,16 @@ extension LoginManagerCircle on LoginManager {
         return false;
       }
 
-      // Remove circle from account's circle list and save
-      final updatedCircles = account.circles.where((c) => c.id != circleId).toList();
-      final updatedAccount = account.copyWith(circles: updatedCircles);
-      await updatedAccount.saveToDB();
+      final newCircle = account.circles.where((c) => c.id != circleId).toList();
+      await updatedCircles(newCircle);
 
       // Update state
       if (!isSwitch) {
         LoginUserNotifier.instance.updateUserSource(null);
+        _state$.value = currentState.copyWith(
+          currentCircle: null,
+        );
       }
-      final updatedState = this.currentState.copyWith(
-        account: updatedAccount,
-        currentCircle: isSwitch ? this.currentState.currentCircle : null,
-      );
-      _state$.value = updatedState;
 
       return true;
     } catch (e) {
@@ -858,17 +846,14 @@ extension LoginManagerCircle on LoginManager {
       if (user == null) {
         _notifyCircleChange(false, LoginFailure(
           type: LoginFailureType.circleDbFailed,
-          message: 'Circle-level login failed',
+          message: 'Circle login failed',
           circleId: circle.id,
         ));
         return false;
       }
 
       // Login success
-      account.updateLastLoginCircle(circle.id);
-      _state$.value = loginState.copyWith(
-        currentCircle: circle,
-      );
+      await updateLastLoginCircle(circle);
 
       _loginCircleSuccessHandler(account, circle);
 
@@ -891,22 +876,27 @@ extension LoginManagerCircle on LoginManager {
       final loginType = account.loginType;
       switch (loginType) {
         case LoginType.nesc:
-        // Use private key login
-          final privateKey = AccountHelperEx.getPrivateKey(
-            account.encryptedPrivKey,
-            account.defaultPassword,
+          // Use private key login
+          String? privateKey = account.privateKey;
+          if (privateKey == null || privateKey.isEmpty) {
+            privateKey = AccountHelperEx.getPrivateKey(
+              account.encryptedPrivKey,
+              account.defaultPassword,
+            );
+          }
+          final result = await Account.sharedInstance.loginWithPriKey(
+            privateKey,
+            false,
           );
-          return Account.sharedInstance.loginWithPriKey(privateKey);
-
+          return result;
         case LoginType.androidSigner:
-        // Use Amber signer login
+          // Use Amber signer login
           return Account.sharedInstance.loginWithPubKey(
             account.pubkey,
             SignerApplication.androidSigner,
           );
-
         case LoginType.remoteSigner:
-        // Use NostrConnect login
+          // Use NostrConnect login
           final nostrConnectUri = account.nostrConnectUri;
           if (nostrConnectUri.isNotEmpty) {
             return Account.sharedInstance.loginWithNip46URI(
@@ -937,7 +927,6 @@ extension LoginManagerCircle on LoginManager {
   }
 
   void _loginCircleSuccessHandler(AccountModel account, Circle circle) async {
-    final pubkey = account.pubkey;
     final circleType = circle.type;
     switch (circleType) {
       case CircleType.relay:
@@ -1183,6 +1172,83 @@ extension LoginManagerDatabase on LoginManager {
   Future<String> _getEncryptionPassword(AccountModel account) async {
     // Use database encryption key from DBKeyManager
     return await DBKeyManager.getKey();
+  }
+}
+
+extension AccountUpdateMethod on LoginManager {
+  Future<bool> updateEncryptedPrivKey(String encryptedPrivKey) async {
+    final account = currentState.account;
+    if (account == null) return false;
+
+    final newAccount = account.copyWith(encryptedPrivKey: encryptedPrivKey);
+    await _saveAccount(newAccount);
+
+    _state$.value = currentState.copyWith(
+      account: newAccount,
+    );
+    return true;
+  }
+
+  Future<bool> updatedCircles(List<Circle> circles) async {
+    final account = currentState.account;
+    if (account == null) return false;
+
+    final newAccount = account.copyWith(circles: circles);
+    await _saveAccount(newAccount);
+
+    _state$.value = currentState.copyWith(
+      account: newAccount,
+    );
+    return true;
+  }
+
+  Future<bool> updateNostrConnectClientPrivkey(String privkey) async {
+    final account = currentState.account;
+    if (account == null) return false;
+
+    final newAccount = account.copyWith(nostrConnectClientPrivkey: privkey);
+    await _saveAccount(newAccount);
+
+    _state$.value = currentState.copyWith(
+      account: newAccount,
+    );
+    return true;
+  }
+
+  Future<bool> updatePushToken(String token) async {
+    final account = currentState.account;
+    if (account == null) return false;
+
+    final newAccount = account.copyWith(pushToken: token);
+    await _saveAccount(newAccount);
+
+    _state$.value = currentState.copyWith(
+      account: newAccount,
+    );
+    return true;
+  }
+
+  Future<bool> updateLastLoginCircle(Circle circle) async {
+    final account = currentState.account;
+    if (account == null) return false;
+
+    final newAccount = account.copyWith(lastLoginCircleId: circle.id);
+    await _saveAccount(newAccount);
+
+    _state$.value = currentState.copyWith(
+      account: newAccount,
+      currentCircle: circle,
+    );
+    return true;
+  }
+
+  /// Save AccountModel to database
+  Future<void> _saveAccount(AccountModel account) async {
+    final db = account.db;
+    final accountDataList = AccountHelper.toAccountDataList(account);
+    await db.writeAsync((accountDb) {
+      accountDb.accountDataISARs.putAll(accountDataList);
+    });
   }
 }
 

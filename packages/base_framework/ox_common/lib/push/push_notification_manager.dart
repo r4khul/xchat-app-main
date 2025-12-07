@@ -173,7 +173,7 @@ class CLUserPushNotificationManager implements PushPermissionChecker {
       if (token.isEmpty) return null;
       if (account.pubkey != LoginManager.instance.currentState.account?.pubkey) return null;
 
-      LoginManager.instance.savePushToken(token);
+      LoginManager.instance.updatePushToken(token);
       if (allowReceiveNotification) {
         NotificationHelper.sharedInstance.updateNotificationDeviceId(token);
       }
@@ -257,7 +257,7 @@ class CLUserPushNotificationManager implements PushPermissionChecker {
               .timeout(Duration(seconds: 15), onTimeout: () => '')
               .then((token) {
             if (token.isEmpty) return '';
-            LoginManager.instance.savePushToken(token);
+            LoginManager.instance.updatePushToken(token);
             return token;
           });
           if (pushToken == null || pushToken.isEmpty) {

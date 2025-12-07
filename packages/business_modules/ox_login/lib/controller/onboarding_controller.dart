@@ -25,6 +25,8 @@ class OnboardingController with LoginManagerObserver {
     LoginManager.instance.addObserver(this);
   }
 
+  final keychain = Account.generateNewKeychain();
+
   bool isCreateNewAccount;
 
   String _firstName = '';
@@ -75,9 +77,8 @@ extension OnboardingControllerCircleEx on OnboardingController {
     );
 
     if (result.success) {
-      await _setupDefaultFileServer();
+      _setupDefaultFileServer();
     }
-
     return result;
   }
 
@@ -117,7 +118,7 @@ extension _NewAccountEx on OnboardingController {
       );
 
       if (isCreateNewAccount) {
-        await _updateProfile();
+        _updateProfile();
       }
     } catch (e) {
       LoginManager.instance.logoutAccount();
@@ -130,7 +131,6 @@ extension _NewAccountEx on OnboardingController {
   Future<bool> _invokeLoginAction() {
     if (LoginManager.instance.currentState.account != null) return Future.value(true);
     final action = loginAction ?? () {
-      final keychain = Account.generateNewKeychain();
       return LoginManager.instance.loginWithPrivateKey(
         keychain.private,
       );
