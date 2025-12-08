@@ -18,6 +18,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:ox_common/utils/permission_utils.dart';
 import 'package:ox_common/const/app_config.dart';
 import 'package:ox_common/utils/compression_utils.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 enum QRCodeStyle {
   defaultStyle, // Default
@@ -496,16 +497,77 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
   }
 
   Future<void> _shareInvite() async {
+    // Show dialog to select share method
+    final shareMethod = await CLAlertDialog.show<String>(
+      context: context,
+      title: Localized.text('ox_usercenter.select_share_method'),
+      actions: [
+        CLAlertAction<String>(
+          label: Localized.text('ox_usercenter.share_via_sms'),
+          value: 'sms',
+          isDefaultAction: true,
+        ),
+        CLAlertAction<String>(
+          label: Localized.text('ox_usercenter.share_via_other'),
+          value: 'other',
+        ),
+        CLAlertAction<String>(
+          label: Localized.text('ox_common.cancel'),
+          value: null,
+        ),
+      ],
+    );
+
+    if (shareMethod == null) return;
+
     try {
-      // Share invite link
-      await Share.share(
-        currentInviteLink!,
-        subject: Localized.text('ox_usercenter.invite_to_chat'),
-      );
+      if (shareMethod == 'sms') {
+        // Share via SMS
+        await _shareViaSMS();
+      } else {
+        // Share via other methods (default share sheet)
+        await Share.share(
+          currentInviteLink!,
+          subject: Localized.text('ox_usercenter.invite_to_chat'),
+        );
+      }
     } catch (e) {
       CommonToast.instance.show(
         context,
         '${Localized.text('ox_usercenter.share_failed')}: $e',
+      );
+    }
+  }
+
+  Future<void> _shareViaSMS() async {
+    try {
+      // Create friendly iMessage/SMS template with the invite link and user name
+      String template = Localized.text('ox_usercenter.sms_invite_message_template');
+      final inviteText = template
+          .replaceAll(r'${name}', userName)
+          .replaceAll(r'${link}', currentInviteLink!);
+      
+      final uri = Uri(
+        scheme: 'sms',
+        queryParameters: {
+          'body': inviteText,
+        },
+      );
+
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+      } else {
+        // Fallback to regular share if SMS is not available
+        await Share.share(
+          currentInviteLink!,
+          subject: Localized.text('ox_usercenter.invite_to_chat'),
+        );
+      }
+    } catch (e) {
+      // Fallback to regular share on error
+      await Share.share(
+        currentInviteLink!,
+        subject: Localized.text('ox_usercenter.invite_to_chat'),
       );
     }
   }
