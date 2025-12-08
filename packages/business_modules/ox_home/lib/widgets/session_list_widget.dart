@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/login/login_models.dart';
 import 'package:ox_common/utils/adapt.dart';
+import 'package:ox_common/widgets/common_image.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 
 import '../page/archived_chats_page.dart';
@@ -148,11 +149,11 @@ class _SessionListWidgetState extends State<SessionListWidget> {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Empty state icon using Material Icons
-              CLIcon(
-                icon: Icons.forum_outlined,
-                size: 120.px,
-                color: ColorToken.xChat.of(context),
+              // Empty state icon
+              CommonImage(
+                iconName: 'empty.png',
+                size: 80.px,
+                package: 'ox_home',
               ),
 
               SizedBox(height: 24.px),

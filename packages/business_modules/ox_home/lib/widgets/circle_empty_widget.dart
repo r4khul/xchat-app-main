@@ -4,6 +4,7 @@ import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/page/circle_introduction_page.dart';
+import 'package:ox_common/widgets/common_image.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 
 class CircleEmptyWidget extends StatelessWidget {
@@ -28,11 +29,11 @@ class CircleEmptyWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
           children: [
-          // Empty state icon using Material Icons
-          Icon(
-            Icons.forum_outlined,
-            size: 120.px,
-            color: ColorToken.xChat.of(context),
+          // Empty state icon
+          CommonImage(
+            iconName: 'empty.png',
+            size: 80.px,
+            package: 'ox_home',
           ),
 
           SizedBox(height: 24.px),

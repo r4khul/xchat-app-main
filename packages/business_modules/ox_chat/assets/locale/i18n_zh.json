@@ -74,7 +74,7 @@
   "no_members": "无成员",
   "no_removable_members": "无可移除成员",
   "remove_member_confirm_content": "确定要从群组中移除 {count} 个成员吗？",
-  "no_sessions_title": "暂无论坛",
+  "no_sessions_title": "暂无聊天",
   "no_sessions_description": "点击右上角的 + 按钮开始新的聊天。",
   "str_leave_group": "退出群组",
   "delete_message_me_action_mode": "仅为我删除",
