@@ -119,19 +119,9 @@ public class PushNotificationService extends Service {
         // This ensures privatekey is available even if Service is restarted by system
         loadConfigFromPrefs();
         
-        // If config exists, try to start the service
-        if (serverRelay != null && !serverRelay.isEmpty() && pubkey != null && !pubkey.isEmpty()) {
-            Log.d(TAG, "Service restarted by system, config loaded from prefs in onCreate");
-            if (deviceId == null || deviceId.isEmpty()) {
-                deviceId = pubkey;
-            }
-            // Start foreground service and connect
-            startForeground(NOTIFICATION_ID, createNotification());
-            if (!isConnecting && webSocket == null) {
-                Log.d(TAG, "Auto-connecting to relay after system restart: " + serverRelay);
-                connectToRelay();
-            }
-        }
+        // Note: Do not call startForeground() in onCreate() for Android 12+ (API 31+)
+        // It will cause ForegroundServiceStartNotAllowedException when service is restarted by system in background
+        // startForeground() should be called in onStartCommand() instead
     }
 
     @Override
@@ -164,8 +154,17 @@ public class PushNotificationService extends Service {
                 Log.d(TAG, "WebSocket already connected or connecting, skipping connection");
             }
             
-            // Start foreground service
-            startForeground(NOTIFICATION_ID, createNotification());
+            // Start foreground service with exception handling for Android 12+
+            try {
+                startForeground(NOTIFICATION_ID, createNotification());
+            } catch (Exception e) {
+                // On Android 12+ (API 31+), if service is started from background,
+                // startForeground() may throw ForegroundServiceStartNotAllowedException
+                Log.e(TAG, "Failed to start foreground service: " + e.getMessage(), e);
+                // Try to stop service if we can't start it as foreground
+                stopSelf();
+                return START_STICKY;
+            }
         } else {
             // Service restarted by system
             // Config should already be loaded in onCreate(), but double-check
@@ -177,8 +176,29 @@ public class PushNotificationService extends Service {
                     return START_STICKY;
                 }
             }
-            // Service should already be started in onCreate(), just ensure foreground
-            startForeground(NOTIFICATION_ID, createNotification());
+            
+            // For Android, if deviceId is not provided, use pubkey as deviceId
+            if (deviceId == null || deviceId.isEmpty()) {
+                deviceId = pubkey;
+            }
+            
+            // Try to connect if not already connecting
+            if (!isConnecting && webSocket == null) {
+                Log.d(TAG, "Auto-connecting to relay after system restart: " + serverRelay);
+                connectToRelay();
+            }
+            
+            // Start foreground service with exception handling for Android 12+
+            try {
+                startForeground(NOTIFICATION_ID, createNotification());
+            } catch (Exception e) {
+                // On Android 12+ (API 31+), if service is restarted by system in background,
+                // startForeground() may throw ForegroundServiceStartNotAllowedException
+                Log.e(TAG, "Failed to start foreground service after system restart: " + e.getMessage(), e);
+                // Try to stop service if we can't start it as foreground
+                stopSelf();
+                return START_STICKY;
+            }
         }
         
         return START_STICKY;
