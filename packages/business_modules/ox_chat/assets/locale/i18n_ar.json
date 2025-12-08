@@ -152,5 +152,8 @@
   "message_detail": "تفاصيل الرسالة",
   "message_detail_not_found": "الرسالة غير موجودة",
   "message_properties": "خصائص الرسالة",
-  "send_event_info": "معلومات حدث الإرسال"
+  "send_event_info": "معلومات حدث الإرسال",
+  "file_transfer_assistant": "مذكرة",
+  "yourself": "نفسك",
+  "click_to_send_message_to_yourself": "اضغط لإرسال رسالة لنفسك"
 }

@@ -52,6 +52,7 @@
   "message_type_template": "[模版消息]",
   "message_type_unknown": "[未知消息]",
   "you": "你",
+  "me": "我",
   "str_grant_permission_photo_hint": "请授权访问照片的权限",
   "str_share": "分享",
   "str_permission_audio_call_hint": "请手动前往\"设置\"，打开麦克风权限",

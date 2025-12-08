@@ -152,5 +152,8 @@
   "message_detail": "Message Detail",
   "message_detail_not_found": "Message not found",
   "message_properties": "Message Properties",
-  "send_event_info": "Send Event Info"
+  "send_event_info": "Send Event Info",
+  "file_transfer_assistant": "Jegyzet",
+  "yourself": "Önmaga",
+  "click_to_send_message_to_yourself": "Kattintson, hogy magának küldjön üzenetet"
 }

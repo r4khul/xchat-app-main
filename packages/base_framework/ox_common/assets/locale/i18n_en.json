@@ -52,6 +52,7 @@
   "message_type_template": "[Template]",
   "message_type_unknown": "[unknown]",
   "you": "you",
+  "me": "Me",
   "str_grant_permission_photo_hint": "Please grant permission to access the photo",
   "str_share": "Share",
   "str_permission_audio_call_hint": "Please manually go to 'Settings', open microphone permissions",

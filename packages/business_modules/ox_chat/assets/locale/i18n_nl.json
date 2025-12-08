@@ -152,5 +152,8 @@
   "message_detail": "Message Detail",
   "message_detail_not_found": "Message not found",
   "message_properties": "Message Properties",
-  "send_event_info": "Send Event Info"
+  "send_event_info": "Send Event Info",
+  "file_transfer_assistant": "Memo",
+  "yourself": "Jezelf",
+  "click_to_send_message_to_yourself": "Tik om jezelf een bericht te sturen"
 }

@@ -173,12 +173,14 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
     return SectionListViewItem(
       data: [
         LabelItemModel(
-          icon: ListViewIcon.data(
-            Icons.share,
+          icon: ListViewIcon(
+            iconName: 'icon_new_group.png',
+            package: 'ox_common',
           ),
-          title: Localized.text('ox_usercenter.invite'),
-          onTap: _onInviteFriends,
+          title: Localized.text('ox_chat.str_new_group'),
+          onTap: _onNewGroup,
         ),
+
         if (!PlatformStyle.isUseMaterial)
           LabelItemModel(
             icon: ListViewIcon(
@@ -189,14 +191,12 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
             onTap: _onScanQRCode,
           ),
         LabelItemModel(
-          icon: ListViewIcon(
-            iconName: 'icon_new_group.png',
-            package: 'ox_common',
+          icon: ListViewIcon.data(
+            Icons.share,
           ),
-          title: Localized.text('ox_chat.str_new_group'),
-          onTap: _onNewGroup,
+          title: Localized.text('ox_usercenter.invite'),
+          onTap: _onInviteFriends,
         ),
-
       ],
     );
   }
@@ -223,6 +223,46 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
 
   ListViewItem userListItem(ValueNotifier<UserDBISAR> user$) {
     final circleType = LoginManager.instance.currentCircle?.type;
+    final currentPubkey = LoginManager.instance.currentPubkey;
+    final isSelf = user$.value.pubKey == currentPubkey;
+    
+    if (isSelf) {
+      // Special UI for self (file transfer assistant)
+      return CustomItemModel(
+        leading: ValueListenableBuilder(
+          valueListenable: user$,
+          builder: (context, user, _) {
+            return _buildSelfAvatar(context);
+          }
+        ),
+        titleWidget: ValueListenableBuilder(
+          valueListenable: user$,
+          builder: (context, user, _) {
+            return Row(
+              children: [
+                CLText.bodyMedium(
+                  '${Localized.text('ox_common.me')} (${Localized.text('ox_chat.file_transfer_assistant')})',
+                  colorToken: ColorToken.onSurface,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(width: 8.px),
+                _buildYourselfTag(context),
+              ],
+            );
+          }
+        ),
+        subtitleWidget: circleType == CircleType.bitchat ? null : CLText.bodySmall(
+          '${user$.value.encodedPubkey} (${Localized.text('ox_chat.click_to_send_message_to_yourself')})',
+          colorToken: ColorToken.onSurfaceVariant,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        onTap: () => _onUserTap(user$),
+      );
+    }
+    
+    // Normal user item
     return CustomItemModel(
       leading: ValueListenableBuilder(
         valueListenable: user$,
@@ -252,6 +292,38 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
         overflow: TextOverflow.ellipsis,
       ),
       onTap: () => _onUserTap(user$),
+    );
+  }
+
+  Widget _buildSelfAvatar(BuildContext context) {
+    return Container(
+      width: 40.px,
+      height: 40.px,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: CLThemeData.themeGradientOf(context),
+      ),
+      child: Center(
+        child: CLText.bodyLarge(
+          Localized.text('ox_common.me'),
+          customColor: Colors.white,
+          isBold: true,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildYourselfTag(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.px, vertical: 2.px),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(4.px),
+        gradient: CLThemeData.themeGradientOf(context),
+      ),
+      child: CLText.labelSmall(
+        Localized.text('ox_chat.yourself'),
+        customColor: Colors.white,
+      ),
     );
   }
 

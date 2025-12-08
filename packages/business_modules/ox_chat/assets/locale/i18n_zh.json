@@ -152,5 +152,8 @@
   "message_detail": "消息详情",
   "message_detail_not_found": "消息未找到",
   "message_properties": "消息属性",
-  "send_event_info": "发送事件信息"
+  "send_event_info": "发送事件信息",
+  "file_transfer_assistant": "备忘录",
+  "yourself": "你自己",
+  "click_to_send_message_to_yourself": "点击给自己发消息"
 }

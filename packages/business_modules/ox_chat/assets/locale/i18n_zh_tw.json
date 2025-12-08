@@ -152,5 +152,8 @@
   "message_detail": "Message Detail",
   "message_detail_not_found": "Message not found",
   "message_properties": "Message Properties",
-  "send_event_info": "Send Event Info"
+  "send_event_info": "Send Event Info",
+  "file_transfer_assistant": "備忘錄",
+  "yourself": "你自己",
+  "click_to_send_message_to_yourself": "點擊給自己發消息"
 }
