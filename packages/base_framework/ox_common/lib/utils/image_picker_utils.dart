@@ -6,7 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:ox_common/ox_common.dart';
 import 'package:ox_common/navigator/navigator.dart';
-import 'package:ox_common/utils/theme_color.dart';
+import 'package:ox_localizable/ox_localizable.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:path_provider/path_provider.dart';
@@ -111,19 +111,13 @@ class ImagePickerUtils {
         ),
       ),
     );
-
-    // Set confirm button color based on platform
-    // iOS: system blue, Android: theme purple
-    final Color confirmButtonColor = Platform.isIOS 
-        ? CupertinoColors.systemBlue 
-        : ThemeColor.purple2; // Theme purple color
-
+    
     // Create ThemeData and customize buttonTheme
     // Use ThemeData.light() for better iOS compatibility
     final ThemeData pickerTheme = ThemeData.dark().copyWith(
       colorScheme: ColorScheme.dark(
         primary: Colors.black,
-        secondary: confirmButtonColor,
+        secondary: CupertinoColors.systemBlue,
       ),
     );
 
@@ -132,17 +126,17 @@ class ImagePickerUtils {
     // - textDelegate will be automatically determined from BuildContext locale if not provided
     // - pickerTheme allows full theme customization including button colors
     // - Most parameters have sensible defaults
+    // Always use current app language setting
+    final AssetPickerTextDelegate textDelegate = 
+        _getTextDelegateFromLocaleType(Localized.getCurrentLanguage());
+    
     final AssetPickerConfig pickerConfig = AssetPickerConfig(
       selectedAssets: <AssetEntity>[],
       maxAssets: selectCount,
       requestType: requestType,
       filterOptions: filterOptionGroup,
       pickerTheme: pickerTheme, // Use pickerTheme with customized buttonTheme
-      // Set default language to English
-      // If language is system, use English as default instead of auto-detecting from BuildContext
-      textDelegate: language == Language.system 
-          ? const EnglishAssetPickerTextDelegate()
-          : _getTextDelegate(language),
+      textDelegate: textDelegate,
       // Add camera item as special item if needed
       specialItems: showCamera 
           ? [
@@ -265,6 +259,36 @@ class ImagePickerUtils {
         return const ArabicAssetPickerTextDelegate();
       default:
         return const AssetPickerTextDelegate();
+    }
+  }
+
+  // Helper method to get text delegate from LocaleType
+  static AssetPickerTextDelegate _getTextDelegateFromLocaleType(LocaleType localeType) {
+    switch (localeType) {
+      case LocaleType.zh:
+        // Simplified Chinese - use default AssetPickerTextDelegate which is Simplified Chinese
+        return const AssetPickerTextDelegate();
+      case LocaleType.zh_tw:
+        return const TraditionalChineseAssetPickerTextDelegate();
+      case LocaleType.en:
+        return const EnglishAssetPickerTextDelegate();
+      case LocaleType.ja:
+        return const JapaneseAssetPickerTextDelegate();
+      case LocaleType.fr:
+        return const FrenchAssetPickerTextDelegate();
+      case LocaleType.de:
+        return const GermanAssetPickerTextDelegate();
+      case LocaleType.ru:
+        return const RussianAssetPickerTextDelegate();
+      case LocaleType.vi:
+        return const VietnameseAssetPickerTextDelegate();
+      case LocaleType.ko:
+        return const KoreanAssetPickerTextDelegate();
+      case LocaleType.ar:
+        return const ArabicAssetPickerTextDelegate();
+      default:
+        // For other languages not supported by wechat_assets_picker, use English
+        return const EnglishAssetPickerTextDelegate();
     }
   }
 
