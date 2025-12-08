@@ -227,41 +227,6 @@ class ImagePickerUtils {
     return medias;
   }
 
-  // Helper method to get text delegate based on language
-  static AssetPickerTextDelegate _getTextDelegate(Language language) {
-    switch (language) {
-      case Language.chinese:
-        // Use TraditionalChinese as fallback for simplified Chinese
-        return const TraditionalChineseAssetPickerTextDelegate();
-      case Language.traditional_chinese:
-        return const TraditionalChineseAssetPickerTextDelegate();
-      case Language.english:
-        return const EnglishAssetPickerTextDelegate();
-      case Language.japanese:
-        return const JapaneseAssetPickerTextDelegate();
-      case Language.france:
-        return const FrenchAssetPickerTextDelegate();
-      case Language.german:
-        return const GermanAssetPickerTextDelegate();
-      case Language.russian:
-        return const RussianAssetPickerTextDelegate();
-      case Language.vietnamese:
-        return const VietnameseAssetPickerTextDelegate();
-      case Language.korean:
-        return const KoreanAssetPickerTextDelegate();
-      case Language.portuguese:
-        // Portuguese not available, use English as fallback
-        return const EnglishAssetPickerTextDelegate();
-      case Language.spanish:
-        // Spanish not available, use English as fallback
-        return const EnglishAssetPickerTextDelegate();
-      case Language.arabic:
-        return const ArabicAssetPickerTextDelegate();
-      default:
-        return const AssetPickerTextDelegate();
-    }
-  }
-
   // Helper method to get text delegate from LocaleType
   static AssetPickerTextDelegate _getTextDelegateFromLocaleType(LocaleType localeType) {
     switch (localeType) {
