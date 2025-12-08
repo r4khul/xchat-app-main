@@ -33,6 +33,7 @@
     <!-- <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/> -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
     <!-- <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/> -->
     <!-- <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE"/> -->
     <!-- <uses-permission android:name="android.permission.POST_NOTIFICATIONS" /> -->
@@ -204,8 +205,12 @@
             android:foregroundServiceType="mediaPlayback"/>
 
         <service android:name="com.oxchat.lite.PushNotificationService"
-            android:foregroundServiceType="dataSync"
-            android:exported="false"/>
+            android:foregroundServiceType="specialUse|dataSync"
+            android:exported="false">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Push notification service for receiving messages"/>
+        </service>
 
     </application>
  

@@ -157,13 +157,19 @@ public class PushNotificationService extends Service {
             // Start foreground service with exception handling for Android 12+
             try {
                 startForeground(NOTIFICATION_ID, createNotification());
-            } catch (Exception e) {
-                // On Android 12+ (API 31+), if service is started from background,
-                // startForeground() may throw ForegroundServiceStartNotAllowedException
-                Log.e(TAG, "Failed to start foreground service: " + e.getMessage(), e);
-                // Try to stop service if we can't start it as foreground
+            } catch (android.app.ForegroundServiceStartNotAllowedException e) {
+                // On Android 12+ (API 31+), if service time limit exhausted or started from background
+                Log.e(TAG, "Foreground service start not allowed: " + e.getMessage(), e);
+                // Disconnect and stop service gracefully
+                disconnectFromRelay();
                 stopSelf();
-                return START_STICKY;
+                return START_NOT_STICKY; // Don't restart if we can't run as foreground
+            } catch (Exception e) {
+                // Other exceptions
+                Log.e(TAG, "Failed to start foreground service: " + e.getMessage(), e);
+                disconnectFromRelay();
+                stopSelf();
+                return START_NOT_STICKY;
             }
         } else {
             // Service restarted by system
@@ -191,13 +197,19 @@ public class PushNotificationService extends Service {
             // Start foreground service with exception handling for Android 12+
             try {
                 startForeground(NOTIFICATION_ID, createNotification());
-            } catch (Exception e) {
-                // On Android 12+ (API 31+), if service is restarted by system in background,
-                // startForeground() may throw ForegroundServiceStartNotAllowedException
-                Log.e(TAG, "Failed to start foreground service after system restart: " + e.getMessage(), e);
-                // Try to stop service if we can't start it as foreground
+            } catch (android.app.ForegroundServiceStartNotAllowedException e) {
+                // On Android 12+ (API 31+), if service time limit exhausted or restarted in background
+                Log.e(TAG, "Foreground service start not allowed after system restart: " + e.getMessage(), e);
+                // Disconnect and stop service gracefully
+                disconnectFromRelay();
                 stopSelf();
-                return START_STICKY;
+                return START_NOT_STICKY; // Don't restart if we can't run as foreground
+            } catch (Exception e) {
+                // Other exceptions
+                Log.e(TAG, "Failed to start foreground service after system restart: " + e.getMessage(), e);
+                disconnectFromRelay();
+                stopSelf();
+                return START_NOT_STICKY;
             }
         }
         
@@ -211,20 +223,38 @@ public class PushNotificationService extends Service {
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
-        Log.d(TAG, "PushNotificationService destroyed");
-        disconnectFromRelay();
-        if (reconnectRunnable != null) {
+        Log.d(TAG, "PushNotificationService destroying");
+        
+        // Stop foreground service immediately to avoid ForegroundServiceDidNotStopInTimeException
+        // Use STOP_FOREGROUND_REMOVE to remove notification immediately
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            stopForeground(Service.STOP_FOREGROUND_REMOVE);
+        } else {
+            stopForeground(true);
+        }
+        
+        // Cancel all pending operations
+        if (reconnectRunnable != null && reconnectHandler != null) {
             reconnectHandler.removeCallbacks(reconnectRunnable);
+            reconnectRunnable = null;
         }
-        if (authRetryRunnable != null) {
+        if (authRetryRunnable != null && authRetryHandler != null) {
             authRetryHandler.removeCallbacks(authRetryRunnable);
+            authRetryRunnable = null;
         }
+        
+        // Disconnect from relay
+        disconnectFromRelay();
+        
+        // Reset flags
         isConnecting = false;
         isReconnecting = false;
+        
         // Clear private key from file system when service is destroyed
         KeystoreHelper.clearPrivateKey(this);
-        stopForeground(true);
+        
+        super.onDestroy();
+        Log.d(TAG, "PushNotificationService destroyed");
     }
 
     /**
