@@ -2,9 +2,11 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:ox_common/ox_common.dart';
 import 'package:ox_common/navigator/navigator.dart';
+import 'package:ox_common/utils/theme_color.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:path_provider/path_provider.dart';
@@ -43,7 +45,7 @@ class ImagePickerUtils {
   static Future<List<Media>> pickerPaths({
     GalleryMode galleryMode = GalleryMode.image,
     UIConfig? uiConfig,
-    int selectCount = 1,
+    int selectCount = 9,
     bool showCamera = false,
     bool showGif = true,
     CropConfig? cropConfig,
@@ -69,11 +71,6 @@ class ImagePickerUtils {
     final PermissionState ps = await PhotoManager.requestPermissionExtend();
     if (!ps.hasAccess) {
       return [];
-    }
-
-    Color uiColor = UIConfig.defUiThemeColor;
-    if (uiConfig != null) {
-      uiColor = uiConfig.uiThemeColor;
     }
 
     // Crop configuration (for future implementation)
@@ -115,17 +112,32 @@ class ImagePickerUtils {
       ),
     );
 
+    // Set confirm button color based on platform
+    // iOS: system blue, Android: theme purple
+    final Color confirmButtonColor = Platform.isIOS 
+        ? CupertinoColors.systemBlue 
+        : ThemeColor.purple2; // Theme purple color
+
+    // Create ThemeData and customize buttonTheme
+    // Use ThemeData.light() for better iOS compatibility
+    final ThemeData pickerTheme = ThemeData.dark().copyWith(
+      colorScheme: ColorScheme.dark(
+        primary: Colors.black,
+        secondary: confirmButtonColor,
+      ),
+    );
+
     // Configure picker config
     // According to documentation:
     // - textDelegate will be automatically determined from BuildContext locale if not provided
-    // - themeColor is simpler than pickerTheme for basic theming
+    // - pickerTheme allows full theme customization including button colors
     // - Most parameters have sensible defaults
     final AssetPickerConfig pickerConfig = AssetPickerConfig(
       selectedAssets: <AssetEntity>[],
       maxAssets: selectCount,
       requestType: requestType,
       filterOptions: filterOptionGroup,
-      themeColor: uiColor, // Use themeColor for simple theme configuration
+      pickerTheme: pickerTheme, // Use pickerTheme with customized buttonTheme
       // Set default language to English
       // If language is system, use English as default instead of auto-detecting from BuildContext
       textDelegate: language == Language.system 
