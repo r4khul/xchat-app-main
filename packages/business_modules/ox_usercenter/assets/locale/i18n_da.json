@@ -105,6 +105,7 @@
   "contact_us": "Kontakt os",
   "advanced_settings": "Avanceret",
   "show_message_info_option": "Vis beskedinfo-option",
+  "use_tor_network": "Brug Tor-netværket globalt",
   "account": "Konto",
   "chat": "Chat"
 }

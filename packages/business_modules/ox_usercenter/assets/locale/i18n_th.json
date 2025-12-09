@@ -105,6 +105,7 @@
   "contact_us": "ติดต่อเรา",
   "advanced_settings": "ขั้นสูง",
   "show_message_info_option": "แสดงตัวเลือกข้อมูลข้อความ",
+  "use_tor_network": "ใช้งานเครือข่าย Tor ทั่วโลก",
   "account": "บัญชี",
   "chat": "แชท"
 }

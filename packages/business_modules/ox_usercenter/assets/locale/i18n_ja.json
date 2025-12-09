@@ -105,6 +105,7 @@
   "contact_us": "お問い合わせ",
   "advanced_settings": "詳細",
   "show_message_info_option": "メッセージ情報オプションを表示",
+  "use_tor_network": "Torネットワークをグローバルに使用する",
   "account": "アカウント",
   "chat": "チャット"
 }

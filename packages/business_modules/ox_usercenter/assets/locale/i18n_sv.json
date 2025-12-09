@@ -105,6 +105,7 @@
   "contact_us": "Kontakta oss",
   "advanced_settings": "Avancerat",
   "show_message_info_option": "Visa meddelandeinfo-alternativ",
+  "use_tor_network": "Använd Tor-nätverket globalt",
   "account": "Konto",
   "chat": "Chatt"
 }
