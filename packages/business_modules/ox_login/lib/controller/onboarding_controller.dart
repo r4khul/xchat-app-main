@@ -72,7 +72,7 @@ extension OnboardingControllerProfileEx on OnboardingController {
 extension OnboardingControllerCircleEx on OnboardingController {
   Future<OnboardingResult> joinPublicCircle() async {
     final result = await _joinCircle(
-      relayUrl: 'wss://relay.0xchat.com',
+      relayUrl: 'wss://relay.damus.io',
       forceJoin: true,
     );
 

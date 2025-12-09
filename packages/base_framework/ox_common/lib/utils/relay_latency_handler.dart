@@ -133,11 +133,11 @@ class RelayLatencyHandler {
         await _measureOnce(_currentRelay!);
       }
 
-      final interval = _isExpanded$.value ? _regularExpanded : _regularCollapsed;
-
-      _regularTimer = Timer(interval, () {
-        scheduleNext();
-      });
+      // final interval = _isExpanded$.value ? _regularExpanded : _regularCollapsed;
+      //
+      // _regularTimer = Timer(interval, () {
+      //   scheduleNext();
+      // });
     }
 
     scheduleNext();
