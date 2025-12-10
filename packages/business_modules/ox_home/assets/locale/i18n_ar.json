@@ -15,5 +15,9 @@
   "join_circle_dialog_title": "انضم إلى الدائرة",
   "join_circle_dialog_content": "هذا المستخدم من الدائرة \"${relayName}\". هل تريد الانضمام إلى هذه الدائرة للدردشة معهم؟",
   "failed_to_join_circle": "فشل في الانضمام إلى الدائرة: ${message}",
-  "error_joining_circle": "خطأ في الانضمام إلى الدائرة: ${error}"
+  "error_joining_circle": "خطأ في الانضمام إلى الدائرة: ${error}",
+  "circle_status_connecting": "جارٍ الاتصال بـ ${circle}...",
+  "circle_status_disconnecting": "جارٍ قطع الاتصال...",
+  "circle_status_disconnected": "غير متصل",
+  "circle_status_unknown": "حالة الاتصال غير معروفة"
 }

@@ -15,5 +15,9 @@
   "join_circle_dialog_title": "加入圈子",
   "join_circle_dialog_content": "此用戶來自圈子 \"${relayName}\"。您是否要加入此圈子以便與他們聊天？",
   "failed_to_join_circle": "加入圈子失敗：${message}",
-  "error_joining_circle": "加入圈子時出錯：${error}"
+  "error_joining_circle": "加入圈子時出錯：${error}",
+  "circle_status_connecting": "正在連接 ${circle}…",
+  "circle_status_disconnecting": "正在斷開連接…",
+  "circle_status_disconnected": "未連接",
+  "circle_status_unknown": "連接狀態未知"
 }

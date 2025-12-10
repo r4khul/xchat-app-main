@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:chatcore/chat-core.dart';
 import 'package:ox_chat/page/session/lite_new_message_page.dart';
 import 'package:ox_common/business_interface/ox_usercenter/interface.dart';
 import 'package:ox_common/component.dart';
@@ -39,16 +40,19 @@ class _HomeScaffoldState extends State<HomeScaffold> {
   Duration get extendBodyDuration => const Duration(milliseconds: 200);
 
   ValueNotifier<bool> isContrastedChild$ = ValueNotifier(false);
+  ValueNotifier<ConnectStatus> relayStatus$ = ValueNotifier(ConnectStatus.open);
   bool isFirstJoin = false;
 
   @override
   void initState() {
     super.initState();
     _latencyHandler = RelayLatencyHandler(isExpanded$: isShowExtendBody$);
+    Connect.sharedInstance.addConnectStatusListener(_handleConnectStatusChanged);
   }
 
   @override
   void dispose() {
+    Connect.sharedInstance.removeConnectStatusListener(_handleConnectStatusChanged);
     _latencyHandler.dispose();
     super.dispose();
   }
@@ -87,6 +91,7 @@ class _HomeScaffoldState extends State<HomeScaffold> {
       joinOnTap: _handleJoinCircle,
       paidOnTap: _paidOnTap,
       isShowExtendBody$: isShowExtendBody$,
+      relayStatus$: relayStatus$,
       latencyHandler: _latencyHandler,
       extendBodyDuration: extendBodyDuration,
     );
@@ -280,6 +285,15 @@ class _HomeScaffoldState extends State<HomeScaffold> {
     } else {
       CommonToast.instance.show(context, failure.message);
     }
+  }
+
+  void _handleConnectStatusChanged(String relay, ConnectStatus status, List<RelayKind> relayKinds) {
+    final currentRelay = selectedCircle$.value?.relayUrl;
+    if (currentRelay == null) return;
+    if (!relayKinds.contains(RelayKind.circleRelay)) return;
+    if (relay != currentRelay) return;
+
+    relayStatus$.value = status;
   }
 }
 

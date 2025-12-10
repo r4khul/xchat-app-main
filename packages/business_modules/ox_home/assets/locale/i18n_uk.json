@@ -15,5 +15,9 @@
   "join_circle_dialog_title": "Приєднатися до кола",
   "join_circle_dialog_content": "Цей користувач з кола \"${relayName}\". Хочете приєднатися до цього кола, щоб спілкуватися з ними?",
   "failed_to_join_circle": "Не вдалося приєднатися до кола: ${message}",
-  "error_joining_circle": "Помилка при приєднанні до кола: ${error}"
+  "error_joining_circle": "Помилка при приєднанні до кола: ${error}",
+  "circle_status_connecting": "Підключення до ${circle}...",
+  "circle_status_disconnecting": "Відключення...",
+  "circle_status_disconnected": "Відключено",
+  "circle_status_unknown": "Невідомий статус підключення"
 }

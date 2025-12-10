@@ -15,5 +15,9 @@
   "join_circle_dialog_title": "Připojit se ke kruhu",
   "join_circle_dialog_content": "Tento uživatel je z kruhu \"${relayName}\". Chcete se připojit k tomuto kruhu pro chatování s ním?",
   "failed_to_join_circle": "Nepodařilo se připojit ke kruhu: ${message}",
-  "error_joining_circle": "Chyba při připojování ke kruhu: ${error}"
+  "error_joining_circle": "Chyba při připojování ke kruhu: ${error}",
+  "circle_status_connecting": "Připojování k ${circle}...",
+  "circle_status_disconnecting": "Odpojování...",
+  "circle_status_disconnected": "Odpojeno",
+  "circle_status_unknown": "Neznámý stav připojení"
 }

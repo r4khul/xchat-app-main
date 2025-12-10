@@ -15,5 +15,9 @@
   "join_circle_dialog_title": "Bergabung dengan lingkaran",
   "join_circle_dialog_content": "Pengguna ini berasal dari lingkaran \"${relayName}\". Apakah Anda ingin bergabung dengan lingkaran ini untuk mengobrol dengan mereka?",
   "failed_to_join_circle": "Gagal bergabung dengan lingkaran: ${message}",
-  "error_joining_circle": "Error saat bergabung dengan lingkaran: ${error}"
+  "error_joining_circle": "Error saat bergabung dengan lingkaran: ${error}",
+  "circle_status_connecting": "Menghubungkan ke ${circle}...",
+  "circle_status_disconnecting": "Memutuskan koneksi...",
+  "circle_status_disconnected": "Terputus",
+  "circle_status_unknown": "Status koneksi tidak diketahui"
 }

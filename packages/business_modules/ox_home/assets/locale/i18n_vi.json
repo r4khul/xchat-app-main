@@ -15,5 +15,9 @@
   "join_circle_dialog_title": "Tham gia vòng tròn",
   "join_circle_dialog_content": "Người dùng này đến từ vòng tròn \"${relayName}\". Bạn có muốn tham gia vòng tròn này để trò chuyện với họ không?",
   "failed_to_join_circle": "Không thể tham gia vòng tròn: ${message}",
-  "error_joining_circle": "Lỗi khi tham gia vòng tròn: ${error}"
+  "error_joining_circle": "Lỗi khi tham gia vòng tròn: ${error}",
+  "circle_status_connecting": "Đang kết nối tới ${circle}...",
+  "circle_status_disconnecting": "Đang ngắt kết nối...",
+  "circle_status_disconnected": "Đã ngắt kết nối",
+  "circle_status_unknown": "Trạng thái kết nối không xác định"
 }

@@ -15,5 +15,9 @@
   "join_circle_dialog_title": "Pievienojieties aplim",
   "join_circle_dialog_content": "Šis lietotājs ir no \"${relayName}\" apļa. Vai vēlaties pievienoties šim aplim, lai čatotu ar viņiem?",
   "failed_to_join_circle": "Neizdevās pievienoties aplim: ${message}",
-  "error_joining_circle": "Kļūda pievienojoties aplim: ${error}"
+  "error_joining_circle": "Kļūda pievienojoties aplim: ${error}",
+  "circle_status_connecting": "Savienojas ar ${circle}...",
+  "circle_status_disconnecting": "Atvienošana...",
+  "circle_status_disconnected": "Atvienots",
+  "circle_status_unknown": "Savienojuma statuss nav zināms"
 }

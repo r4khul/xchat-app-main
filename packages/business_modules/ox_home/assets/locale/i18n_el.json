@@ -15,5 +15,9 @@
   "join_circle_dialog_title": "Γίνετε μέλος του κύκλου",
   "join_circle_dialog_content": "Αυτός ο χρήστης είναι από τον κύκλο \"${relayName}\". Θέλετε να γίνετε μέλος αυτού του κύκλου για να συνομιλήσετε μαζί τους;",
   "failed_to_join_circle": "Αποτυχία συμμετοχής στον κύκλο: ${message}",
-  "error_joining_circle": "Σφάλμα κατά τη συμμετοχή στον κύκλο: ${error}"
+  "error_joining_circle": "Σφάλμα κατά τη συμμετοχή στον κύκλο: ${error}",
+  "circle_status_connecting": "Σύνδεση με ${circle}...",
+  "circle_status_disconnecting": "Αποσύνδεση...",
+  "circle_status_disconnected": "Αποσυνδεδεμένο",
+  "circle_status_unknown": "Άγνωστη κατάσταση σύνδεσης"
 }

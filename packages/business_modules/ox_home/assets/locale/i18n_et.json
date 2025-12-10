@@ -15,5 +15,9 @@
   "join_circle_dialog_title": "Liitu ringiga",
   "join_circle_dialog_content": "See kasutaja on ringist \"${relayName}\". Kas soovid liituda selle ringiga, et nendega vestelda?",
   "failed_to_join_circle": "Ringiga liitumine ebaõnnestus: ${message}",
-  "error_joining_circle": "Viga ringiga liitumisel: ${error}"
+  "error_joining_circle": "Viga ringiga liitumisel: ${error}",
+  "circle_status_connecting": "Ühendamine ${circle}...",
+  "circle_status_disconnecting": "Ühenduse katkestamine...",
+  "circle_status_disconnected": "Ühendus katkestatud",
+  "circle_status_unknown": "Ühenduse olek teadmata"
 }

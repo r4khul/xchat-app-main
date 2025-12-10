@@ -15,5 +15,9 @@
   "join_circle_dialog_title": "Присоединиться к кругу",
   "join_circle_dialog_content": "Этот пользователь из круга \"${relayName}\". Хотите присоединиться к этому кругу, чтобы общаться с ним?",
   "failed_to_join_circle": "Не удалось присоединиться к кругу: ${message}",
-  "error_joining_circle": "Ошибка при присоединении к кругу: ${error}"
+  "error_joining_circle": "Ошибка при присоединении к кругу: ${error}",
+  "circle_status_connecting": "Подключение к ${circle}...",
+  "circle_status_disconnecting": "Отключение...",
+  "circle_status_disconnected": "Отключено",
+  "circle_status_unknown": "Неизвестный статус подключения"
 }

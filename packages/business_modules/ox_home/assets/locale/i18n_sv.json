@@ -15,5 +15,9 @@
   "join_circle_dialog_title": "Gå med i cirkel",
   "join_circle_dialog_content": "Denna användare kommer från cirkeln \"${relayName}\". Vill du gå med i denna cirkel för att chatta med dem?",
   "failed_to_join_circle": "Misslyckades att gå med i cirkel: ${message}",
-  "error_joining_circle": "Fel vid anslutning till cirkel: ${error}"
+  "error_joining_circle": "Fel vid anslutning till cirkel: ${error}",
+  "circle_status_connecting": "Ansluter till ${circle}...",
+  "circle_status_disconnecting": "Kopplar från...",
+  "circle_status_disconnected": "Frånkopplad",
+  "circle_status_unknown": "Anslutningsstatus okänd"
 }

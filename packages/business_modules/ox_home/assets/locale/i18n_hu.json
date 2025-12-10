@@ -15,5 +15,9 @@
   "join_circle_dialog_title": "Csatlakozás a körhöz",
   "join_circle_dialog_content": "Ez a felhasználó a \"${relayName}\" körből származik. Szeretne csatlakozni ehhez a körhöz, hogy beszélgessen velük?",
   "failed_to_join_circle": "A körhöz való csatlakozás sikertelen: ${message}",
-  "error_joining_circle": "Hiba a körhöz való csatlakozáskor: ${error}"
+  "error_joining_circle": "Hiba a körhöz való csatlakozáskor: ${error}",
+  "circle_status_connecting": "Kapcsolódás a ${circle}...",
+  "circle_status_disconnecting": "Kapcsolat bontása...",
+  "circle_status_disconnected": "Kapcsolat bontva",
+  "circle_status_unknown": "Kapcsolat állapota ismeretlen"
 }
