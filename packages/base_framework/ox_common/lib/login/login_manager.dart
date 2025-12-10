@@ -886,6 +886,7 @@ extension LoginManagerCircle on LoginManager {
           }
           final result = await Account.sharedInstance.loginWithPriKey(
             privateKey,
+            false,
           );
           return result;
         case LoginType.androidSigner:
