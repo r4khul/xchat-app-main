@@ -878,7 +878,7 @@ extension ChatInputMoreHandlerEx on ChatGeneralHandler {
       res = await ImagePickerUtils.pickerPaths(
         galleryMode: mode,
         selectCount: 9,
-        showGif: false,
+        showGif: true,
         compressSize: 1024,
       );
     }else{
