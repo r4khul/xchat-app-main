@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:ox_common/component.dart';
+import 'package:ox_common/network/tor_network_helper.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import 'package:ox_usercenter/utils/app_config_helper.dart';
 
@@ -19,7 +19,6 @@ class AdvancedSettingsPage extends StatefulWidget {
 class _AdvancedSettingsPageState extends State<AdvancedSettingsPage> {
   late ValueNotifier<bool> showMessageInfoOption$;
   late ValueNotifier<bool> useTorNetwork$;
-  late Future<void> _initFuture;
 
   @override
   void initState() {
@@ -27,7 +26,6 @@ class _AdvancedSettingsPageState extends State<AdvancedSettingsPage> {
     // Notifier is cached in AppConfigHelper, no need to dispose
     showMessageInfoOption$ = AppConfigHelper.showMessageInfoOptionNotifier();
     useTorNetwork$ = AppConfigHelper.useTorNetworkNotifier();
-    _initFuture = AppConfigHelper.preloadAdvancedSettings();
   }
 
   @override
@@ -38,37 +36,34 @@ class _AdvancedSettingsPageState extends State<AdvancedSettingsPage> {
         previousPageTitle: widget.previousPageTitle,
       ),
       isSectionListPage: true,
-      body: FutureBuilder<void>(
-        future: _initFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return Center(child: CLProgressIndicator.circular());
-          }
-          return CLSectionListView(
-            items: [
-              SectionListViewItem(
-                data: [
-                  SwitcherItemModel(
-                    icon: ListViewIcon.data(CupertinoIcons.info),
-                    title: Localized.text('ox_usercenter.show_message_info_option'),
-                    value$: showMessageInfoOption$,
-                    onChanged: (value) async {
-                      await AppConfigHelper.updateShowMessageInfoOption(value);
-                    },
-                  ),
-                  SwitcherItemModel(
-                    icon: ListViewIcon.data(CupertinoIcons.lock_shield),
-                    title: Localized.text('ox_usercenter.use_tor_network'),
-                    value$: useTorNetwork$,
-                    onChanged: (value) async {
-                      await AppConfigHelper.updateUseTorNetwork(value);
-                    },
-                  ),
-                ],
+      body: CLSectionListView(
+        items: [
+          SectionListViewItem(
+            data: [
+              SwitcherItemModel(
+                icon: ListViewIcon.data(CupertinoIcons.info),
+                title: Localized.text('ox_usercenter.show_message_info_option'),
+                value$: showMessageInfoOption$,
+                onChanged: (value) async {
+                  await AppConfigHelper.updateShowMessageInfoOption(value);
+                },
+              ),
+              SwitcherItemModel(
+                icon: ListViewIcon.data(CupertinoIcons.lock_shield),
+                title: Localized.text('ox_usercenter.use_tor_network'),
+                value$: useTorNetwork$,
+                onChanged: (value) async {
+                  await AppConfigHelper.updateUseTorNetwork(value);
+                  if (value) {
+                    TorNetworkHelper.initialize();
+                  } else {
+                    TorNetworkHelper.stop();
+                  }
+                },
               ),
             ],
-          );
-        },
+          ),
+        ],
       ),
     );
   }
