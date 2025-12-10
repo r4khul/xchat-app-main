@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/login/login_models.dart';
 import 'package:ox_common/network/ping_helper.dart';
+import 'package:ox_common/network/tor_network_helper.dart';
 import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import 'package:ox_common/component.dart';
@@ -391,6 +392,10 @@ class CircleJoinUtils {
   /// Returns [_PreflightCheckResult] indicating whether to proceed (success) or cancel (failure)
   static Future<_PreflightCheckResult> _performWeakPreflightChecks(
       BuildContext context, String relayUrl) async {
+    if (TorNetworkHelper.isOnionUrl(relayUrl)) {
+      await TorNetworkHelper.initialize();
+    }
+
     try {
       // Perform basic connectivity check
       final uri = Uri.tryParse(relayUrl);

@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:chatcore/chat-core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ox_chat/ox_chat.dart';
@@ -8,6 +7,8 @@ import 'package:ox_chat_ui/ox_chat_ui.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/desktop/window_manager.dart';
 import 'package:ox_common/log_util.dart';
+import 'package:ox_common/network/http_overrides.dart';
+import 'package:ox_common/network/tor_network_helper.dart';
 import 'package:ox_common/ox_common.dart';
 import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/login/account_path_manager.dart';
@@ -21,8 +22,8 @@ import 'package:ox_localizable/ox_localizable.dart';
 import 'package:ox_login/ox_login.dart';
 import 'package:ox_theme/ox_theme.dart';
 import 'package:ox_usercenter/ox_usercenter.dart';
+import 'package:ox_usercenter/utils/app_config_helper.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:flutter_socks_proxy/socks_proxy.dart';
 import 'package:nostr_mls_package/nostr_mls_package.dart';
 import 'main.reflectable.dart';
 
@@ -72,12 +73,20 @@ class AppInitializer {
   }
 
   Future businessInitializer() async {
-    HttpOverrides.global = OXHttpOverrides(); //ignore all ssl
     await Future.wait([
       ThemeManager.init(),
       Localized.init(),
     ]);
     await _setupModules();
+
+    HttpOverrides.global = OXHttpOverrides()
+      ..torUsageResolver = () => AppConfigHelper.useTorNetworkNotifier().value;
+
+    AppConfigHelper.preloadAdvancedSettings().then((_) {
+      if (AppConfigHelper.useTorNetworkNotifier().value) {
+        TorNetworkHelper.initialize();
+      }
+    });
 
     ThemeManager.addOnThemeChangedCallback(onThemeStyleChange);
   }
@@ -170,39 +179,5 @@ class AppInitializer {
     } catch (e) {
       LogUtil.e('Error cleaning up temp folders on app startup: $e');
     }
-  }
-}
-
-class OXHttpOverrides extends HttpOverrides {
-  @override
-  HttpClient createHttpClient(SecurityContext? context) {
-    final client = createProxyHttpClient(context: context)
-      ..findProxy = (Uri uri) {
-        ProxySettings? settings = Config.sharedInstance.proxySettings;
-        if (settings == null) {
-          return 'DIRECT';
-        }
-        if (settings.turnOnProxy) {
-          return 'PROXY ${settings.socksProxyHost}:${settings.socksProxyPort}';
-          bool onionURI = uri.host.contains(".onion");
-          switch (settings.onionHostOption) {
-            case EOnionHostOption.no:
-              return onionURI ? '' : 'SOCKS5 ${settings.socksProxyHost}:${settings.socksProxyPort}';
-            case EOnionHostOption.whenAvailable:
-              return !onionURI
-                  ? 'DIRECT'
-                  : 'SOCKS5 ${settings.socksProxyHost}:${settings.socksProxyPort}';
-            case EOnionHostOption.required:
-              return !onionURI ? '' : 'SOCKS5 ${settings.socksProxyHost}:${settings.socksProxyPort}';
-            default:
-              break;
-          }
-        }
-        return "DIRECT";
-      }
-      ..badCertificateCallback = (X509Certificate cert, String host, int port) {
-        return true;
-      }; // add your localhost detection logic here if you want;
-    return client;
   }
 }

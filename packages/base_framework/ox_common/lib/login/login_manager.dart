@@ -8,6 +8,7 @@ import 'package:nostr_core_dart/nostr.dart';
 import 'package:convert/convert.dart';
 import 'package:ox_common/component.dart';
 import 'package:nostr_core_dart/src/signer/signer_config.dart';
+import 'package:ox_common/network/tor_network_helper.dart';
 import 'package:ox_common/push/push_integration.dart';
 import 'package:ox_common/push/push_notification_manager.dart';
 import 'package:ox_common/utils/extension.dart';
@@ -852,7 +853,6 @@ extension LoginManagerCircle on LoginManager {
         return false;
       }
 
-      // Login success
       await updateLastLoginCircle(circle);
 
       _loginCircleSuccessHandler(account, circle);
@@ -939,13 +939,15 @@ extension LoginManagerCircle on LoginManager {
 
   void _loginRelayCircleSuccessHandler(AccountModel account, Circle circle) async {
     final pubkey = account.pubkey;
+    final circleId = circle.id;
+    final relayUrl = circle.relayUrl;
     final config = ChatCoreInitConfig(
       pubkey: account.pubkey,
-      databasePath: await AccountPathManager.getCircleFolderPath(account.pubkey, circle.id),
+      databasePath: await AccountPathManager.getCircleFolderPath(account.pubkey, circleId),
       encryptionPassword: await _getEncryptionPassword(account),
-      circleId: circle.id,
+      circleId: circleId,
       isLite: true,
-      circleRelay: circle.relayUrl,
+      circleRelay: relayUrl,
       circleConnectCallback: (isConnected) {
         if (isConnected) {
           Account.sharedInstance.reloadProfileFromRelay(pubkey);
@@ -960,9 +962,13 @@ extension LoginManagerCircle on LoginManager {
     );
     await ChatCoreManager().initChatCoreWithConfig(config);
     LoginUserNotifier.instance.updateUserSource(Account.sharedInstance.getUserNotifier(pubkey));
-    Account.sharedInstance.syncFollowingListFromRelay(pubkey, relay: circle.relayUrl);
+    Account.sharedInstance.syncFollowingListFromRelay(pubkey, relay: relayUrl);
 
     initializePushCore();
+
+    if (TorNetworkHelper.isOnionUrl(relayUrl)) {
+      TorNetworkHelper.initialize();
+    }
   }
 
   void initializePushCore() async {
