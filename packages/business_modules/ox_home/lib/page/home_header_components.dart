@@ -196,25 +196,22 @@ class HomeHeaderComponents {
       );
     }
 
-    final statusText = CLText.bodyLarge(
+    final statusText = CLText.titleMedium(
       _statusText(status),
-      colorToken: ColorToken.onSurfaceVariant,
       maxLines: 1,
-      overflow: TextOverflow.ellipsis,
+      colorToken: ColorToken.onSurface,
     );
 
     return Row(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         if (status == ConnectStatus.connecting)
           ...[
-            SizedBox(
-              width: 24.px,
-              height: 24.px,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation(ColorToken.onSurfaceVariant.of(context)),
-              ),
+            CLProgressIndicator.circular(
+              size: 20.px,
+              color: ColorToken.onSurfaceVariant.of(context),
+              useMaterialStyle: true, // force Android style for consistent size
             ),
             SizedBox(width: 6.px),
           ],

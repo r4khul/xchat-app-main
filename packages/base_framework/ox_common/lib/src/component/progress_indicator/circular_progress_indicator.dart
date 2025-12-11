@@ -11,17 +11,20 @@ class CLCircularProgressIndicator extends StatelessWidget {
     this.progress,
     this.size,
     this.color,
+    this.useMaterialStyle,
   });
 
   final double? progress;
   final double? size;
   final Color? color;
+  final bool? useMaterialStyle;
 
   double get defaultSize => 40; // _CircularProgressIndicatorDefaultsM3.constraints
+  bool get _isMaterialStyle => useMaterialStyle ?? PlatformStyle.isUseMaterial;
 
   @override
   Widget build(BuildContext context) {
-    if (PlatformStyle.isUseMaterial) {
+    if (_isMaterialStyle) {
       return _buildMaterialIndicator(context);
     } else {
       return _buildCupertinoIndicator(context);
@@ -38,6 +41,8 @@ class CLCircularProgressIndicator extends StatelessWidget {
       child: CircularProgressIndicator(
         value: progress,
         strokeWidth: strokeWidth,
+        color: color,
+        year2023: false,
       ),
     );
   }
@@ -68,6 +73,7 @@ class CLCircularProgressIndicator extends StatelessWidget {
         strokeWidth: strokeWidth,
         strokeCap: StrokeCap.round,
         backgroundColor: trackColor,
+        color: color,
       ),
     );
   }
