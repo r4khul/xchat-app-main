@@ -57,6 +57,7 @@ public class PushNotificationService extends Service {
     private static final String TAG = "PushNotificationService";
     private static final String CHANNEL_ID = "PushNotificationServiceChannel";
     private static final String PUSH_NOTIFICATION_CHANNEL_ID = "PushNotificationChannel";
+    public static final String ACTION_STOP = "com.oxchat.lite.ACTION_STOP";
     
     // Jackson ObjectMapper for JSON serialization (matching nostr-java EventJsonMapper)
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
@@ -85,6 +86,8 @@ public class PushNotificationService extends Service {
     private Secp256k1 secp256k1; // For Schnorr signature
     private Handler authRetryHandler; // Handler for retrying AUTH challenge when privatekey is not available
     private Runnable authRetryRunnable; // Runnable for retrying AUTH challenge
+    private boolean hasStoppedForeground = false; // Track if foreground notification has been removed
+    private boolean cleanedUp = false; // Prevent double cleanup when service is stopping
 
     private static final String PREFS_NAME = "push_service";
     private static final String KEY_SERVER_RELAY = "server_relay";
@@ -129,6 +132,13 @@ public class PushNotificationService extends Service {
         Log.d(TAG, "PushNotificationService started");
         
         if (intent != null) {
+            // Handle explicit stop action to ensure foreground is removed within timeout
+            if (ACTION_STOP.equals(intent.getAction())) {
+                Log.d(TAG, "Received ACTION_STOP, stopping service gracefully");
+                cleanupAndStopSelf();
+                return START_NOT_STICKY;
+            }
+
             // New start from Flutter app
             serverRelay = intent.getStringExtra(EXTRA_SERVER_RELAY);
             deviceId = intent.getStringExtra(EXTRA_DEVICE_ID);
@@ -224,35 +234,14 @@ public class PushNotificationService extends Service {
     @Override
     public void onDestroy() {
         Log.d(TAG, "PushNotificationService destroying");
-        
-        // Stop foreground service immediately to avoid ForegroundServiceDidNotStopInTimeException
-        // Use STOP_FOREGROUND_REMOVE to remove notification immediately
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            stopForeground(Service.STOP_FOREGROUND_REMOVE);
-        } else {
-            stopForeground(true);
-        }
-        
-        // Cancel all pending operations
-        if (reconnectRunnable != null && reconnectHandler != null) {
-            reconnectHandler.removeCallbacks(reconnectRunnable);
-            reconnectRunnable = null;
-        }
-        if (authRetryRunnable != null && authRetryHandler != null) {
-            authRetryHandler.removeCallbacks(authRetryRunnable);
-            authRetryRunnable = null;
-        }
-        
-        // Disconnect from relay
-        disconnectFromRelay();
-        
-        // Reset flags
-        isConnecting = false;
-        isReconnecting = false;
-        
-        // Clear private key from file system when service is destroyed
-        KeystoreHelper.clearPrivateKey(this);
-        
+
+        // CRITICAL: Stop foreground notification IMMEDIATELY to avoid ForegroundServiceDidNotStopInTimeException
+        // This must be called before any potentially blocking cleanup operations
+        stopForegroundSafely();
+
+        // Perform cleanup operations (these may be slow, but stopForeground was already called)
+        performCleanup(false);
+
         super.onDestroy();
         Log.d(TAG, "PushNotificationService destroyed");
     }
@@ -851,6 +840,71 @@ public class PushNotificationService extends Service {
         };
         
         reconnectHandler.postDelayed(reconnectRunnable, RECONNECT_DELAY_MS);
+    }
+
+    /**
+     * Stop the foreground service gracefully when receiving explicit stop action.
+     */
+    private void cleanupAndStopSelf() {
+        performCleanup(true);
+    }
+
+    /**
+     * Shared cleanup logic; optionally calls stopSelf() when requested.
+     */
+    private void performCleanup(boolean shouldStopSelf) {
+        if (cleanedUp) {
+            if (shouldStopSelf) {
+                stopSelf();
+            }
+            return;
+        }
+
+        cleanedUp = true;
+
+        // Stop foreground notification as early as possible to avoid timeout crashes
+        stopForegroundSafely();
+
+        // Cancel all pending operations
+        if (reconnectRunnable != null && reconnectHandler != null) {
+            reconnectHandler.removeCallbacks(reconnectRunnable);
+            reconnectRunnable = null;
+        }
+        if (authRetryRunnable != null && authRetryHandler != null) {
+            authRetryHandler.removeCallbacks(authRetryRunnable);
+            authRetryRunnable = null;
+        }
+
+        // Disconnect and reset state
+        disconnectFromRelay();
+        isConnecting = false;
+        isReconnecting = false;
+
+        // Clear private key from file system when service is destroyed
+        KeystoreHelper.clearPrivateKey(this);
+
+        if (shouldStopSelf) {
+            stopSelf();
+        }
+    }
+
+    /**
+     * Remove the foreground notification with safeguards to avoid duplicate calls.
+     */
+    private void stopForegroundSafely() {
+        if (hasStoppedForeground) {
+            return;
+        }
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                stopForeground(Service.STOP_FOREGROUND_REMOVE);
+            } else {
+                stopForeground(true);
+            }
+        } catch (IllegalStateException e) {
+            Log.w(TAG, "stopForeground called when not in foreground", e);
+        }
+        hasStoppedForeground = true;
     }
 
     /**

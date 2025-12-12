@@ -141,8 +141,13 @@ public class AppPreferences implements MethodChannel.MethodCallHandler, FlutterP
                 result.success(true);
             }
             case "stopPushNotificationService" -> {
-                Intent serviceIntent = new Intent(mContext, PushNotificationService.class);
-                mContext.stopService(serviceIntent);
+                Intent stopIntent = new Intent(mContext, PushNotificationService.class);
+                stopIntent.setAction(PushNotificationService.ACTION_STOP);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    mContext.startForegroundService(stopIntent);
+                } else {
+                    mContext.startService(stopIntent);
+                }
                 result.success(true);
             }
             case "sendAuthResponse" -> {
