@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:ox_common/component.dart';
+import 'package:ox_common/network/tor_network_helper.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import 'package:ox_usercenter/utils/app_config_helper.dart';
 
@@ -18,12 +18,14 @@ class AdvancedSettingsPage extends StatefulWidget {
 
 class _AdvancedSettingsPageState extends State<AdvancedSettingsPage> {
   late ValueNotifier<bool> showMessageInfoOption$;
+  late ValueNotifier<bool> useTorNetwork$;
 
   @override
   void initState() {
     super.initState();
     // Notifier is cached in AppConfigHelper, no need to dispose
     showMessageInfoOption$ = AppConfigHelper.showMessageInfoOptionNotifier();
+    useTorNetwork$ = AppConfigHelper.useTorNetworkNotifier();
   }
 
   @override
@@ -44,6 +46,19 @@ class _AdvancedSettingsPageState extends State<AdvancedSettingsPage> {
                 value$: showMessageInfoOption$,
                 onChanged: (value) async {
                   await AppConfigHelper.updateShowMessageInfoOption(value);
+                },
+              ),
+              SwitcherItemModel(
+                icon: ListViewIcon.data(CupertinoIcons.lock_shield),
+                title: Localized.text('ox_usercenter.use_tor_network'),
+                value$: useTorNetwork$,
+                onChanged: (value) async {
+                  await AppConfigHelper.updateUseTorNetwork(value);
+                  if (value) {
+                    TorNetworkHelper.initialize();
+                  } else {
+                    TorNetworkHelper.stop();
+                  }
                 },
               ),
             ],

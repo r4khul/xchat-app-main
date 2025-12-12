@@ -15,5 +15,9 @@
   "join_circle_dialog_title": "Tilslut dig til cirkel",
   "join_circle_dialog_content": "Denne bruger kommer fra cirklen \"${relayName}\". Vil du tilslutte dig til denne cirkel for at chatte med dem?",
   "failed_to_join_circle": "Kunne ikke tilslutte sig til cirkel: ${message}",
-  "error_joining_circle": "Fejl ved tilslutning til cirkel: ${error}"
+  "error_joining_circle": "Fejl ved tilslutning til cirkel: ${error}",
+  "circle_status_connecting": "Forbinder til ${circle}...",
+  "circle_status_disconnecting": "Afbryder forbindelse...",
+  "circle_status_disconnected": "Afbrudt",
+  "circle_status_unknown": "Forbindelsesstatus ukendt"
 }

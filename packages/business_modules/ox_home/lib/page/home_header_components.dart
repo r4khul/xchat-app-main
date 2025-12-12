@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:chatcore/chat-core.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/login/login_models.dart';
@@ -30,6 +31,7 @@ class HomeHeaderComponents {
     required this.circles,
     required this.selectedCircle$,
     this.onCircleSelected,
+    required this.relayStatus$,
     this.avatarOnTap,
     this.nameOnTap,
     this.addOnTap,
@@ -50,6 +52,8 @@ class HomeHeaderComponents {
   /// Called when a circle is selected
   final ValueChanged<CircleItem>? onCircleSelected;
 
+  final ValueNotifier<ConnectStatus> relayStatus$;
+
   GestureTapCallback? avatarOnTap;
   GestureTapCallback? nameOnTap;
   GestureTapCallback? addOnTap;
@@ -68,7 +72,7 @@ class HomeHeaderComponents {
     if (initUrl != null) _latencyHandler.switchRelay(initUrl);
   }
 
-  selectedCircleChangedHandler() {
+  void selectedCircleChangedHandler() {
     final url = selectedCircle$.value?.relayUrl;
     if (url != null) _latencyHandler.switchRelay(url);
   }
@@ -79,17 +83,7 @@ class HomeHeaderComponents {
 
   AppBar buildAppBar(BuildContext ctx) => AppBar(
     leadingWidth: 280.px,
-    leading: ValueListenableBuilder(
-      valueListenable: LoginManager.instance.state$,
-      builder: (_, __, ___) {
-        return Row(
-          children: [
-            _buildAvatar(),
-            Expanded(child: _buildCircleName()),
-          ],
-        );
-      }
-    ),
+    leading: _buildLeading(),
     actions: [
       // if (PlatformStyle.isUseMaterial)
       //   CLButton.icon(
@@ -113,11 +107,25 @@ class HomeHeaderComponents {
               onTap: addOnTap,
             ).setPaddingOnly(right: 4.px),
           );
-        }
+        },
       ),
     ],
     backgroundColor: ColorToken.surface.of(ctx),
   );
+
+  Widget _buildLeading() {
+    return ValueListenableBuilder(
+      valueListenable: LoginManager.instance.state$,
+      builder: (_, __, ___) {
+        return Row(
+          children: [
+            _buildAvatar(),
+            Expanded(child: _buildCircleName()),
+          ],
+        );
+      },
+    );
+  }
 
   Widget _buildAvatar() {
     return GestureDetector(
@@ -146,41 +154,90 @@ class HomeHeaderComponents {
     return ValueListenableBuilder(
       valueListenable: selectedCircle$,
       builder: (_, selectedCircle, __) {
-        return GestureDetector(
-          onTap: circles.isNotEmpty ? nameOnTap : null,
-          child: Row(
-            children: [
-              Flexible(
-                child: CLText.titleLarge(
-                  selectedCircle?.name ?? '',
-                  maxLines: 1,
-                ),
+        return ValueListenableBuilder(
+          valueListenable: relayStatus$,
+          builder: (context, status, __) {
+            return GestureDetector(
+              onTap: circles.isNotEmpty ? nameOnTap : null,
+              child: Row(
+                children: [
+                  Flexible(
+                    child: _buildCircleTitleContent(context, selectedCircle, status),
+                  ),
+                  if (circles.isNotEmpty)
+                    ValueListenableBuilder(
+                      valueListenable: isShowExtendBody$,
+                      builder: (context, isShowExtendBody, _) {
+                        return AnimatedRotation(
+                          turns: isShowExtendBody ? 0.5 : 0,
+                          duration: const Duration(milliseconds: 300),
+                          child: Icon(
+                            Icons.arrow_drop_down,
+                            color: ColorToken.onSurface.of(context),
+                          ),
+                        );
+                      },
+                    ),
+                ],
               ),
-              if (circles.isNotEmpty)
-                ValueListenableBuilder(
-                  valueListenable: isShowExtendBody$,
-                  builder: (context, isShowExtendBody, _) {
-                    return AnimatedRotation(
-                      turns: isShowExtendBody ? 0.5 : 0,
-                      duration: const Duration(milliseconds: 300),
-                      child: Icon(
-                        Icons.arrow_drop_down,
-                        color: ColorToken.onSurface.of(context),
-                      ),
-                    );
-                  }
-                ),
-            ],
-          ),
+            );
+          },
         );
-      }
+      },
     );
+  }
+
+  Widget _buildCircleTitleContent(BuildContext context, CircleItem? selectedCircle, ConnectStatus status) {
+    final isConnected = status == ConnectStatus.open;
+    if (isConnected) {
+      return CLText.titleLarge(
+        selectedCircle?.name ?? '',
+        maxLines: 1,
+      );
+    }
+
+    final statusText = CLText.titleMedium(
+      _statusText(status),
+      maxLines: 1,
+      colorToken: ColorToken.onSurface,
+    );
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        if (status == ConnectStatus.connecting)
+          ...[
+            CLProgressIndicator.circular(
+              size: 20.px,
+              color: ColorToken.onSurfaceVariant.of(context),
+              useMaterialStyle: true, // force Android style for consistent size
+            ),
+            SizedBox(width: 6.px),
+          ],
+        Flexible(child: statusText),
+      ],
+    );
+  }
+
+  String _statusText(ConnectStatus status) {
+    switch (status) {
+      case ConnectStatus.connecting:
+        return Localized.text('ox_home.circle_status_connecting')
+            .replaceAll('\${circle}', '');
+      case ConnectStatus.closing:
+        return Localized.text('ox_home.circle_status_disconnecting');
+      case ConnectStatus.closed:
+        return Localized.text('ox_home.circle_status_disconnected');
+      default:
+        return Localized.text('ox_home.circle_status_unknown');
+    }
   }
 
   Widget buildCircleList(BuildContext ctx) => Container(
     decoration: BoxDecoration(
       color: ColorToken.surface.of(ctx),
-      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16))
+      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
     ),
     child: Column(
       mainAxisSize: MainAxisSize.min,
@@ -199,7 +256,7 @@ class HomeHeaderComponents {
               items: circles.map((circle) =>
                   _circleItemListTileMapper(circle, selectedCircle)).toList(),
             );
-          }
+          },
         ),
         _buildOptionButtons(),
       ],

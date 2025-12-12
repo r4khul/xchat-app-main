@@ -79,6 +79,7 @@ dev_dependencies:
   json_serializable: ^6.1.5
   watcher: ^1.1.0
   flutter_socks_proxy: ^0.0.3
+  flutter_lints: ^5.0.0
 
 dependency_overrides:
   file_selector_linux: 0.9.2+1

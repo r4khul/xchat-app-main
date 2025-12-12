@@ -15,5 +15,9 @@
   "join_circle_dialog_title": "Uneix-te al cercle",
   "join_circle_dialog_content": "Aquest usuari és del cercle \"${relayName}\". Vols unir-te a aquest cercle per xatejar amb ells?",
   "failed_to_join_circle": "Error en unir-se al cercle: ${message}",
-  "error_joining_circle": "Error en unir-se al cercle: ${error}"
+  "error_joining_circle": "Error en unir-se al cercle: ${error}",
+  "circle_status_connecting": "Connectant a ${circle}...",
+  "circle_status_disconnecting": "Desconnectant...",
+  "circle_status_disconnected": "Desconnectat",
+  "circle_status_unknown": "Estat de connexió desconegut"
 }

@@ -15,5 +15,9 @@
   "join_circle_dialog_title": "Dairəyə qoşulun",
   "join_circle_dialog_content": "Bu istifadəçi \"${relayName}\" dairəsindəndir. Onlarla söhbət etmək üçün bu dairəyə qoşulmaq istəyirsinizmi?",
   "failed_to_join_circle": "Dairəyə qoşulmaq uğursuz oldu: ${message}",
-  "error_joining_circle": "Dairəyə qoşularkən xəta: ${error}"
+  "error_joining_circle": "Dairəyə qoşularkən xəta: ${error}",
+  "circle_status_connecting": "${circle} ilə bağlanır...",
+  "circle_status_disconnecting": "Bağlantı kəsiliyor...",
+  "circle_status_disconnected": "Bağlantı kəsildi",
+  "circle_status_unknown": "Bağlantı statusu naməlum"
 }

@@ -15,5 +15,9 @@
   "join_circle_dialog_title": "サークルに参加",
   "join_circle_dialog_content": "このユーザーは「${relayName}」サークルからのものです。このサークルに参加してチャットしますか？",
   "failed_to_join_circle": "サークルへの参加に失敗しました：${message}",
-  "error_joining_circle": "サークルへの参加中にエラーが発生しました：${error}"
+  "error_joining_circle": "サークルへの参加中にエラーが発生しました：${error}",
+  "circle_status_connecting": "${circle} に接続中...",
+  "circle_status_disconnecting": "切断中...",
+  "circle_status_disconnected": "未接続",
+  "circle_status_unknown": "接続状態不明"
 }

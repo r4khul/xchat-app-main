@@ -9,11 +9,13 @@ class CLProgressIndicator {
     double? progress,
     double? size,
     Color? color,
+    bool? useMaterialStyle,
   }) {
     return CLCircularProgressIndicator(
       progress: progress,
       size: size,
       color: color,
+      useMaterialStyle: useMaterialStyle,
     );
   }
 

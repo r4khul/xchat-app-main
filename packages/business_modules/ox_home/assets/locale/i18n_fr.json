@@ -15,5 +15,9 @@
   "join_circle_dialog_title": "Rejoindre un cercle",
   "join_circle_dialog_content": "Cet utilisateur provient du cercle \"${relayName}\". Voulez-vous rejoindre ce cercle pour discuter avec lui ?",
   "failed_to_join_circle": "Échec de la participation au cercle : ${message}",
-  "error_joining_circle": "Erreur lors de la participation au cercle : ${error}"
+  "error_joining_circle": "Erreur lors de la participation au cercle : ${error}",
+  "circle_status_connecting": "Connexion à ${circle}...",
+  "circle_status_disconnecting": "Déconnexion...",
+  "circle_status_disconnected": "Déconnecté",
+  "circle_status_unknown": "État de connexion inconnu"
 }

@@ -15,5 +15,9 @@
   "join_circle_dialog_title": "เข้าร่วมวงกลม",
   "join_circle_dialog_content": "ผู้ใช้นี้มาจากวงกลม \"${relayName}\" คุณต้องการเข้าร่วมวงกลมนี้เพื่อแชทกับพวกเขาไหม?",
   "failed_to_join_circle": "ล้มเหลวในการเข้าร่วมวงกลม: ${message}",
-  "error_joining_circle": "ข้อผิดพลาดในการเข้าร่วมวงกลม: ${error}"
+  "error_joining_circle": "ข้อผิดพลาดในการเข้าร่วมวงกลม: ${error}",
+  "circle_status_connecting": "กำลังเชื่อมต่อกับ ${circle}...",
+  "circle_status_disconnecting": "กำลังตัดการเชื่อมต่อ...",
+  "circle_status_disconnected": "ตัดการเชื่อมต่อแล้ว",
+  "circle_status_unknown": "สถานะการเชื่อมต่อไม่ทราบ"
 }

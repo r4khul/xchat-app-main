@@ -3,7 +3,8 @@ import 'package:ox_cache_manager/ox_cache_manager.dart';
 import 'package:ox_common/log_util.dart';
 
 enum AppConfigKeys {
-  showMessageInfoOption('app_config_show_message_info_option');
+  showMessageInfoOption('app_config_show_message_info_option'),
+  useTorNetwork('app_config_use_tor_network');
 
   const AppConfigKeys(this.value);
   final String value;
@@ -18,6 +19,26 @@ class AppConfigHelper {
 
   static Future<void> updateShowMessageInfoOption(bool value) async {
     await AppConfigKeys.showMessageInfoOption._updateNotifier(value);
+  }
+
+  static ValueNotifier<bool> useTorNetworkNotifier() {
+    return AppConfigKeys.useTorNetwork._getNotifier(defaultValue: false);
+  }
+
+  static Future<void> updateUseTorNetwork(bool value) async {
+    await AppConfigKeys.useTorNetwork._updateNotifier(value);
+  }
+
+  /// Preload advanced settings before presenting UI to avoid toggle flicker.
+  static Future<void> preloadAdvancedSettings() async {
+    final showMessageInfo =
+        await AppConfigKeys.showMessageInfoOption._getValue(defaultValue: false);
+    AppConfigKeys.showMessageInfoOption
+        ._setNotifierValue(defaultValue: false, value: showMessageInfo);
+
+    final useTor = await AppConfigKeys.useTorNetwork._getValue(defaultValue: false);
+    AppConfigKeys.useTorNetwork
+        ._setNotifierValue(defaultValue: false, value: useTor);
   }
 }
 
@@ -60,5 +81,10 @@ extension _AppConfigKeysExtension on AppConfigKeys {
     if (notifier is ValueNotifier<T>) {
       notifier.value = value;
     }
+  }
+
+  void _setNotifierValue<T>({required T defaultValue, required T value}) {
+    final notifier = _getNotifier(defaultValue: defaultValue);
+    notifier.value = value;
   }
 }

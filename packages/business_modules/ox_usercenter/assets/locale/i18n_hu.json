@@ -105,6 +105,7 @@
   "contact_us": "Lépjen kapcsolatba velünk",
   "advanced_settings": "Haladó",
   "show_message_info_option": "Üzenet információ opció megjelenítése",
+  "use_tor_network": "A Tor hálózat globális használata",
   "account": "Fiók",
   "chat": "Csevegés"
 }

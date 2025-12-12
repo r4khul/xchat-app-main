@@ -15,5 +15,9 @@
   "join_circle_dialog_title": "सर्कल में शामिल हों",
   "join_circle_dialog_content": "यह उपयोगकर्ता सर्कल \"${relayName}\" से है। क्या आप इस सर्कल में शामिल होना चाहते हैं ताकि उनसे चैट कर सकें?",
   "failed_to_join_circle": "सर्कल में शामिल होने में विफल: ${message}",
-  "error_joining_circle": "सर्कल में शामिल होने में त्रुटि: ${error}"
+  "error_joining_circle": "सर्कल में शामिल होने में त्रुटि: ${error}",
+  "circle_status_connecting": "${circle} से कनेक्ट हो रहा है...",
+  "circle_status_disconnecting": "डिस्कनेक्ट हो रहा है...",
+  "circle_status_disconnected": "डिस्कनेक्ट",
+  "circle_status_unknown": "कनेक्शन स्थिति अज्ञात"
 }

@@ -15,5 +15,9 @@
   "join_circle_dialog_title": "Word lid van cirkel",
   "join_circle_dialog_content": "Deze gebruiker komt uit de cirkel \"${relayName}\". Wil je lid worden van deze cirkel om met hen te chatten?",
   "failed_to_join_circle": "Lid worden van cirkel mislukt: ${message}",
-  "error_joining_circle": "Fout bij lid worden van cirkel: ${error}"
+  "error_joining_circle": "Fout bij lid worden van cirkel: ${error}",
+  "circle_status_connecting": "Verbinden met ${circle}...",
+  "circle_status_disconnecting": "Verbinding verbreken...",
+  "circle_status_disconnected": "Verbroken",
+  "circle_status_unknown": "Verbindingsstatus onbekend"
 }

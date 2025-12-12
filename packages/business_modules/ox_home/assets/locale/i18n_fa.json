@@ -15,5 +15,9 @@
   "join_circle_dialog_title": "به دایره بپیوندید",
   "join_circle_dialog_content": "این کاربر از دایره \"${relayName}\" است. آیا می‌خواهید به این دایره بپیوندید تا با آنها چت کنید؟",
   "failed_to_join_circle": "پیوستن به دایره ناموفق بود: ${message}",
-  "error_joining_circle": "خطا در پیوستن به دایره: ${error}"
+  "error_joining_circle": "خطا در پیوستن به دایره: ${error}",
+  "circle_status_connecting": "در حال اتصال به ${circle}...",
+  "circle_status_disconnecting": "در حال قطع اتصال...",
+  "circle_status_disconnected": "قطع شده",
+  "circle_status_unknown": "وضعیت اتصال نامشخص"
 }

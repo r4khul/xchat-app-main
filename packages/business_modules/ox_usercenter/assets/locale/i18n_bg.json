@@ -105,6 +105,7 @@
   "contact_us": "Свържете се с нас",
   "advanced_settings": "Разширени",
   "show_message_info_option": "Покажи опция за информация за съобщението",
+  "use_tor_network": "Използвай мрежата Tor глобално",
   "account": "Акаунт",
   "chat": "Чат"
 }

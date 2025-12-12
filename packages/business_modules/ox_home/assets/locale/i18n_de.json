@@ -15,5 +15,9 @@
   "join_circle_dialog_title": "Kreis beitreten",
   "join_circle_dialog_content": "Dieser Benutzer kommt aus dem Kreis \"${relayName}\". Möchten Sie diesem Kreis beitreten, um mit ihm zu chatten?",
   "failed_to_join_circle": "Beitritt zum Kreis fehlgeschlagen: ${message}",
-  "error_joining_circle": "Fehler beim Beitritt zum Kreis: ${error}"
+  "error_joining_circle": "Fehler beim Beitritt zum Kreis: ${error}",
+  "circle_status_connecting": "Verbinde mit ${circle}...",
+  "circle_status_disconnecting": "Trenne Verbindung...",
+  "circle_status_disconnected": "Getrennt",
+  "circle_status_unknown": "Verbindungsstatus unbekannt"
 }

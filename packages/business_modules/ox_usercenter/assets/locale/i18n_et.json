@@ -105,6 +105,7 @@
   "contact_us": "Võtke meiega ühendust",
   "advanced_settings": "Täpsem",
   "show_message_info_option": "Kuva sõnumi info valik",
+  "use_tor_network": "Kasuta Tor-võrku globaalselt",
   "account": "Konto",
   "chat": "Vestlus"
 }

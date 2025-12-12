@@ -15,5 +15,9 @@
   "join_circle_dialog_title": "Unisciti al cerchio",
   "join_circle_dialog_content": "Questo utente proviene dal cerchio \"${relayName}\". Vuoi unirti a questo cerchio per chattare con loro?",
   "failed_to_join_circle": "Impossibile unirsi al cerchio: ${message}",
-  "error_joining_circle": "Errore nell'unirsi al cerchio: ${error}"
+  "error_joining_circle": "Errore nell'unirsi al cerchio: ${error}",
+  "circle_status_connecting": "Connessione a ${circle}...",
+  "circle_status_disconnecting": "Disconnessione...",
+  "circle_status_disconnected": "Disconnesso",
+  "circle_status_unknown": "Stato di connessione sconosciuto"
 }

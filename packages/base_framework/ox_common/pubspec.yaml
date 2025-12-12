@@ -96,6 +96,7 @@ dependencies:
   wechat_assets_picker: ^10.0.0
   photo_manager: ^3.5.0
   path_provider: ^2.1.0
+  socks5_proxy: 2.1.1
 
   chatcore:
     path: ../../0xchat-core
@@ -109,6 +110,10 @@ dependencies:
     path: ../ox_localizable
   bitchat_flutter_plugin:
     path: ../../bitchat-flutter-plugin
+  tor:
+    git:
+      url: https://github.com/0xchat-app/tor.git
+      ref: 703504a16b00a274435bfd772de6d9b9b06a3f15
 
 dev_dependencies:
   build_runner: ^2.4.10

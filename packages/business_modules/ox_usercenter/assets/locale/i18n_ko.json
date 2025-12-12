@@ -105,6 +105,7 @@
   "contact_us": "문의하기",
   "advanced_settings": "고급",
   "show_message_info_option": "메시지 정보 옵션 표시",
+  "use_tor_network": "Tor 네트워크를 전역으로 사용",
   "account": "계정",
   "chat": "채팅"
 }

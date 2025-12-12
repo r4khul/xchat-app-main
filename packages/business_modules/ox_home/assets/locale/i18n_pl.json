@@ -15,5 +15,9 @@
   "join_circle_dialog_title": "Dołącz do kręgu",
   "join_circle_dialog_content": "Ten użytkownik pochodzi z kręgu \"${relayName}\". Czy chcesz dołączyć do tego kręgu, aby z nim czatować?",
   "failed_to_join_circle": "Nie udało się dołączyć do kręgu: ${message}",
-  "error_joining_circle": "Błąd podczas dołączania do kręgu: ${error}"
+  "error_joining_circle": "Błąd podczas dołączania do kręgu: ${error}",
+  "circle_status_connecting": "Łączenie z ${circle}...",
+  "circle_status_disconnecting": "Rozłączanie...",
+  "circle_status_disconnected": "Rozłączono",
+  "circle_status_unknown": "Nieznany status połączenia"
 }

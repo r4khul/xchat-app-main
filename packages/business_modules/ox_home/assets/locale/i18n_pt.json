@@ -15,5 +15,9 @@
   "join_circle_dialog_title": "Junte-se ao círculo",
   "join_circle_dialog_content": "Este usuário é do círculo \"${relayName}\". Você gostaria de se juntar a este círculo para conversar com eles?",
   "failed_to_join_circle": "Falha ao se juntar ao círculo: ${message}",
-  "error_joining_circle": "Erro ao se juntar ao círculo: ${error}"
+  "error_joining_circle": "Erro ao se juntar ao círculo: ${error}",
+  "circle_status_connecting": "Conectando a ${circle}...",
+  "circle_status_disconnecting": "Desconectando...",
+  "circle_status_disconnected": "Desconectado",
+  "circle_status_unknown": "Estado de conexão desconhecido"
 }

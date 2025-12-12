@@ -105,6 +105,7 @@
   "contact_us": "Contactez-nous",
   "advanced_settings": "Avancé",
   "show_message_info_option": "Afficher l'option d'information du message",
+  "use_tor_network": "Utiliser le réseau Tor globalement",
   "account": "Compte",
   "chat": "Discussion"
 }
