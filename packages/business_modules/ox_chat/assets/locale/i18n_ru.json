@@ -74,7 +74,7 @@
   "no_members": "Нет участников",
   "no_removable_members": "Нет удаляемых участников",
   "remove_member_confirm_content": "Вы уверены, что хотите удалить {count} участника(ов) из группы?",
-  "no_sessions_title": "Пока нет разговоров",
+  "no_sessions_title": "Пока нет чатов",
   "no_sessions_description": "Нажмите кнопку + в правом верхнем углу, чтобы начать новый чат.",
   "str_leave_group": "Выйти из группы",
   "delete_message_me_action_mode": "Удалить только для меня",
