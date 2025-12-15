@@ -1,0 +1,38 @@
+name: ox_call
+description: XChat WebRTC calling module
+version: 0.0.1
+publish_to: none
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+  flutter: ">=3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # WebRTC
+  flutter_webrtc: ^1.2.1
+
+  # Permissions
+  permission_handler: ^11.0.0
+
+  # Core dependencies
+  chatcore:
+    path: ../../0xchat-core
+  nostr_core_dart:
+    path: ../../nostr-dart
+  ox_module_service:
+    path: ../ox_module_service
+  ox_common:
+    path: ../ox_common
+  ox_cache_manager:
+    path: ../ox_cache_manager
+
+  # Audio session for background keep-alive
+  audio_session: ^0.1.18
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
