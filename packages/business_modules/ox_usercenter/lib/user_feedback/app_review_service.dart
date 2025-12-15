@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:in_app_review/in_app_review.dart';
@@ -107,10 +108,16 @@ class AppReviewService {
   }
 
   Future<AppReviewOutcome> openStoreListing() async {
-    if (_config.appStoreId == null || _config.appStoreId!.isEmpty) {
+    if (Platform.isIOS && (_config.appStoreId == null || _config.appStoreId!.isEmpty)) {
       LogUtil.w('openStoreListing skipped: appStoreId is not configured');
       return _storeOutcome(AppReviewOutcome.unavailable);
     }
+
+    if (Platform.isAndroid && (_config.googlePlayId == null || _config.googlePlayId!.isEmpty)) {
+      LogUtil.w('openStoreListing skipped: googlePlayId is not configured');
+      return _storeOutcome(AppReviewOutcome.unavailable);
+    }
+
     await _rateMyAppAdapter.ensureInitialized();
     try {
       final bool opened = await _rateMyAppAdapter.launchStore();
@@ -154,8 +161,8 @@ class AppReviewService {
   }
 
   bool _isUnsupportedPlatform() {
-    // Only iOS is supported for now.
-    if (defaultTargetPlatform == TargetPlatform.iOS) {
+    // Support both iOS and Android.
+    if (Platform.isIOS || Platform.isAndroid) {
       return false;
     }
     return true;
