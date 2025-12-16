@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:chatcore/chat-core.dart';
 import 'package:nostr_core_dart/nostr.dart' show SignalingState;
+import 'package:ox_common/login/login_manager.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:ox_call/src/models/call_state.dart';
 import 'package:ox_call/src/models/call_error.dart';
@@ -39,11 +40,7 @@ class CallManager {
 
   Future<void> initialize() async {
     if (_initialized) return;
-
-    CallLogger.info('Initializing CallManager...');
-
     _setupSignalingListener();
-
     _initialized = true;
     CallLogger.info('CallManager initialized');
   }
@@ -81,8 +78,6 @@ class CallManager {
       ...?additionalParticipants,
     ];
 
-    CallLogger.info('Starting call: sessionId=$sessionId, type=$callType, participants=$participants');
-
     final session = CallSession(
       sessionId: sessionId,
       offerId: offerId,
@@ -104,17 +99,15 @@ class CallManager {
         return;
       }
 
-      final peerConnection = await _createPeerConnection(sessionId);
-      _peerConnections[sessionId] = peerConnection;
-
       final localStream = await _getUserMedia(callType);
       _localStreams[sessionId] = localStream;
 
-      localStream.getTracks().forEach((track) {
-        peerConnection.addTrack(track, localStream);
-      });
+      final peerConnection = await _createPeerConnection(sessionId);
+      _peerConnections[sessionId] = peerConnection;
 
-      _setupPeerConnectionHandlers(sessionId, peerConnection);
+      for (final track in localStream.getTracks()) {
+        await peerConnection.addTrack(track, localStream);
+      }
 
       final offer = await peerConnection.createOffer();
       await peerConnection.setLocalDescription(offer);
@@ -133,8 +126,6 @@ class CallManager {
 
       await _backgroundKeepAlive.configureForCall();
       await _backgroundKeepAlive.activate();
-
-      CallLogger.info('Call offer sent: sessionId=$sessionId');
     } catch (e) {
       CallLogger.error('Failed to start call: $e');
       await _handleError(sessionId, CallErrorType.unknown, 'Failed to start call: $e', e);
@@ -170,17 +161,21 @@ class CallManager {
         return;
       }
 
+      // Get media stream FIRST before creating PeerConnection
+      CallLogger.debug('Getting user media for call type: ${session.callType}');
+      final localStream = await _getUserMedia(session.callType);
+      _localStreams[session.sessionId] = localStream;
+      CallLogger.debug('Got local stream with ${localStream.getTracks().length} tracks');
+
+      // Then create PeerConnection
       final peerConnection = await _createPeerConnection(session.sessionId);
       _peerConnections[session.sessionId] = peerConnection;
 
-      final localStream = await _getUserMedia(session.callType);
-      _localStreams[session.sessionId] = localStream;
-
-      localStream.getTracks().forEach((track) {
-        peerConnection.addTrack(track, localStream);
-      });
-
-      _setupPeerConnectionHandlers(session.sessionId, peerConnection);
+      // Add tracks to PeerConnection
+      for (final track in localStream.getTracks()) {
+        await peerConnection.addTrack(track, localStream);
+      }
+      CallLogger.debug('Added ${localStream.getTracks().length} tracks to PeerConnection');
 
       // Set remote description from stored SDP
       await peerConnection.setRemoteDescription(
@@ -256,15 +251,13 @@ class CallManager {
     final endTime = DateTime.now().millisecondsSinceEpoch;
     final duration = endTime - session.startTime;
 
-    final updatedSession = session.copyWith(
-      state: CallState.ended,
-      endTime: endTime,
-      endReason: reason,
-      duration: duration,
-    );
+    // Update session state
+    session.state = CallState.ended;
+    session.endTime = endTime;
+    session.endReason = reason;
+    session.duration = duration;
 
-    _activeSessions[sessionId] = updatedSession;
-    _notifyStateChange(updatedSession);
+    _notifyStateChange(session);
 
     await _cleanupSession(sessionId);
     _activeSessions.remove(sessionId);
@@ -364,10 +357,8 @@ class CallManager {
       CallLogger.info('Incoming call ringing: offerId=$offerId, waiting for user to accept');
     } catch (e) {
       CallLogger.error('Failed to handle offer: $e');
-      if (offerId != null) {
-        final disconnectContent = jsonEncode({'reason': 'error'});
-        await Contacts.sharedInstance.sendDisconnect(offerId, caller, disconnectContent);
-      }
+      final disconnectContent = jsonEncode({'reason': 'error'});
+      await Contacts.sharedInstance.sendDisconnect(offerId, caller, disconnectContent);
     }
   }
 
@@ -476,16 +467,23 @@ class CallManager {
   }
 
   Future<RTCPeerConnection> _createPeerConnection(String sessionId) async {
-    final iceServerConfig = await IceServerConfig.load();
-    if (iceServerConfig == null) {
-      throw 'Ice server config is null';
+    final circle = LoginManager.instance.currentCircle;
+    if (circle == null) {
+      throw 'No active circle for creating peer connection';
     }
 
+    final iceServerConfig = await IceServerConfig.load()
+        ?? IceServerConfig.defaultPublicConfig(circle);
+
+    final iceServers = iceServerConfig.toRTCIceServers();
+    CallLogger.debug('Creating PeerConnection with ${iceServers.length} ICE servers: $iceServers');
+
     final configuration = <String, dynamic>{
-      'iceServers': iceServerConfig.toRTCIceServers(),
+      'iceServers': iceServers,
     };
 
     final peerConnection = await createPeerConnection(configuration);
+    CallLogger.debug('PeerConnection created successfully');
 
     peerConnection.onIceCandidate = (RTCIceCandidate candidate) {
       _sendIceCandidate(sessionId, candidate);
@@ -604,30 +602,6 @@ class CallManager {
     onRemoteStreamReady?.call(sessionId, stream);
   }
 
-  void _setupPeerConnectionHandlers(String sessionId, RTCPeerConnection peerConnection) {
-    peerConnection.onIceCandidate = (RTCIceCandidate candidate) {
-      _sendIceCandidate(sessionId, candidate);
-    };
-
-    peerConnection.onConnectionState = (RTCPeerConnectionState state) {
-      _handleConnectionStateChange(sessionId, state);
-    };
-
-    peerConnection.onIceConnectionState = (RTCIceConnectionState state) {
-      _handleIceConnectionStateChange(sessionId, state);
-    };
-
-    peerConnection.onAddStream = (MediaStream stream) {
-      _handleRemoteStream(sessionId, stream);
-    };
-
-    peerConnection.onTrack = (RTCTrackEvent event) {
-      if (event.streams.isNotEmpty) {
-        _handleRemoteStream(sessionId, event.streams[0]);
-      }
-    };
-  }
-
   Future<MediaStream> _getUserMedia(CallType callType) async {
     final constraints = <String, dynamic>{
       'audio': true,
@@ -670,13 +644,12 @@ class CallManager {
     _offerTimers.remove(sessionId);
   }
 
-  void _updateSession(String sessionId, {CallState? state}) {
+  void _updateSession(String sessionId, {required CallState state}) {
     final session = _activeSessions[sessionId];
     if (session == null) return;
 
-    final updatedSession = session.copyWith(state: state);
-    _activeSessions[sessionId] = updatedSession;
-    _notifyStateChange(updatedSession);
+    session.state = state;
+    _notifyStateChange(session);
   }
 
   void _notifyStateChange(CallSession session) {

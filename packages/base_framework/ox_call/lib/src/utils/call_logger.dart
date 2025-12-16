@@ -35,14 +35,14 @@ class CallLogger {
           debugPrint(logMessage);
           break;
         case LogLevel.info:
-          print(logMessage);
+          debugPrint(logMessage);
           break;
         case LogLevel.warning:
-          print('⚠️ $logMessage');
+          debugPrint('⚠️ $logMessage');
           if (error != null) print('Error: $error');
           break;
         case LogLevel.error:
-          print('❌ $logMessage');
+          debugPrint('❌ $logMessage');
           if (error != null) print('Error: $error');
           if (stackTrace != null) print('Stack: $stackTrace');
           break;

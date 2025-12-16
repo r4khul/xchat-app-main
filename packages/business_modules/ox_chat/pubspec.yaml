@@ -33,6 +33,8 @@ dependencies:
     path: ../../business_modules/ox_chat_ui
   ox_usercenter:
     path: ../ox_usercenter
+  ox_call:
+    path: ../../base_framework/ox_call
 
 
 dev_dependencies:

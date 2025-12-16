@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'package:chatcore/chat-core.dart';
 import 'package:ox_call/src/models/call_state.dart';
 
 class CallSession {
@@ -8,14 +10,20 @@ class CallSession {
   final List<String> participants;
   final CallType callType;
   final CallDirection direction;
-  final CallState state;
-  final int startTime;
-  final int? endTime;
-  final CallEndReason? endReason;
-  final int? duration;
+  CallState state;
+  int startTime;
+  int? endTime;
+  CallEndReason? endReason;
+  int? duration;
 
   /// Remote SDP offer (stored for incoming calls until accepted).
   final String? remoteSdp;
+
+  /// ValueNotifier for caller user info, lazily loaded.
+  final ValueNotifier<UserDBISAR?> callerUser$;
+
+  /// ValueNotifier for callee user info, lazily loaded.
+  final ValueNotifier<UserDBISAR?> calleeUser$;
 
   CallSession({
     required this.sessionId,
@@ -31,37 +39,14 @@ class CallSession {
     this.endReason,
     this.duration,
     this.remoteSdp,
-  });
+  })  : callerUser$ = Account.sharedInstance.getUserNotifier(callerPubkey),
+        calleeUser$ = Account.sharedInstance.getUserNotifier(calleePubkey);
 
-  CallSession copyWith({
-    String? sessionId,
-    String? offerId,
-    String? callerPubkey,
-    String? calleePubkey,
-    List<String>? participants,
-    CallType? callType,
-    CallDirection? direction,
-    CallState? state,
-    int? startTime,
-    int? endTime,
-    CallEndReason? endReason,
-    int? duration,
-    String? remoteSdp,
-  }) {
-    return CallSession(
-      sessionId: sessionId ?? this.sessionId,
-      offerId: offerId ?? this.offerId,
-      callerPubkey: callerPubkey ?? this.callerPubkey,
-      calleePubkey: calleePubkey ?? this.calleePubkey,
-      participants: participants ?? this.participants,
-      callType: callType ?? this.callType,
-      direction: direction ?? this.direction,
-      state: state ?? this.state,
-      startTime: startTime ?? this.startTime,
-      endTime: endTime ?? this.endTime,
-      endReason: endReason ?? this.endReason,
-      duration: duration ?? this.duration,
-      remoteSdp: remoteSdp ?? this.remoteSdp,
-    );
-  }
+  /// Get the remote user based on call direction.
+  ValueNotifier<UserDBISAR?> get remoteUser$ =>
+      direction == CallDirection.outgoing ? calleeUser$ : callerUser$;
+
+  /// Get the local user based on call direction.
+  ValueNotifier<UserDBISAR?> get localUser$ =>
+      direction == CallDirection.outgoing ? callerUser$ : calleeUser$;
 }

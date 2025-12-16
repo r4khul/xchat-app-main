@@ -9,6 +9,7 @@ import 'package:ox_common/utils/profile_refresh_utils.dart';
 import 'package:ox_common/widgets/avatar.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import 'package:ox_common/login/login_manager.dart';
+import 'package:ox_call/ox_call.dart';
 import '../../utils/chat_session_utils.dart';
 import '../../utils/block_helper.dart';
 
@@ -77,6 +78,12 @@ class _ContactUserInfoPageState extends State<ContactUserInfoPage> {
                         _buildBioItem(user),
                       ],
                     ),
+                    // Call Demo (temporary for testing)
+                    if (!LoginManager.instance.isMe(user.pubKey))
+                      SectionListViewItem.button(
+                        text: '📞 Call Demo',
+                        onTap: () => _openCallDemo(user),
+                      ),
                     if (!LoginManager.instance.isMe(user.pubKey))
                       SectionListViewItem.button(
                         text: _getBlockButtonText(user),
@@ -187,6 +194,14 @@ class _ContactUserInfoPageState extends State<ContactUserInfoPage> {
       context: context,
       user: user$.value,
       isPushWithReplace: true,
+    );
+  }
+
+  void _openCallDemo(UserDBISAR user) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => CallDemoPage(user: user),
+      ),
     );
   }
 

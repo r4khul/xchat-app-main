@@ -1,30 +1,65 @@
-import 'package:chatcore/chat-core.dart';
+import 'package:ox_common/login/login_manager.dart';
+import 'package:ox_common/login/login_models.dart';
 import 'package:ox_call/src/call_manager.dart';
+import 'package:ox_call/src/services/call_service.dart';
 import 'package:ox_call/src/utils/call_logger.dart';
 
-class CallIntegrationHelper {
-  static bool _initialized = false;
+class CallIntegrationHelper with LoginManagerObserver {
+  CallIntegrationHelper._();
 
-  static Future<void> initializeAfterLogin() async {
-    if (_initialized) {
-      CallLogger.debug('CallManager already initialized, skipping');
-      return;
-    }
+  static final CallIntegrationHelper _instance = CallIntegrationHelper._();
+  static CallIntegrationHelper get instance => _instance;
 
-    try {
-      if (Contacts.sharedInstance.pubkey.isNotEmpty) {
-        await CallManager().initialize();
-        _initialized = true;
-        CallLogger.info('CallManager initialized after login');
-      } else {
-        CallLogger.warning('Cannot initialize CallManager: user not logged in');
-      }
-    } catch (e) {
-      CallLogger.error('Failed to initialize CallManager after login: $e');
+  bool _initialized = false;
+  bool _registered = false;
+
+  /// Register as LoginManager observer. Call this in module setup.
+  void register() {
+    if (_registered) return;
+    LoginManager.instance.addObserver(this);
+    _registered = true;
+
+    // If already logged into a circle, initialize immediately
+    if (LoginManager.instance.isLoginCircle) {
+      _initializeCallManager();
     }
   }
 
-  static Future<void> cleanupOnLogout() async {
+  /// Unregister from LoginManager observer.
+  void unregister() {
+    if (!_registered) return;
+    LoginManager.instance.removeObserver(this);
+    _registered = false;
+  }
+
+  @override
+  void onCircleChange(bool isSuccess, LoginFailure? failure) {
+    if (isSuccess) {
+      _initializeCallManager();
+    }
+  }
+
+  @override
+  void onLogout() {
+    _cleanupCallManager();
+  }
+
+  Future<void> _initializeCallManager() async {
+    if (_initialized) return;
+
+    try {
+      final pubkey = LoginManager.instance.currentPubkey;
+      if (pubkey.isNotEmpty) {
+        await CallManager().initialize();
+        CallService.instance.initialize();
+        _initialized = true;
+      }
+    } catch (e) {
+      CallLogger.error('Failed to initialize CallManager: $e');
+    }
+  }
+
+  Future<void> _cleanupCallManager() async {
     if (!_initialized) return;
 
     try {
@@ -32,10 +67,10 @@ class CallIntegrationHelper {
       for (final session in activeSessions) {
         await CallManager().endCall(session.sessionId);
       }
+      CallService.instance.cleanup();
       _initialized = false;
-      CallLogger.info('CallManager cleaned up on logout');
     } catch (e) {
-      CallLogger.error('Failed to cleanup CallManager on logout: $e');
+      CallLogger.error('Failed to cleanup CallManager: $e');
     }
   }
 }

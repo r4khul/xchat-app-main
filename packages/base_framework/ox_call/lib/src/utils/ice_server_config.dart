@@ -77,9 +77,29 @@ class IceServerConfig {
 
   static IceServerConfig defaultPublicConfig(Circle circle) => IceServerConfig(
     servers: [
+      // STUN server (free, for NAT traversal)
       ICEServerDBISAR(
         circleId: circle.id,
         url: 'stun:stun.l.google.com:19302',
+      ),
+      // TURN servers (for relay when direct connection fails)
+      ICEServerDBISAR(
+        circleId: circle.id,
+        url: 'turn:52.76.210.159:5349',
+        username: '0xchat',
+        credential: 'Prettyvs511',
+      ),
+      ICEServerDBISAR(
+        circleId: circle.id,
+        url: 'turn:13.213.17.140:5349',
+        username: '0xchat',
+        credential: 'Prettyvs511',
+      ),
+      ICEServerDBISAR(
+        circleId: circle.id,
+        url: 'turn:15.222.242.167:5349',
+        username: '0xchat',
+        credential: 'Prettyvs511',
       ),
     ],
   );
