@@ -14,6 +14,9 @@ class CallSession {
   final CallEndReason? endReason;
   final int? duration;
 
+  /// Remote SDP offer (stored for incoming calls until accepted).
+  final String? remoteSdp;
+
   CallSession({
     required this.sessionId,
     required this.offerId,
@@ -27,6 +30,7 @@ class CallSession {
     this.endTime,
     this.endReason,
     this.duration,
+    this.remoteSdp,
   });
 
   CallSession copyWith({
@@ -42,6 +46,7 @@ class CallSession {
     int? endTime,
     CallEndReason? endReason,
     int? duration,
+    String? remoteSdp,
   }) {
     return CallSession(
       sessionId: sessionId ?? this.sessionId,
@@ -56,6 +61,7 @@ class CallSession {
       endTime: endTime ?? this.endTime,
       endReason: endReason ?? this.endReason,
       duration: duration ?? this.duration,
+      remoteSdp: remoteSdp ?? this.remoteSdp,
     );
   }
 }

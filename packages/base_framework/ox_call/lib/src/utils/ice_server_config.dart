@@ -1,104 +1,86 @@
-import 'dart:convert';
-import 'package:ox_cache_manager/ox_cache_manager.dart';
-import 'package:ox_common/utils/storage_key_tool.dart';
+import 'package:chatcore/chat-core.dart';
+import 'package:isar/isar.dart';
+import 'package:ox_common/login/login_manager.dart';
+import 'package:ox_call/src/models/iceserver_db_isar.dart';
 import 'package:ox_call/src/utils/call_logger.dart';
+import 'package:ox_common/login/login_models.dart';
 
 class IceServerConfig {
-  final List<IceServer> servers;
+  final List<ICEServerDBISAR> servers;
 
   IceServerConfig({required this.servers});
 
   List<Map<String, dynamic>> toRTCIceServers() {
     return servers.map((server) {
-      final urls = server.urls is String
-          ? [server.urls as String]
-          : (server.urls as List).cast<String>();
-
-      final serverMap = <String, dynamic>{
-        'urls': urls,
+      return <String, dynamic>{
+        'urls': server.url,
+        if (server.username != null)
+          'username': server.username,
+        if (server.credential != null)
+          'credential': server.credential,
       };
-
-      if (server.username != null) {
-        serverMap['username'] = server.username;
-      }
-
-      if (server.credential != null) {
-        serverMap['credential'] = server.credential;
-      }
-
-      return serverMap;
     }).toList();
   }
 
-  static Future<IceServerConfig> load() async {
+  static Future<IceServerConfig?> load() async {
     try {
-      final iceServerJson = await OXCacheManager.defaultOXCacheManager.getData(
-        StorageSettingKey.KEY_ICE_SERVER.name,
-        defaultValue: '',
-      );
-
-      if (iceServerJson.isEmpty) {
-        CallLogger.warning('ICE server config is empty, using default STUN');
-        return IceServerConfig(
-          servers: [
-            IceServer(urls: 'stun:stun.l.google.com:19302'),
-          ],
-        );
+      final currentCircleId = LoginManager.instance.currentCircle?.id;
+      if (currentCircleId == null) {
+        CallLogger.warning('No active circle');
+        return null;
       }
 
-      final configData = jsonDecode(iceServerJson) as Map<String, dynamic>;
-      final serversData = configData['servers'] as List<dynamic>?;
+      final isar = DBISAR.sharedInstance.isar;
+      final servers = isar.iCEServerDBISARs
+          .where()
+          .circleIdEqualTo(currentCircleId)
+          .findAll();
 
-      if (serversData == null || serversData.isEmpty) {
-        CallLogger.warning('ICE server config has no servers, using default STUN');
-        return IceServerConfig(
-          servers: [
-            IceServer(urls: 'stun:stun.l.google.com:19302'),
-          ],
-        );
+      if (servers.isEmpty) {
+        CallLogger.warning('ICE server list empty for circle $currentCircleId');
+        return null;
       }
-
-      final servers = serversData
-          .map((serverData) => IceServer.fromJson(serverData as Map<String, dynamic>))
-          .toList();
 
       CallLogger.info('Loaded ${servers.length} ICE servers');
       return IceServerConfig(servers: servers);
     } catch (e) {
       CallLogger.error('Failed to load ICE server config: $e');
-      return IceServerConfig(
-        servers: [
-          IceServer(urls: 'stun:stun.l.google.com:19302'),
-        ],
-      );
+      return null;
     }
   }
-}
 
-class IceServer {
-  final dynamic urls;
-  final String? username;
-  final String? credential;
+  static Future<void> save(IceServerConfig config) async {
+    final currentCircleId = LoginManager.instance.currentCircle?.id;
+    if (currentCircleId == null) {
+      CallLogger.warning('No active circle, skip saving ICE servers');
+      return;
+    }
 
-  IceServer({
-    required this.urls,
-    this.username,
-    this.credential,
-  });
+    final isar = DBISAR.sharedInstance.isar;
+    await isar.writeAsync((isar) async {
+      // Clean old records for this circle
+      isar.iCEServerDBISARs
+          .where()
+          .circleIdEqualTo(currentCircleId)
+          .deleteAll();
 
-  factory IceServer.fromJson(Map<String, dynamic> json) {
-    return IceServer(
-      urls: json['urls'],
-      username: json['username'] as String?,
-      credential: json['credential'] as String?,
-    );
+      // set auto increment id
+      final servers = config.servers.map((server) {
+        server.id = isar.iCEServerDBISARs.autoIncrement();
+        return server;
+      }).toList();
+
+      // Insert new records
+      isar.iCEServerDBISARs.putAll(servers);
+    });
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'urls': urls,
-      if (username != null) 'username': username,
-      if (credential != null) 'credential': credential,
-    };
-  }
+  static IceServerConfig defaultPublicConfig(Circle circle) => IceServerConfig(
+    servers: [
+      ICEServerDBISAR(
+        circleId: circle.id,
+        url: 'stun:stun.l.google.com:19302',
+      ),
+    ],
+  );
 }

@@ -15,6 +15,7 @@ import 'package:ox_call/src/device_manager.dart';
 
 typedef CallStateCallback = void Function(CallSession session);
 typedef CallErrorCallback = void Function(CallSession session, CallError error);
+typedef RemoteStreamCallback = void Function(String sessionId, MediaStream stream);
 
 class CallManager {
   static final CallManager _instance = CallManager._internal();
@@ -31,9 +32,9 @@ class CallManager {
 
   CallStateCallback? onCallStateChanged;
   CallErrorCallback? onCallError;
+  RemoteStreamCallback? onRemoteStreamReady;
 
   bool _initialized = false;
-  List<Map<String, dynamic>>? _iceServers;
   final BackgroundKeepAlive _backgroundKeepAlive = BackgroundKeepAlive();
 
   Future<void> initialize() async {
@@ -41,24 +42,10 @@ class CallManager {
 
     CallLogger.info('Initializing CallManager...');
 
-    await _loadIceServers();
     _setupSignalingListener();
 
     _initialized = true;
     CallLogger.info('CallManager initialized');
-  }
-
-  Future<void> _loadIceServers() async {
-    try {
-      final iceServerConfig = await IceServerConfig.load();
-      _iceServers = iceServerConfig.toRTCIceServers();
-      CallLogger.info('Loaded ICE servers: ${_iceServers?.length ?? 0}');
-    } catch (e) {
-      CallLogger.error('Failed to load ICE servers: $e');
-      _iceServers = [
-        {'urls': ['stun:stun.l.google.com:19302']}
-      ];
-    }
   }
 
   void _setupSignalingListener() {
@@ -86,8 +73,6 @@ class CallManager {
     required CallType callType,
     List<String>? additionalParticipants,
   }) async {
-    await initialize();
-
     final sessionId = _generateSessionId();
     final offerId = sessionId;
     final participants = [
@@ -163,7 +148,21 @@ class CallManager {
       return;
     }
 
+    if (session.state != CallState.ringing) {
+      CallLogger.error('Cannot accept call in state: ${session.state}');
+      return;
+    }
+
+    if (session.remoteSdp == null) {
+      CallLogger.error('Remote SDP not found for session: ${session.sessionId}');
+      await rejectCall(offerId, 'error');
+      return;
+    }
+
     CallLogger.info('Accepting call: sessionId=${session.sessionId}');
+
+    // Cancel the timeout timer
+    _cancelOfferTimer(session.sessionId);
 
     try {
       if (!await _requestPermissions(session.callType)) {
@@ -183,11 +182,28 @@ class CallManager {
 
       _setupPeerConnectionHandlers(session.sessionId, peerConnection);
 
+      // Set remote description from stored SDP
+      await peerConnection.setRemoteDescription(
+        RTCSessionDescription(session.remoteSdp!, 'offer'),
+      );
+
+      // Create and send answer
+      final answer = await peerConnection.createAnswer();
+      await peerConnection.setLocalDescription(answer);
+
+      final answerSdp = answer.sdp ?? '';
+      final answerJson = jsonEncode({
+        'sdp': answerSdp,
+        'type': answer.type,
+      });
+
+      await Contacts.sharedInstance.sendAnswer(offerId, session.callerPubkey, answerJson);
+
       await _backgroundKeepAlive.configureForCall();
       await _backgroundKeepAlive.activate();
 
       _updateSession(session.sessionId, state: CallState.connecting);
-      _notifyStateChange(_activeSessions[session.sessionId]!);
+      CallLogger.info('Answer sent: offerId=$offerId');
     } catch (e) {
       CallLogger.error('Failed to accept call: $e');
       await _handleError(session.sessionId, CallErrorType.unknown, 'Failed to accept call: $e', e);
@@ -316,6 +332,16 @@ class CallManager {
       final callType = media == 'video' ? CallType.video : CallType.audio;
 
       final sessionId = offerId;
+
+      // Check if already in a call
+      if (_activeSessions.isNotEmpty) {
+        CallLogger.warning('Already in a call, rejecting incoming call');
+        final disconnectContent = jsonEncode({'reason': 'inCalling'});
+        await Contacts.sharedInstance.sendDisconnect(offerId, caller, disconnectContent);
+        return;
+      }
+
+      // Create session in ringing state, store the remote SDP for later use
       final session = CallSession(
         sessionId: sessionId,
         offerId: offerId,
@@ -326,48 +352,22 @@ class CallManager {
         direction: CallDirection.incoming,
         state: CallState.ringing,
         startTime: DateTime.now().millisecondsSinceEpoch,
+        remoteSdp: sdp,
       );
 
       _activeSessions[sessionId] = session;
       _notifyStateChange(session);
 
-      if (!await _requestPermissions(callType)) {
-        await rejectCall(offerId, 'permissionDenied');
-        return;
-      }
+      // Start timeout timer for incoming call
+      _startOfferTimer(sessionId);
 
-      final peerConnection = await _createPeerConnection(sessionId);
-      _peerConnections[sessionId] = peerConnection;
-
-      final localStream = await _getUserMedia(callType);
-      _localStreams[sessionId] = localStream;
-
-      localStream.getTracks().forEach((track) {
-        peerConnection.addTrack(track, localStream);
-      });
-
-      _setupPeerConnectionHandlers(sessionId, peerConnection);
-
-      await peerConnection.setRemoteDescription(
-        RTCSessionDescription(sdp, 'offer'),
-      );
-
-      final answer = await peerConnection.createAnswer();
-      await peerConnection.setLocalDescription(answer);
-
-      final answerSdp = answer.sdp ?? '';
-      final answerJson = jsonEncode({
-        'sdp': answerSdp,
-        'type': answer.type,
-      });
-
-      await Contacts.sharedInstance.sendAnswer(offerId, caller, answerJson);
-
-      _updateSession(sessionId, state: CallState.connecting);
-      CallLogger.info('Answer sent: offerId=$offerId');
+      CallLogger.info('Incoming call ringing: offerId=$offerId, waiting for user to accept');
     } catch (e) {
       CallLogger.error('Failed to handle offer: $e');
-      await _handleError(offerId, CallErrorType.sdpSetupFailed, 'Failed to handle offer: $e', e);
+      if (offerId != null) {
+        final disconnectContent = jsonEncode({'reason': 'error'});
+        await Contacts.sharedInstance.sendDisconnect(offerId, caller, disconnectContent);
+      }
     }
   }
 
@@ -476,9 +476,13 @@ class CallManager {
   }
 
   Future<RTCPeerConnection> _createPeerConnection(String sessionId) async {
-    // Use Map format for RTCConfiguration in flutter_webrtc 1.2.1
+    final iceServerConfig = await IceServerConfig.load();
+    if (iceServerConfig == null) {
+      throw 'Ice server config is null';
+    }
+
     final configuration = <String, dynamic>{
-      'iceServers': _iceServers ?? [],
+      'iceServers': iceServerConfig.toRTCIceServers(),
     };
 
     final peerConnection = await createPeerConnection(configuration);
@@ -597,6 +601,7 @@ class CallManager {
   void _handleRemoteStream(String sessionId, MediaStream stream) {
     CallLogger.info('Remote stream received: sessionId=$sessionId');
     _remoteStreams[sessionId] = stream;
+    onRemoteStreamReady?.call(sessionId, stream);
   }
 
   void _setupPeerConnectionHandlers(String sessionId, RTCPeerConnection peerConnection) {
