@@ -32,11 +32,11 @@
   "last_name_placeholder": "Nama Belakang (Opsional)",
   
   "circle_selection_title": "Bergabung dengan Circle",
-  "circle_selection_subtitle": "Circle adalah komunitas tempat Anda mengobrol dengan orang lain. Anda dapat bergabung dengan lebih banyak circle nanti. Pelajari lebih lanjut",
-  "use_public_circle": "Circle Publik",
-  "use_public_circle_desc": "Bergabung dengan circle publik gratis. Cepat dan mudah untuk memulai.",
-  "use_private_circle": "Circle Pribadi",
-  "use_private_circle_desc": "Terhubung ke circle pribadi atau yang di-host sendiri untuk kontrol lebih.",
+  "circle_selection_subtitle": "Circle menggunakan relay untuk menghubungkan Anda dengan orang lain. Semua pesan dienkripsi end-to-end. Pelajari lebih lanjut",
+  "use_public_circle": "Relay Komunitas",
+  "use_public_circle_desc": "Relay komunitas gratis. Setup cepat, enkripsi penuh.",
+  "use_private_circle": "Relay Pribadi",
+  "use_private_circle_desc": "Relay yang di-host sendiri atau pribadi untuk kontrol maksimal.",
   "recommended": "Direkomendasikan",
   
   "add_circle_title": "Tambah Circle",

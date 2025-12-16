@@ -32,11 +32,11 @@
   "last_name_placeholder": "Efternamn (Valfritt)",
   
   "circle_selection_title": "Gå med i en Cirkel",
-  "circle_selection_subtitle": "Cirklar är gemenskaper där du chattar med andra. Du kan gå med i fler cirklar senare. Läs mer",
-  "use_public_circle": "Offentlig Cirkel",
-  "use_public_circle_desc": "Gå med i en gratis offentlig cirkel. Snabbt och enkelt att komma igång.",
-  "use_private_circle": "Privat Cirkel",
-  "use_private_circle_desc": "Anslut till en privat eller självhostad cirkel för mer kontroll.",
+  "circle_selection_subtitle": "Cirklar använder reläer för att ansluta dig till andra. Alla meddelanden är end-to-end krypterade. Läs mer",
+  "use_public_circle": "Gemenskapsrelä",
+  "use_public_circle_desc": "Gratis gemenskapsrelä. Snabb installation, full kryptering.",
+  "use_private_circle": "Privat Relä",
+  "use_private_circle_desc": "Självhostat eller personligt relä för maximal kontroll.",
   "recommended": "Rekommenderas",
   
   "add_circle_title": "Lägg till Cirkel",

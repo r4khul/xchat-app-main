@@ -32,11 +32,11 @@
   "last_name_placeholder": "Cognome (Opzionale)",
   
   "circle_selection_title": "Unisciti a un Cerchio",
-  "circle_selection_subtitle": "I Cerchi sono comunità dove chatti con altri. Puoi unirti a più cerchi in seguito. Scopri di più",
-  "use_public_circle": "Cerchio pubblico",
-  "use_public_circle_desc": "Unisciti a un cerchio pubblico gratuito. Veloce e facile per iniziare.",
-  "use_private_circle": "Cerchio privato",
-  "use_private_circle_desc": "Connettiti a un cerchio privato o self-hosted per maggior controllo.",
+  "circle_selection_subtitle": "I Cerchi usano relay per connetterti con altri. Tutti i messaggi sono crittografati end-to-end. Scopri di più",
+  "use_public_circle": "Relay Comunitario",
+  "use_public_circle_desc": "Relay comunitario gratuito. Configurazione rapida, crittografia completa.",
+  "use_private_circle": "Relay Privato",
+  "use_private_circle_desc": "Relay self-hosted o personale per massimo controllo.",
   "recommended": "Consigliato",
   
   "add_circle_title": "Aggiungi Cerchio",

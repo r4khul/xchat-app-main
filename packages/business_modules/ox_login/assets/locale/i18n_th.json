@@ -32,11 +32,11 @@
   "last_name_placeholder": "นามสกุล (ไม่บังคับ)",
   
   "circle_selection_title": "เข้าร่วม Circle",
-  "circle_selection_subtitle": "Circles คือชุมชนที่คุณแชทกับคนอื่น คุณสามารถเข้าร่วม circles เพิ่มเติมได้ภายหลัง เรียนรู้เพิ่มเติม",
-  "use_public_circle": "Circle สาธารณะ",
-  "use_public_circle_desc": "เข้าร่วม circle สาธารณะฟรี รวดเร็วและง่ายในการเริ่มต้น",
-  "use_private_circle": "Circle ส่วนตัว",
-  "use_private_circle_desc": "เชื่อมต่อกับ circle ส่วนตัวหรือโฮสต์เองเพื่อควบคุมมากขึ้น",
+  "circle_selection_subtitle": "Circles ใช้ relays เพื่อเชื่อมต่อคุณกับคนอื่น ข้อความทั้งหมดเข้ารหัสแบบ end-to-end เรียนรู้เพิ่มเติม",
+  "use_public_circle": "Community Relay",
+  "use_public_circle_desc": "Community relay ฟรี ตั้งค่าเร็ว เข้ารหัสเต็มรูปแบบ",
+  "use_private_circle": "Private Relay",
+  "use_private_circle_desc": "Relay ที่โฮสต์เองหรือส่วนตัวเพื่อการควบคุมสูงสุด",
   "recommended": "แนะนำ",
   
   "add_circle_title": "เพิ่ม Circle",

@@ -32,11 +32,11 @@
   "last_name_placeholder": "उपनाम (वैकल्पिक)",
   
   "circle_selection_title": "एक Circle में शामिल हों",
-  "circle_selection_subtitle": "Circles वे समुदाय हैं जहां आप दूसरों के साथ चैट करते हैं। आप बाद में और circles में शामिल हो सकते हैं। अधिक जानें",
-  "use_public_circle": "सार्वजनिक Circle",
-  "use_public_circle_desc": "एक मुफ्त सार्वजनिक circle में शामिल हों। शुरू करने के लिए तेज़ और आसान।",
-  "use_private_circle": "निजी Circle",
-  "use_private_circle_desc": "अधिक नियंत्रण के लिए एक निजी या स्व-होस्टेड circle से कनेक्ट करें।",
+  "circle_selection_subtitle": "Circles दूसरों से जुड़ने के लिए relay का उपयोग करते हैं। सभी संदेश end-to-end एन्क्रिप्टेड हैं। अधिक जानें",
+  "use_public_circle": "Community Relay",
+  "use_public_circle_desc": "मुफ्त community relay। तेज़ सेटअप, पूर्ण एन्क्रिप्शन।",
+  "use_private_circle": "Private Relay",
+  "use_private_circle_desc": "अधिकतम नियंत्रण के लिए स्व-होस्टेड या व्यक्तिगत relay।",
   "recommended": "अनुशंसित",
   
   "add_circle_title": "Circle जोड़ें",

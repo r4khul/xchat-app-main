@@ -32,11 +32,11 @@
   "last_name_placeholder": "Příjmení (Volitelné)",
   
   "circle_selection_title": "Připojit se ke Kruhu",
-  "circle_selection_subtitle": "Kruhy jsou komunity, kde chatujete s ostatními. Později se můžete připojit k dalším kruhům. Zjistit více",
-  "use_public_circle": "Veřejný Kruh",
-  "use_public_circle_desc": "Připojte se k bezplatnému veřejnému kruhu. Rychlé a snadné pro začátek.",
-  "use_private_circle": "Soukromý Kruh",
-  "use_private_circle_desc": "Připojte se k soukromému nebo vlastnímu kruhu pro větší kontrolu.",
+  "circle_selection_subtitle": "Kruhy používají relay pro připojení k ostatním. Všechny zprávy jsou šifrovány end-to-end. Zjistit více",
+  "use_public_circle": "Komunitní Relay",
+  "use_public_circle_desc": "Bezplatný komunitní relay. Rychlé nastavení, plné šifrování.",
+  "use_private_circle": "Soukromý Relay",
+  "use_private_circle_desc": "Vlastní nebo osobní relay pro maximální kontrolu.",
   "recommended": "Doporučeno",
   
   "add_circle_title": "Přidat Kruh",

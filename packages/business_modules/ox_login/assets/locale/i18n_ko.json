@@ -32,11 +32,11 @@
   "last_name_placeholder": "성 (선택)",
   
   "circle_selection_title": "서클에 참여",
-  "circle_selection_subtitle": "서클은 다른 사람들과 채팅하는 커뮤니티입니다. 나중에 더 많은 서클에 참여할 수 있습니다. 자세히 알아보기",
-  "use_public_circle": "공개 서클",
-  "use_public_circle_desc": "무료 공개 서클에 참여하세요. 빠르고 쉽게 시작할 수 있습니다.",
-  "use_private_circle": "개인 서클",
-  "use_private_circle_desc": "개인 또는 자체 호스팅 서클에 연결하여 더 많은 제어를 얻으세요.",
+  "circle_selection_subtitle": "서클은 릴레이를 사용하여 다른 사람과 연결합니다. 모든 메시지는 엔드투엔드 암호화됩니다. 자세히 알아보기",
+  "use_public_circle": "커뮤니티 릴레이",
+  "use_public_circle_desc": "무료 커뮤니티 릴레이. 빠른 설정, 완전한 암호화.",
+  "use_private_circle": "개인 릴레이",
+  "use_private_circle_desc": "자체 호스팅 또는 개인 릴레이로 최대 제어권 확보.",
   "recommended": "추천",
   
   "add_circle_title": "서클 추가",

@@ -32,11 +32,11 @@
   "last_name_placeholder": "Vezetéknév (Opcionális)",
   
   "circle_selection_title": "Csatlakozás egy Körhöz",
-  "circle_selection_subtitle": "A Körök olyan közösségek, ahol másokkal cseveghet. Később több körhöz is csatlakozhat. Tudjon meg többet",
-  "use_public_circle": "Nyilvános Kör",
-  "use_public_circle_desc": "Csatlakozzon egy ingyenes nyilvános körhöz. Gyors és egyszerű kezdés.",
-  "use_private_circle": "Privát Kör",
-  "use_private_circle_desc": "Csatlakozzon egy privát vagy saját üzemeltetésű körhöz a nagyobb kontroll érdekében.",
+  "circle_selection_subtitle": "A Körök relay-eket használnak másokkal való kapcsolódáshoz. Minden üzenet end-to-end titkosított. Tudjon meg többet",
+  "use_public_circle": "Közösségi Relay",
+  "use_public_circle_desc": "Ingyenes közösségi relay. Gyors beállítás, teljes titkosítás.",
+  "use_private_circle": "Privát Relay",
+  "use_private_circle_desc": "Saját üzemeltetésű vagy személyes relay a maximális kontroll érdekében.",
   "recommended": "Ajánlott",
   
   "add_circle_title": "Kör hozzáadása",

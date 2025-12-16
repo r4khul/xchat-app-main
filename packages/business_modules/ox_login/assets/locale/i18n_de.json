@@ -32,11 +32,11 @@
   "last_name_placeholder": "Nachname (Optional)",
   
   "circle_selection_title": "Einem Kreis beitreten",
-  "circle_selection_subtitle": "Kreise sind Communities, in denen Sie mit anderen chatten. Sie können später weiteren Kreisen beitreten. Mehr erfahren",
-  "use_public_circle": "Öffentlicher Kreis",
-  "use_public_circle_desc": "Treten Sie einem kostenlosen öffentlichen Kreis bei. Schnell und einfach zu starten.",
-  "use_private_circle": "Privater Kreis",
-  "use_private_circle_desc": "Verbinden Sie sich mit einem privaten oder selbst gehosteten Kreis für mehr Kontrolle.",
+  "circle_selection_subtitle": "Kreise verwenden Relays, um Sie mit anderen zu verbinden. Alle Nachrichten sind Ende-zu-Ende-verschlüsselt. Mehr erfahren",
+  "use_public_circle": "Community-Relay",
+  "use_public_circle_desc": "Kostenloses Community-Relay. Schnelles Setup, vollständige Verschlüsselung.",
+  "use_private_circle": "Privates Relay",
+  "use_private_circle_desc": "Selbst gehostetes oder persönliches Relay für maximale Kontrolle.",
   "recommended": "Empfohlen",
   
   "add_circle_title": "Kreis hinzufügen",

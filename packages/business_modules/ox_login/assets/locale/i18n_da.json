@@ -32,11 +32,11 @@
   "last_name_placeholder": "Efternavn (Valgfrit)",
   
   "circle_selection_title": "Deltag i en Cirkel",
-  "circle_selection_subtitle": "Cirkler er fællesskaber, hvor du chatter med andre. Du kan deltage i flere cirkler senere. Læs mere",
-  "use_public_circle": "Offentlig Cirkel",
-  "use_public_circle_desc": "Deltag i en gratis offentlig cirkel. Hurtigt og nemt at komme i gang.",
-  "use_private_circle": "Privat Cirkel",
-  "use_private_circle_desc": "Opret forbindelse til en privat eller selvhostet cirkel for mere kontrol.",
+  "circle_selection_subtitle": "Cirkler bruger relays til at forbinde dig med andre. Alle beskeder er end-to-end krypteret. Læs mere",
+  "use_public_circle": "Fællesskabs-Relay",
+  "use_public_circle_desc": "Gratis fællesskabs-relay. Hurtig opsætning, fuld kryptering.",
+  "use_private_circle": "Privat Relay",
+  "use_private_circle_desc": "Selvhostet eller personlig relay for maksimal kontrol.",
   "recommended": "Anbefalet",
   
   "add_circle_title": "Tilføj Cirkel",

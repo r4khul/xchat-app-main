@@ -32,11 +32,11 @@
   "last_name_placeholder": "Cognom (Opcional)",
   
   "circle_selection_title": "Uniu-vos a un Cercle",
-  "circle_selection_subtitle": "Els Cercles són comunitats on xategeu amb altres. Podeu unir-vos a més cercles després. Més informació",
-  "use_public_circle": "Cercle públic",
-  "use_public_circle_desc": "Uniu-vos a un cercle públic gratuït. Ràpid i fàcil per començar.",
-  "use_private_circle": "Cercle privat",
-  "use_private_circle_desc": "Connecteu-vos a un cercle privat o autoallotjat per a més control.",
+  "circle_selection_subtitle": "Els Cercles fan servir relays per connectar-vos amb altres. Tots els missatges estan xifrats end-to-end. Més informació",
+  "use_public_circle": "Relay Comunitari",
+  "use_public_circle_desc": "Relay comunitari gratuït. Configuració ràpida, xifratge complet.",
+  "use_private_circle": "Relay Privat",
+  "use_private_circle_desc": "Relay autoallotjat o personal per al màxim control.",
   "recommended": "Recomanat",
   
   "add_circle_title": "Afegir Cercle",

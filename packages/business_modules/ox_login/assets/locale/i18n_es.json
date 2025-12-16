@@ -32,11 +32,11 @@
   "last_name_placeholder": "Apellido (Opcional)",
   
   "circle_selection_title": "Unirse a un Círculo",
-  "circle_selection_subtitle": "Los Círculos son comunidades donde chateas con otros. Puedes unirte a más círculos después. Saber más",
-  "use_public_circle": "Círculo público",
-  "use_public_circle_desc": "Únete a un círculo público gratuito. Rápido y fácil para comenzar.",
-  "use_private_circle": "Círculo privado",
-  "use_private_circle_desc": "Conéctate a un círculo privado o auto-alojado para más control.",
+  "circle_selection_subtitle": "Los Círculos usan relays para conectarte con otros. Todos los mensajes están cifrados de extremo a extremo. Saber más",
+  "use_public_circle": "Relay Comunitario",
+  "use_public_circle_desc": "Relay comunitario gratuito. Configuración rápida, cifrado completo.",
+  "use_private_circle": "Relay Privado",
+  "use_private_circle_desc": "Relay auto-alojado o personal para máximo control.",
   "recommended": "Recomendado",
   
   "add_circle_title": "Agregar Círculo",

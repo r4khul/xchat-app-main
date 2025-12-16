@@ -32,11 +32,11 @@
   "last_name_placeholder": "نام خانوادگی (اختیاری)",
   
   "circle_selection_title": "به یک Circle بپیوندید",
-  "circle_selection_subtitle": "Circle ها جوامعی هستند که در آنها با دیگران چت می‌کنید. بعداً می‌توانید به circle های بیشتری بپیوندید. بیشتر بدانید",
-  "use_public_circle": "Circle عمومی",
-  "use_public_circle_desc": "به یک circle عمومی رایگان بپیوندید. سریع و آسان برای شروع.",
-  "use_private_circle": "Circle خصوصی",
-  "use_private_circle_desc": "برای کنترل بیشتر به یک circle خصوصی یا خود میزبان متصل شوید.",
+  "circle_selection_subtitle": "Circle ها از relay برای اتصال شما به دیگران استفاده می‌کنند. همه پیام‌ها end-to-end رمزگذاری شده‌اند. بیشتر بدانید",
+  "use_public_circle": "Relay جامعه",
+  "use_public_circle_desc": "Relay جامعه رایگان. راه‌اندازی سریع، رمزگذاری کامل.",
+  "use_private_circle": "Relay خصوصی",
+  "use_private_circle_desc": "Relay خود میزبان یا شخصی برای حداکثر کنترل.",
   "recommended": "توصیه شده",
   
   "add_circle_title": "افزودن Circle",

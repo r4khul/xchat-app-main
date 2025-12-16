@@ -32,11 +32,11 @@
   "last_name_placeholder": "Uzvārds (Neobligāti)",
   
   "circle_selection_title": "Pievienoties aplim",
-  "circle_selection_subtitle": "Apļi ir kopienas, kur jūs tērzējat ar citiem. Vēlāk varat pievienoties vairākiem apļiem. Uzzināt vairāk",
-  "use_public_circle": "Publiskais aplis",
-  "use_public_circle_desc": "Pievienojieties bezmaksas publiskajam aplim. Ātri un viegli, lai sāktu.",
-  "use_private_circle": "Privātais aplis",
-  "use_private_circle_desc": "Izveidojiet savienojumu ar privātu vai pašmitinātu apli lielākai kontrolei.",
+  "circle_selection_subtitle": "Apļi izmanto stafetes, lai savienotu jūs ar citiem. Visi ziņojumi ir end-to-end šifrēti. Uzzināt vairāk",
+  "use_public_circle": "Kopienas Stafete",
+  "use_public_circle_desc": "Bezmaksas kopienas stafete. Ātra iestatīšana, pilna šifrēšana.",
+  "use_private_circle": "Privātā Stafete",
+  "use_private_circle_desc": "Pašmitināta vai personīga stafete maksimālai kontrolei.",
   "recommended": "Ieteicams",
   
   "add_circle_title": "Pievienot apli",

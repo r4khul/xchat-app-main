@@ -32,11 +32,11 @@
   "last_name_placeholder": "Soyad (İxtiyari)",
   
   "circle_selection_title": "Dairəyə qoşul",
-  "circle_selection_subtitle": "Dairələr başqaları ilə söhbət etdiyiniz cəmiyyətlərdir. Sonra daha çox dairəyə qoşula bilərsiniz. Ətraflı öyrən",
-  "use_public_circle": "İctimai Dairə",
-  "use_public_circle_desc": "Pulsuz ictimai dairəyə qoşulun. Başlamaq üçün sürətli və asan.",
-  "use_private_circle": "Şəxsi Dairə",
-  "use_private_circle_desc": "Daha çox nəzarət üçün şəxsi və ya öz-özünə yerləşdirilmiş dairəyə qoşulun.",
+  "circle_selection_subtitle": "Dairələr başqaları ilə əlaqə üçün relay istifadə edir. Bütün mesajlar end-to-end şifrələnir. Ətraflı öyrən",
+  "use_public_circle": "İctimai Relay",
+  "use_public_circle_desc": "Pulsuz ictimai relay. Sürətli quraşdırma, tam şifrələmə.",
+  "use_private_circle": "Şəxsi Relay",
+  "use_private_circle_desc": "Maksimum nəzarət üçün öz-özünə yerləşdirilmiş və ya şəxsi relay.",
   "recommended": "Tövsiyə olunur",
   
   "add_circle_title": "Dairə əlavə et",

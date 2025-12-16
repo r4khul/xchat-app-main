@@ -32,11 +32,11 @@
   "last_name_placeholder": "Last Name (Optional)",
   
   "circle_selection_title": "Join a Circle",
-  "circle_selection_subtitle": "Circles are communities where you chat with others. You can join more circles later. Learn more",
-  "use_public_circle": "Public Circle",
-  "use_public_circle_desc": "Join a free public circle. Quick and easy to get started.",
-  "use_private_circle": "Private Circle",
-  "use_private_circle_desc": "Connect to a private or self-hosted circle for more control.",
+  "circle_selection_subtitle": "Circles use relays to connect you with others. All messages are end-to-end encrypted. Learn more",
+  "use_public_circle": "Community Relay",
+  "use_public_circle_desc": "Free community relay. Quick setup with full encryption.",
+  "use_private_circle": "Private Relay",
+  "use_private_circle_desc": "Self-hosted or personal relay for maximum control.",
   "recommended": "Recommended",
   
   "add_circle_title": "Add Circle",

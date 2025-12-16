@@ -32,11 +32,11 @@
   "last_name_placeholder": "姓（可选）",
   
   "circle_selection_title": "加入圈子",
-  "circle_selection_subtitle": "圈子是您与他人聊天的社区。您可以稍后加入更多圈子。了解更多",
-  "use_public_circle": "公共圈子",
-  "use_public_circle_desc": "加入免费的公共圈子，快速简单上手。",
-  "use_private_circle": "私有圈子",
-  "use_private_circle_desc": "连接到私有或自托管的圈子，获得更多控制。",
+  "circle_selection_subtitle": "圈子使用中继来连接您与他人。所有消息都是端到端加密的。了解更多",
+  "use_public_circle": "社区中继",
+  "use_public_circle_desc": "免费社区中继。快速设置，完整加密。",
+  "use_private_circle": "私有中继",
+  "use_private_circle_desc": "自托管或个人中继，获得最大控制权。",
   "recommended": "推荐",
   
   "add_circle_title": "添加圈子",

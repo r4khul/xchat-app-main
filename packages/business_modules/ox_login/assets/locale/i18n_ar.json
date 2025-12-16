@@ -32,11 +32,11 @@
   "last_name_placeholder": "اسم العائلة (اختياري)",
   
   "circle_selection_title": "انضم إلى دائرة",
-  "circle_selection_subtitle": "الدوائر هي مجتمعات تدردش فيها مع الآخرين. يمكنك الانضمام إلى المزيد من الدوائر لاحقًا. اعرف المزيد",
-  "use_public_circle": "دائرة عامة",
-  "use_public_circle_desc": "انضم إلى دائرة عامة مجانية. سريعة وسهلة للبدء.",
-  "use_private_circle": "دائرة خاصة",
-  "use_private_circle_desc": "اتصل بدائرة خاصة أو مستضافة ذاتيًا لمزيد من التحكم.",
+  "circle_selection_subtitle": "تستخدم الدوائر المرحلات للاتصال بالآخرين. جميع الرسائل مشفرة من طرف إلى طرف. اعرف المزيد",
+  "use_public_circle": "مرحل المجتمع",
+  "use_public_circle_desc": "مرحل مجتمع مجاني. إعداد سريع، تشفير كامل.",
+  "use_private_circle": "مرحل خاص",
+  "use_private_circle_desc": "مرحل مستضاف ذاتيًا أو شخصي للتحكم الأقصى.",
   "recommended": "موصى به",
   
   "add_circle_title": "إضافة دائرة",

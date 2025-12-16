@@ -32,11 +32,11 @@
   "last_name_placeholder": "Perekonnanimi (Valikuline)",
   
   "circle_selection_title": "Liitu ringiga",
-  "circle_selection_subtitle": "Ringid on kogukonnad, kus vestled teistega. Saad hiljem rohkemate ringidega liituda. Loe lähemalt",
-  "use_public_circle": "Avalik ring",
-  "use_public_circle_desc": "Liitu tasuta avaliku ringiga. Kiire ja lihtne alustamiseks.",
-  "use_private_circle": "Privaatne ring",
-  "use_private_circle_desc": "Ühenda privaatse või ise majutatud ringiga suurema kontrolli saamiseks.",
+  "circle_selection_subtitle": "Ringid kasutavad relesid teistega ühendamiseks. Kõik sõnumid on otsast-otsani krüpteeritud. Loe lähemalt",
+  "use_public_circle": "Kogukonna Rels",
+  "use_public_circle_desc": "Tasuta kogukonna rels. Kiire seadistamine, täielik krüpteerimine.",
+  "use_private_circle": "Privaatne Rels",
+  "use_private_circle_desc": "Ise majutatud või isiklik rels maksimaalse kontrolli saamiseks.",
   "recommended": "Soovitatud",
   
   "add_circle_title": "Lisa ring",

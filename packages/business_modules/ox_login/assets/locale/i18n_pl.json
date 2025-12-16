@@ -32,11 +32,11 @@
   "last_name_placeholder": "Nazwisko (Opcjonalnie)",
   
   "circle_selection_title": "Dołącz do Kręgu",
-  "circle_selection_subtitle": "Kręgi to społeczności, w których rozmawiasz z innymi. Możesz dołączyć do więcej kręgów później. Dowiedz się więcej",
-  "use_public_circle": "Publiczny Krąg",
-  "use_public_circle_desc": "Dołącz do darmowego publicznego kręgu. Szybko i łatwo, aby zacząć.",
-  "use_private_circle": "Prywatny Krąg",
-  "use_private_circle_desc": "Połącz się z prywatnym lub samodzielnie hostowanym kręgiem dla większej kontroli.",
+  "circle_selection_subtitle": "Kręgi używają przekaźników do łączenia z innymi. Wszystkie wiadomości są szyfrowane end-to-end. Dowiedz się więcej",
+  "use_public_circle": "Przekaźnik Społeczności",
+  "use_public_circle_desc": "Darmowy przekaźnik społeczności. Szybka konfiguracja, pełne szyfrowanie.",
+  "use_private_circle": "Prywatny Przekaźnik",
+  "use_private_circle_desc": "Własny lub osobisty przekaźnik dla maksymalnej kontroli.",
   "recommended": "Polecane",
   
   "add_circle_title": "Dodaj Krąg",

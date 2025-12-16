@@ -32,11 +32,11 @@
   "last_name_placeholder": "Soyad (İsteğe bağlı)",
   
   "circle_selection_title": "Bir Çembere Katıl",
-  "circle_selection_subtitle": "Çemberler, başkalarıyla sohbet ettiğiniz topluluklardır. Daha sonra daha fazla çembere katılabilirsiniz. Daha fazla bilgi",
-  "use_public_circle": "Genel Çember",
-  "use_public_circle_desc": "Ücretsiz bir genel çembere katılın. Hızlı ve kolay başlangıç.",
-  "use_private_circle": "Özel Çember",
-  "use_private_circle_desc": "Daha fazla kontrol için özel veya kendi barındırdığınız bir çembere bağlanın.",
+  "circle_selection_subtitle": "Çemberler başkalarıyla bağlanmak için relay kullanır. Tüm mesajlar uçtan uca şifrelenir. Daha fazla bilgi",
+  "use_public_circle": "Topluluk Relay'i",
+  "use_public_circle_desc": "Ücretsiz topluluk relay'i. Hızlı kurulum, tam şifreleme.",
+  "use_private_circle": "Özel Relay",
+  "use_private_circle_desc": "Maksimum kontrol için kendi barındırdığınız veya kişisel relay.",
   "recommended": "Önerilen",
   
   "add_circle_title": "Çember Ekle",

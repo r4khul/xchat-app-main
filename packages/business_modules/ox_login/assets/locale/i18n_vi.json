@@ -32,11 +32,11 @@
   "last_name_placeholder": "Họ (Tùy chọn)",
   
   "circle_selection_title": "Tham gia Circle",
-  "circle_selection_subtitle": "Circles là cộng đồng nơi bạn trò chuyện với người khác. Bạn có thể tham gia thêm circles sau. Tìm hiểu thêm",
-  "use_public_circle": "Circle công khai",
-  "use_public_circle_desc": "Tham gia circle công khai miễn phí. Nhanh chóng và dễ dàng để bắt đầu.",
-  "use_private_circle": "Circle riêng tư",
-  "use_private_circle_desc": "Kết nối với circle riêng tư hoặc tự lưu trữ để kiểm soát nhiều hơn.",
+  "circle_selection_subtitle": "Circles sử dụng relay để kết nối bạn với người khác. Tất cả tin nhắn đều được mã hóa đầu cuối. Tìm hiểu thêm",
+  "use_public_circle": "Community Relay",
+  "use_public_circle_desc": "Community relay miễn phí. Thiết lập nhanh, mã hóa đầy đủ.",
+  "use_private_circle": "Private Relay",
+  "use_private_circle_desc": "Relay tự lưu trữ hoặc cá nhân để kiểm soát tối đa.",
   "recommended": "Đề xuất",
   
   "add_circle_title": "Thêm Circle",

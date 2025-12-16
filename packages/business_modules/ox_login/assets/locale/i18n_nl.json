@@ -32,11 +32,11 @@
   "last_name_placeholder": "Achternaam (Optioneel)",
   
   "circle_selection_title": "Word lid van een Circle",
-  "circle_selection_subtitle": "Circles zijn gemeenschappen waar je met anderen chat. Je kunt later meer circles toevoegen. Meer informatie",
-  "use_public_circle": "Openbare Circle",
-  "use_public_circle_desc": "Word lid van een gratis openbare circle. Snel en eenvoudig om te starten.",
-  "use_private_circle": "Privé Circle",
-  "use_private_circle_desc": "Verbind met een privé of zelf-gehoste circle voor meer controle.",
+  "circle_selection_subtitle": "Circles gebruiken relays om je met anderen te verbinden. Alle berichten zijn end-to-end versleuteld. Meer informatie",
+  "use_public_circle": "Community Relay",
+  "use_public_circle_desc": "Gratis community relay. Snelle setup, volledige versleuteling.",
+  "use_private_circle": "Privé Relay",
+  "use_private_circle_desc": "Zelf-gehoste of persoonlijke relay voor maximale controle.",
   "recommended": "Aanbevolen",
   
   "add_circle_title": "Circle toevoegen",
