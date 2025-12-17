@@ -8,6 +8,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:ox_call/src/models/call_state.dart';
 import 'package:ox_call/src/models/call_error.dart';
 import 'package:ox_call/src/models/call_session.dart';
+import 'package:ox_call/src/models/call_target.dart';
 import 'package:ox_call/src/models/call_device_info.dart';
 import 'package:ox_call/src/utils/call_logger.dart';
 import 'package:ox_call/src/utils/ice_server_config.dart';
@@ -31,9 +32,31 @@ class CallManager {
   final Map<String, MediaStream?> _remoteStreams = {};
   final Map<String, Timer?> _offerTimers = {};
 
-  CallStateCallback? onCallStateChanged;
-  CallErrorCallback? onCallError;
-  RemoteStreamCallback? onRemoteStreamReady;
+  /// Store privateGroupId for incoming calls (before session is created).
+  final Map<String, String> _pendingPrivateGroupIds = {};
+
+  /// Multiple listeners support
+  final List<CallStateCallback> _stateCallbacks = [];
+  final List<CallErrorCallback> _errorCallbacks = [];
+  final List<RemoteStreamCallback> _streamCallbacks = [];
+
+  /// Add a state change listener. Returns a function to remove the listener.
+  void Function() addStateListener(CallStateCallback callback) {
+    _stateCallbacks.add(callback);
+    return () => _stateCallbacks.remove(callback);
+  }
+
+  /// Add an error listener. Returns a function to remove the listener.
+  void Function() addErrorListener(CallErrorCallback callback) {
+    _errorCallbacks.add(callback);
+    return () => _errorCallbacks.remove(callback);
+  }
+
+  /// Add a remote stream listener. Returns a function to remove the listener.
+  void Function() addStreamListener(RemoteStreamCallback callback) {
+    _streamCallbacks.add(callback);
+    return () => _streamCallbacks.remove(callback);
+  }
 
   bool _initialized = false;
   final BackgroundKeepAlive _backgroundKeepAlive = BackgroundKeepAlive();
@@ -47,42 +70,45 @@ class CallManager {
 
   void _setupSignalingListener() {
     Contacts.sharedInstance.onCallStateChange = (
-      String friend,
-      SignalingState state,
-      String data,
-      String? offerId,
-    ) {
+        String friend,
+        SignalingState state,
+        String data,
+        String? offerId,
+        ) {
       _handleSignalingMessage(friend, state, data, offerId);
     };
   }
 
-  /// Start a call
+  /// Start a call to a target.
   ///
-  /// [calleePubkey] - The primary callee's public key
+  /// [target] - The call target (pubkey + privateGroupId)
   /// [callType] - Audio or video call
   /// [additionalParticipants] - Additional participants for group calls
-  ///
-  /// Note: Current implementation uses point-to-point connection.
-  /// For true multi-party calls, each participant needs a separate RTCPeerConnection.
-  /// ICE candidates are sent to all participants, but only one connection is established.
   Future<void> startCall({
-    required String calleePubkey,
+    required CallTarget target,
     required CallType callType,
-    List<String>? additionalParticipants,
+    List<CallTarget>? additionalParticipants,
   }) async {
     final sessionId = _generateSessionId();
     final offerId = sessionId;
+    final currentPubkey = Account.sharedInstance.currentPubkey;
+
+    final callerTarget = CallTarget(
+      pubkey: currentPubkey,
+      privateGroupId: target.privateGroupId,
+    );
+
     final participants = [
-      Account.sharedInstance.currentPubkey,
-      calleePubkey,
+      callerTarget,
+      target,
       ...?additionalParticipants,
     ];
 
     final session = CallSession(
       sessionId: sessionId,
       offerId: offerId,
-      callerPubkey: Account.sharedInstance.currentPubkey,
-      calleePubkey: calleePubkey,
+      callerTarget: callerTarget,
+      calleeTarget: target,
       participants: participants,
       callType: callType,
       direction: CallDirection.outgoing,
@@ -119,7 +145,11 @@ class CallManager {
         'media': callType == CallType.video ? 'video' : 'audio',
       });
 
-      await Contacts.sharedInstance.sendOffer(calleePubkey, offerJson);
+      await Contacts.sharedInstance.sendOffer(
+        target.pubkey,
+        target.privateGroupId,
+        offerJson,
+      );
 
       _updateSession(sessionId, state: CallState.ringing);
       _startOfferTimer(sessionId);
@@ -152,7 +182,6 @@ class CallManager {
 
     CallLogger.info('Accepting call: sessionId=${session.sessionId}');
 
-    // Cancel the timeout timer
     _cancelOfferTimer(session.sessionId);
 
     try {
@@ -161,28 +190,23 @@ class CallManager {
         return;
       }
 
-      // Get media stream FIRST before creating PeerConnection
       CallLogger.debug('Getting user media for call type: ${session.callType}');
       final localStream = await _getUserMedia(session.callType);
       _localStreams[session.sessionId] = localStream;
       CallLogger.debug('Got local stream with ${localStream.getTracks().length} tracks');
 
-      // Then create PeerConnection
       final peerConnection = await _createPeerConnection(session.sessionId);
       _peerConnections[session.sessionId] = peerConnection;
 
-      // Add tracks to PeerConnection
       for (final track in localStream.getTracks()) {
         await peerConnection.addTrack(track, localStream);
       }
       CallLogger.debug('Added ${localStream.getTracks().length} tracks to PeerConnection');
 
-      // Set remote description from stored SDP
       await peerConnection.setRemoteDescription(
         RTCSessionDescription(session.remoteSdp!, 'offer'),
       );
 
-      // Create and send answer
       final answer = await peerConnection.createAnswer();
       await peerConnection.setLocalDescription(answer);
 
@@ -192,7 +216,12 @@ class CallManager {
         'type': answer.type,
       });
 
-      await Contacts.sharedInstance.sendAnswer(offerId, session.callerPubkey, answerJson);
+      await Contacts.sharedInstance.sendAnswer(
+        offerId,
+        session.callerPubkey,
+        session.privateGroupId,
+        answerJson,
+      );
 
       await _backgroundKeepAlive.configureForCall();
       await _backgroundKeepAlive.activate();
@@ -218,6 +247,7 @@ class CallManager {
     await Contacts.sharedInstance.sendDisconnect(
       offerId,
       session.callerPubkey,
+      session.privateGroupId,
       disconnectContent,
     );
 
@@ -231,11 +261,14 @@ class CallManager {
     if (session == null) return;
 
     final disconnectContent = jsonEncode({'reason': 'hangUp'});
+    final targetPubkey = session.direction == CallDirection.outgoing
+        ? session.calleePubkey
+        : session.callerPubkey;
+
     await Contacts.sharedInstance.sendDisconnect(
       session.offerId,
-      session.direction == CallDirection.outgoing
-          ? session.calleePubkey
-          : session.callerPubkey,
+      targetPubkey,
+      session.privateGroupId,
       disconnectContent,
     );
 
@@ -247,11 +280,11 @@ class CallManager {
     if (session == null) return;
 
     _cancelOfferTimer(sessionId);
+    _pendingPrivateGroupIds.remove(session.offerId);
 
     final endTime = DateTime.now().millisecondsSinceEpoch;
     final duration = endTime - session.startTime;
 
-    // Update session state
     session.state = CallState.ended;
     session.endTime = endTime;
     session.endReason = reason;
@@ -290,11 +323,11 @@ class CallManager {
   }
 
   void _handleSignalingMessage(
-    String friend,
-    SignalingState state,
-    String data,
-    String? offerId,
-  ) {
+      String friend,
+      SignalingState state,
+      String data,
+      String? offerId,
+      ) {
     CallLogger.debug('Received signaling: friend=$friend, state=$state, offerId=$offerId');
 
     switch (state) {
@@ -329,18 +362,31 @@ class CallManager {
       // Check if already in a call
       if (_activeSessions.isNotEmpty) {
         CallLogger.warning('Already in a call, rejecting incoming call');
+        final privateGroupId = _pendingPrivateGroupIds[offerId] ?? '';
         final disconnectContent = jsonEncode({'reason': 'inCalling'});
-        await Contacts.sharedInstance.sendDisconnect(offerId, caller, disconnectContent);
+        await Contacts.sharedInstance.sendDisconnect(
+          offerId,
+          caller,
+          privateGroupId,
+          disconnectContent,
+        );
         return;
       }
 
-      // Create session in ringing state, store the remote SDP for later use
+      // Get privateGroupId from the signaling context
+      // This should be passed through the signaling layer
+      final privateGroupId = _extractPrivateGroupId(offerId, caller) ?? '';
+
+      final currentPubkey = Account.sharedInstance.currentPubkey;
+      final callerTarget = CallTarget(pubkey: caller, privateGroupId: privateGroupId);
+      final calleeTarget = CallTarget(pubkey: currentPubkey, privateGroupId: privateGroupId);
+
       final session = CallSession(
         sessionId: sessionId,
         offerId: offerId,
-        callerPubkey: caller,
-        calleePubkey: Account.sharedInstance.currentPubkey,
-        participants: [caller, Account.sharedInstance.currentPubkey],
+        callerTarget: callerTarget,
+        calleeTarget: calleeTarget,
+        participants: [callerTarget, calleeTarget],
         callType: callType,
         direction: CallDirection.incoming,
         state: CallState.ringing,
@@ -351,15 +397,52 @@ class CallManager {
       _activeSessions[sessionId] = session;
       _notifyStateChange(session);
 
-      // Start timeout timer for incoming call
       _startOfferTimer(sessionId);
 
       CallLogger.info('Incoming call ringing: offerId=$offerId, waiting for user to accept');
     } catch (e) {
       CallLogger.error('Failed to handle offer: $e');
+      final privateGroupId = _pendingPrivateGroupIds[offerId] ?? '';
       final disconnectContent = jsonEncode({'reason': 'error'});
-      await Contacts.sharedInstance.sendDisconnect(offerId, caller, disconnectContent);
+      await Contacts.sharedInstance.sendDisconnect(
+        offerId,
+        caller,
+        privateGroupId,
+        disconnectContent,
+      );
     }
+  }
+
+  /// Extract privateGroupId from signaling context.
+  /// This needs to be implemented based on how the signaling layer passes this information.
+  String? _extractPrivateGroupId(String offerId, String remotePubkey) {
+    // Check if we have a pending privateGroupId stored
+    if (_pendingPrivateGroupIds.containsKey(offerId)) {
+      return _pendingPrivateGroupIds[offerId];
+    }
+
+    // Try to find from existing sessions
+    final existingSession = _findSessionByOfferId(offerId);
+    if (existingSession != null) {
+      return existingSession.privateGroupId;
+    }
+
+    // Default: try to find a private group between current user and remote
+    // This is a fallback and may need to be improved based on app requirements
+    return _findPrivateGroupWithUser(remotePubkey);
+  }
+
+  /// Find a private group ID that contains both current user and the specified user.
+  String? _findPrivateGroupWithUser(String userPubkey) {
+    // This should be implemented based on how private groups are stored
+    // For now, return null and let the signaling layer handle it
+    return null;
+  }
+
+  /// Register a privateGroupId for an upcoming incoming call.
+  /// Call this when you know the privateGroupId before the offer arrives.
+  void registerPendingPrivateGroupId(String offerId, String privateGroupId) {
+    _pendingPrivateGroupIds[offerId] = privateGroupId;
   }
 
   Future<void> _handleAnswer(String callee, String data, String? offerId) async {
@@ -528,19 +611,23 @@ class CallManager {
       await Contacts.sharedInstance.sendCandidate(
         session.offerId,
         targetPubkey,
+        session.privateGroupId,
         candidateJson,
       );
 
       CallLogger.debug('ICE candidate sent: sessionId=$sessionId, to=$targetPubkey');
 
+      // Send to additional participants
       for (final participant in session.participants) {
-        if (participant != targetPubkey && participant != Account.sharedInstance.currentPubkey) {
+        if (participant.pubkey != targetPubkey &&
+            participant.pubkey != Account.sharedInstance.currentPubkey) {
           await Contacts.sharedInstance.sendCandidate(
             session.offerId,
-            participant,
+            participant.pubkey,
+            participant.privateGroupId,
             candidateJson,
           );
-          CallLogger.debug('ICE candidate sent to additional participant: $participant');
+          CallLogger.debug('ICE candidate sent to additional participant: ${participant.pubkey}');
         }
       }
     } catch (e) {
@@ -599,7 +686,9 @@ class CallManager {
   void _handleRemoteStream(String sessionId, MediaStream stream) {
     CallLogger.info('Remote stream received: sessionId=$sessionId');
     _remoteStreams[sessionId] = stream;
-    onRemoteStreamReady?.call(sessionId, stream);
+    for (final callback in _streamCallbacks) {
+      callback(sessionId, stream);
+    }
   }
 
   Future<MediaStream> _getUserMedia(CallType callType) async {
@@ -607,8 +696,8 @@ class CallManager {
       'audio': true,
       'video': callType == CallType.video
           ? {
-              'facingMode': 'user',
-            }
+        'facingMode': 'user',
+      }
           : false,
     };
 
@@ -653,7 +742,9 @@ class CallManager {
   }
 
   void _notifyStateChange(CallSession session) {
-    onCallStateChanged?.call(session);
+    for (final callback in _stateCallbacks) {
+      callback(session);
+    }
   }
 
   Future<void> _handleError(String sessionId, CallErrorType type, String message, dynamic originalError) async {
@@ -668,7 +759,9 @@ class CallManager {
 
     CallLogger.error('Call error: sessionId=$sessionId, error=$error');
 
-    onCallError?.call(session, error);
+    for (final callback in _errorCallbacks) {
+      callback(session, error);
+    }
 
     if (session.state != CallState.ended) {
       await _endCall(sessionId, CallEndReason.unknown);
@@ -678,7 +771,7 @@ class CallManager {
   CallSession? _findSessionByOfferId(String offerId) {
     try {
       return _activeSessions.values.firstWhere(
-        (session) => session.offerId == offerId,
+            (session) => session.offerId == offerId,
       );
     } catch (e) {
       return _activeSessions[offerId];
