@@ -20,7 +20,7 @@ class CircleEmptyWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
         return Transform.translate(
-      offset: Offset(0, -120.px),
+      offset: Offset(0, -80.px),
       child: Center(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 16.px),

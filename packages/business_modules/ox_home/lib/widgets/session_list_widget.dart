@@ -1,10 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ox_common/component.dart';
+import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/login/login_models.dart';
+import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/utils/adapt.dart';
+import 'package:ox_common/utils/circle_join_utils.dart';
 import 'package:ox_common/widgets/common_image.dart';
 import 'package:ox_localizable/ox_localizable.dart';
+import 'package:ox_chat/page/session/find_people_page.dart';
+import 'package:ox_usercenter/page/settings/qr_code_display_page.dart';
 
 import '../page/archived_chats_page.dart';
 import 'session_list_data_controller.dart';
@@ -174,10 +179,53 @@ class _SessionListWidgetState extends State<SessionListWidget> {
                 textAlign: TextAlign.center,
                 maxLines: 3,
               ),
+                      color: ColorToken.onPrimary.of(context),
+                    ),
+                    SizedBox(width: 8.px),
+                    CLText.bodyMedium(
+                      Localized.text('ox_chat.find_people_to_chat'),
+                      customColor: ColorToken.onPrimary.of(context),
+                    ),
+                  ],
+                ),
+              ),
+
+              // SizedBox(height: 16.px),
+
+              // Invite Friends link
+              CupertinoButton(
+                onPressed: () => _navigateToInviteFriends(context),
+                padding: EdgeInsets.zero,
+                child: CLText.bodyMedium(
+                  Localized.text('ox_chat.invite_friends_link'),
+                  customColor: ColorToken.primary.of(context),
+                ),
+              ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  void _navigateToFindPeople(BuildContext context) {
+    OXNavigator.pushPage(
+      context,
+      (context) => const FindPeoplePage(),
+      type: OXPushPageType.present,
+    );
+  }
+
+  void _navigateToInviteFriends(BuildContext context) {
+    final circle = LoginManager.instance.currentCircle;
+    if (circle == null) {
+      CircleJoinUtils.showJoinCircleGuideDialog(context: OXNavigator.rootContext);
+      return;
+    }
+    
+    OXNavigator.pushPage(
+      context,
+      (context) => const QRCodeDisplayPage(),
     );
   }
 
