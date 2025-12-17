@@ -199,7 +199,7 @@ class _SessionListWidgetState extends State<SessionListWidget> {
                     ),
                     SizedBox(width: 8.px),
                     CLText.bodyMedium(
-                      Localized.text('ox_chat.find_people_to_chat'),
+                      Localized.text('ox_chat.add_friends_to_chat'),
                       customColor: ColorToken.onPrimary.of(context),
                     ),
                   ],
