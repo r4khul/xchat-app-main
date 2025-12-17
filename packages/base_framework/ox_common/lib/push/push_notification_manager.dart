@@ -165,20 +165,23 @@ class CLUserPushNotificationManager implements PushPermissionChecker {
       return null;
     }
 
-    final account = LoginManager.instance.currentState.account;
-    if (account == null) return null;
-    return CLPushIntegration.instance
-        .registerNotification()
-        .then((token) {
-      if (token.isEmpty) return null;
-      if (account.pubkey != LoginManager.instance.currentState.account?.pubkey) return null;
+    if (allowReceiveNotification) {
+      final account = LoginManager.instance.currentState.account;
+      if (account == null) return null;
+      return CLPushIntegration.instance
+          .registerNotification()
+          .then((token) {
+        if (token.isEmpty) return null;
+        if (account.pubkey != LoginManager.instance.currentState.account?.pubkey) return null;
 
-      LoginManager.instance.updatePushToken(token);
-      if (allowReceiveNotification) {
+        LoginManager.instance.updatePushToken(token);
         NotificationHelper.sharedInstance.updateNotificationDeviceId(token);
-      }
-      return token;
-    });
+        return token;
+      });
+    } else {
+      NotificationHelper.sharedInstance.removeNotification();
+      return '';
+    }
   }
 
   Future<void> setAllowSendNotification(bool value) async {
