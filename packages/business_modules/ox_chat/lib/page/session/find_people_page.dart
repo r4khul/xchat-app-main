@@ -68,14 +68,15 @@ class _FindPeoplePageState extends State<FindPeoplePage> {
         borderRadius: BorderRadius.circular(12.px),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        // crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
             width: 24.px,
             height: 24.px,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: ColorToken.primary.of(context),
+              gradient: CLThemeData.themeGradientOf(context),
             ),
             child: Icon(
               PlatformStyle.isUseMaterial
@@ -103,7 +104,7 @@ class _FindPeoplePageState extends State<FindPeoplePage> {
       children: [
         CLText.titleMedium(
           Localized.text('ox_chat.method_1_scan'),
-          colorToken: ColorToken.onSurfaceVariant,
+          colorToken: ColorToken.onSurface,
         ),
         SizedBox(height: 12.px),
         GestureDetector(
@@ -112,7 +113,7 @@ class _FindPeoplePageState extends State<FindPeoplePage> {
             width: double.infinity,
             padding: EdgeInsets.symmetric(vertical: 48.px),
             decoration: BoxDecoration(
-              color: ColorToken.primary.of(context),
+              gradient: CLThemeData.themeGradientOf(context),
               borderRadius: BorderRadius.circular(16.px),
             ),
             child: Column(
@@ -143,17 +144,15 @@ class _FindPeoplePageState extends State<FindPeoplePage> {
       children: [
         CLText.titleMedium(
           Localized.text('ox_chat.method_2_paste_id'),
-          colorToken: ColorToken.onSurfaceVariant,
+          colorToken: ColorToken.onSurface,
         ),
         SizedBox(height: 12.px),
         Container(
           decoration: BoxDecoration(
-            color: ColorToken.surfaceContainer.of(context),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(12.px),
             border: Border.all(
-              color: _userIdFocusNode.hasFocus
-                  ? ColorToken.primary.of(context)
-                  : ColorToken.onSurfaceVariant.of(context).withOpacity(0.3),
+              color: CLThemeData.themeColorOf(context),
               width: 1.5.px,
             ),
           ),
@@ -206,7 +205,7 @@ class _FindPeoplePageState extends State<FindPeoplePage> {
                               ? Icons.paste
                               : CupertinoIcons.doc_on_clipboard,
                           size: 20.px,
-                          color: ColorToken.onSurfaceVariant.of(context),
+                          color: CLThemeData.themeColorOf(context),
                         ),
                       ),
                     ),
@@ -215,7 +214,7 @@ class _FindPeoplePageState extends State<FindPeoplePage> {
               ),
         SizedBox(height: 16.px),
         CLButton.filled(
-          backgroundColor: ColorToken.primary.of(context),
+          // Use theme gradient (purple) by default when backgroundColor is null
           expanded: true,
           onTap: () => _onFindAndAdd(context),
           child: Row(
@@ -227,12 +226,12 @@ class _FindPeoplePageState extends State<FindPeoplePage> {
                     ? Icons.person_add
                     : CupertinoIcons.person_add,
                 size: 20.px,
-                color: ColorToken.onPrimary.of(context),
+                color: Colors.white,
               ),
               SizedBox(width: 8.px),
               CLText.bodyMedium(
                 Localized.text('ox_chat.find_and_add'),
-                customColor: ColorToken.onPrimary.of(context),
+                customColor: Colors.white,
               ),
             ],
           ),

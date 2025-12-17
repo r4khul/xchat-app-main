@@ -184,7 +184,6 @@ class _SessionListWidgetState extends State<SessionListWidget> {
 
               // Find People to Chat button
               CLButton.filled(
-                backgroundColor: ColorToken.primary.of(context),
                 expanded: true,
                 onTap: () => _navigateToFindPeople(context),
                 child: Row(
@@ -215,7 +214,7 @@ class _SessionListWidgetState extends State<SessionListWidget> {
                 padding: EdgeInsets.zero,
                 child: CLText.bodyMedium(
                   Localized.text('ox_chat.invite_friends_link'),
-                  customColor: ColorToken.primary.of(context),
+                  customColor: CLThemeData.themeColorOf(context),
                 ),
               ),
             ],
