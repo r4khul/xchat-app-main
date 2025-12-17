@@ -18,7 +18,9 @@ import 'package:share_plus/share_plus.dart';
 import 'package:ox_common/utils/permission_utils.dart';
 import 'package:ox_common/const/app_config.dart';
 import 'package:ox_common/utils/compression_utils.dart';
+import 'package:ox_common/utils/user_config_tool.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/cupertino.dart';
 
 enum QRCodeStyle {
   defaultStyle, // Default
@@ -66,6 +68,9 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
   // Invite link type
   InviteLinkType currentLinkType = InviteLinkType.oneTime;
 
+  // Discoverable by ID setting
+  late final ValueNotifier<bool> discoverableByID$;
+
   @override
   void initState() {
     super.initState();
@@ -75,14 +80,45 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
     currentDecoration = createDecoration(currentStyle);
     previousDecoration = currentDecoration;
 
+    // Initialize discoverable by ID setting
+    // Check both saved setting and actual keypackage events in database
+    discoverableByID$ = ValueNotifier<bool>(false);
+    _initializeDiscoverableByID();
+
     // Auto-generate permanent invite link when page loads (only for current user)
     if (widget.otherUser == null) {
       _generateInviteLink(InviteLinkType.permanent);
     }
   }
 
+  /// Initialize discoverable by ID state by checking database
+  Future<void> _initializeDiscoverableByID() async {
+    if (widget.otherUser != null) return; // Only for current user
+    
+    try {
+      final ownerPubkey = Account.sharedInstance.currentPubkey;
+      
+      // Check if there are any permanent keypackages that are published
+      List<KeyPackageDBISAR> permanentKeyPackages =
+          await KeyPackageManager.getLocalKeyPackagesByType(
+              ownerPubkey, KeyPackageType.permanent);
+      
+      // Check if any keypackage has been published (isPublished = true)
+      // Use database state as the only source of truth
+      bool isDiscoverable = permanentKeyPackages.any((kp) => kp.isPublished);
+      
+      discoverableByID$.value = isDiscoverable;
+    } catch (e) {
+      print('Failed to initialize discoverable by ID: $e');
+      // Default to false on error
+      discoverableByID$.value = false;
+    }
+  }
+
+
   @override
   void dispose() {
+    discoverableByID$.dispose();
     super.dispose();
   }
 
@@ -195,13 +231,23 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
           RepaintBoundary(
             key: qrWidgetKey,
             child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: horizontal,
-                vertical: 20.px,
+              padding: EdgeInsets.only(
+                left: horizontal,
+                top: 20.px,
+                right: horizontal,
               ),
               child: _buildQRCodeCard(),
             ),
           ),
+
+          // Discoverable by ID option (only for current user)
+          if (widget.otherUser == null) ...[
+            SizedBox(height: 24.px),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: horizontal),
+              child: _buildDiscoverableByIDOption(),
+            ),
+          ],
 
           // Action buttons (only for current user, only show when invite link is generated)
           if (widget.otherUser == null && currentInviteLink != null) ...[
@@ -288,6 +334,130 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
             Localized.text('ox_usercenter.scan_qr_to_find_me'),
             textAlign: TextAlign.center,
             colorToken: ColorToken.onSurfaceVariant,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDiscoverableByIDOption() {
+    return Container(
+      padding: EdgeInsets.all(16.px),
+      decoration: BoxDecoration(
+        color: ColorToken.surface.of(context),
+        borderRadius: BorderRadius.circular(12.px),
+      ),
+      child: Row(
+        children: [
+          // Icon
+          ValueListenableBuilder<bool>(
+            valueListenable: discoverableByID$,
+            builder: (context, isDiscoverable, _) {
+              return Container(
+                width: 40.px,
+                height: 40.px,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isDiscoverable
+                      ? const Color(0xFFE8F5E9) // Light green background
+                      : ColorToken.surfaceContainer.of(context),
+                ),
+                child: Icon(
+                  isDiscoverable
+                      ? (PlatformStyle.isUseMaterial
+                          ? Icons.public
+                          : CupertinoIcons.globe)
+                      : (PlatformStyle.isUseMaterial
+                          ? Icons.lock_outline
+                          : CupertinoIcons.lock),
+                  size: 20.px,
+                  color: isDiscoverable
+                      ? const Color(0xFF2E7D32) // Dark green color for globe icon
+                      : ColorToken.onSurfaceVariant.of(context),
+                ),
+              );
+            },
+          ),
+          SizedBox(width: 12.px),
+          // Title and description
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CLText.titleMedium(
+                  Localized.text('ox_usercenter.discoverable_by_id'),
+                  colorToken: ColorToken.onSurface,
+                ),
+                SizedBox(height: 4.px),
+                ValueListenableBuilder<bool>(
+                  valueListenable: discoverableByID$,
+                  builder: (context, isDiscoverable, _) {
+                    return CLText.bodySmall(
+                      Localized.text(isDiscoverable
+                          ? 'ox_usercenter.discoverable_by_id_description_on'
+                          : 'ox_usercenter.discoverable_by_id_description_off'),
+                      colorToken: ColorToken.onSurfaceVariant,
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+          SizedBox(width: 12.px),
+          // Switch
+          ValueListenableBuilder<bool>(
+            valueListenable: discoverableByID$,
+            builder: (context, value, _) {
+              return CLSwitch(
+                value: value,
+                onChanged: (newValue) async {
+                  // Only allow toggle for current user
+                  if (widget.otherUser != null) return;
+                  
+                  discoverableByID$.value = newValue;
+                  await UserConfigTool.saveSetting('discoverable_by_id', newValue);
+                  
+                  // Show loading
+                  OXLoading.show();
+                  
+                  try {
+                    bool success = false;
+                    
+                    if (newValue) {
+                      // Switch ON: Enable discoverable by ID
+                      success = await Groups.sharedInstance.enableDiscoverableByID();
+                      if (success) {
+                        CommonToast.instance.show(context, Localized.text('ox_usercenter.discoverable_by_id_enabled'));
+                      } else {
+                        // Failed to enable, revert switch
+                        discoverableByID$.value = false;
+                        await UserConfigTool.saveSetting('discoverable_by_id', false);
+                        CommonToast.instance.show(context, Localized.text('ox_usercenter.failed_to_enable_discoverable'));
+                      }
+                    } else {
+                      // Switch OFF: Disable discoverable by ID
+                      success = await Groups.sharedInstance.disableDiscoverableByID();
+                      if (success) {
+                        CommonToast.instance.show(context, Localized.text('ox_usercenter.discoverable_by_id_disabled'));
+                      } else {
+                        // Failed to disable, revert switch
+                        discoverableByID$.value = true;
+                        await UserConfigTool.saveSetting('discoverable_by_id', true);
+                        CommonToast.instance.show(context, Localized.text('ox_usercenter.failed_to_toggle_discoverable'));
+                      }
+                    }
+                  } catch (e) {
+                    print('Failed to toggle discoverable by ID: $e');
+                    // Revert switch on error
+                    discoverableByID$.value = !newValue;
+                    await UserConfigTool.saveSetting('discoverable_by_id', !newValue);
+                    CommonToast.instance.show(context, Localized.text('ox_usercenter.failed_to_toggle_discoverable'));
+                  } finally {
+                    OXLoading.dismiss();
+                  }
+                },
+              );
+            },
           ),
         ],
       ),

@@ -164,7 +164,7 @@ class _SessionListWidgetState extends State<SessionListWidget> {
               SizedBox(height: 24.px),
 
               // Title
-              CLText.titleMedium(
+              CLText.titleLarge(
                 Localized.text('ox_chat.no_sessions_title'),
                 colorToken: ColorToken.onSurface,
                 textAlign: TextAlign.center,
@@ -179,6 +179,23 @@ class _SessionListWidgetState extends State<SessionListWidget> {
                 textAlign: TextAlign.center,
                 maxLines: 3,
               ),
+
+              SizedBox(height: 32.px),
+
+              // Find People to Chat button
+              CLButton.filled(
+                backgroundColor: ColorToken.primary.of(context),
+                expanded: true,
+                onTap: () => _navigateToFindPeople(context),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      PlatformStyle.isUseMaterial
+                          ? Icons.person_add
+                          : CupertinoIcons.person_add,
+                      size: 20.px,
                       color: ColorToken.onPrimary.of(context),
                     ),
                     SizedBox(width: 8.px),
