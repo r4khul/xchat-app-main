@@ -147,67 +147,50 @@ class _FindPeoplePageState extends State<FindPeoplePage> {
         ),
         SizedBox(height: 12.px),
         Container(
-          padding: EdgeInsets.all(16.px),
           decoration: BoxDecoration(
-            color: ColorToken.surface.of(context),
-            borderRadius: BorderRadius.circular(16.px),
+            color: ColorToken.surfaceContainer.of(context),
+            borderRadius: BorderRadius.circular(12.px),
             border: Border.all(
-              color: ColorToken.onSurfaceVariant.of(context).withOpacity(0.2),
+              color: _userIdFocusNode.hasFocus
+                  ? ColorToken.primary.of(context)
+                  : ColorToken.onSurfaceVariant.of(context).withOpacity(0.3),
+              width: 1.5.px,
             ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: Row(
             children: [
-              CLText.bodySmall(
-                Localized.text('ox_chat.enter_user_id'),
-                colorToken: ColorToken.onSurfaceVariant,
+              Expanded(
+                child: PlatformStyle.isUseMaterial
+                    ? TextField(
+                        controller: _userIdController,
+                        focusNode: _userIdFocusNode,
+                        decoration: InputDecoration(
+                          hintText: Localized.text('ox_chat.enter_user_id'),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 16.px,
+                            vertical: 12.px,
+                          ),
+                          hintStyle: TextStyle(
+                            color: ColorToken.onSurfaceVariant.of(context).withOpacity(0.5),
+                          ),
+                        ),
+                        style: TextStyle(
+                          color: ColorToken.onSurface.of(context),
+                          fontSize: 16.px,
+                        ),
+                      )
+                    : CupertinoTextField(
+                        controller: _userIdController,
+                        focusNode: _userIdFocusNode,
+                        placeholder: Localized.text('ox_chat.enter_user_id'),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16.px,
+                          vertical: 12.px,
+                        ),
+                        decoration: null,
+                      ),
               ),
-              SizedBox(height: 8.px),
-              Container(
-                decoration: BoxDecoration(
-                  color: ColorToken.surfaceContainer.of(context),
-                  borderRadius: BorderRadius.circular(12.px),
-                  border: Border.all(
-                    color: _userIdFocusNode.hasFocus
-                        ? ColorToken.primary.of(context)
-                        : ColorToken.onSurfaceVariant.of(context).withOpacity(0.3),
-                    width: 1.5.px,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: PlatformStyle.isUseMaterial
-                          ? TextField(
-                              controller: _userIdController,
-                              focusNode: _userIdFocusNode,
-                              decoration: InputDecoration(
-                                hintText: 'npub1...',
-                                border: InputBorder.none,
-                                contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 16.px,
-                                  vertical: 12.px,
-                                ),
-                                hintStyle: TextStyle(
-                                  color: ColorToken.onSurfaceVariant.of(context).withOpacity(0.5),
-                                ),
-                              ),
-                              style: TextStyle(
-                                color: ColorToken.onSurface.of(context),
-                                fontSize: 16.px,
-                              ),
-                            )
-                          : CupertinoTextField(
-                              controller: _userIdController,
-                              focusNode: _userIdFocusNode,
-                              placeholder: 'npub1...',
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 16.px,
-                                vertical: 12.px,
-                              ),
-                              decoration: null,
-                            ),
-                    ),
                     GestureDetector(
                       onTap: () async {
                         // Paste from clipboard
@@ -230,29 +213,26 @@ class _FindPeoplePageState extends State<FindPeoplePage> {
                   ],
                 ),
               ),
-              SizedBox(height: 16.px),
-              CLButton.filled(
-                backgroundColor: ColorToken.primary.of(context),
-                expanded: true,
-                onTap: () => _onFindAndAdd(context),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      PlatformStyle.isUseMaterial
-                          ? Icons.person_add
-                          : CupertinoIcons.person_add,
-                      size: 20.px,
-                      color: ColorToken.onPrimary.of(context),
-                    ),
-                    SizedBox(width: 8.px),
-                    CLText.bodyMedium(
-                      Localized.text('ox_chat.find_and_add'),
-                      customColor: ColorToken.onPrimary.of(context),
-                    ),
-                  ],
-                ),
+        SizedBox(height: 16.px),
+        CLButton.filled(
+          backgroundColor: ColorToken.primary.of(context),
+          expanded: true,
+          onTap: () => _onFindAndAdd(context),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                PlatformStyle.isUseMaterial
+                    ? Icons.person_add
+                    : CupertinoIcons.person_add,
+                size: 20.px,
+                color: ColorToken.onPrimary.of(context),
+              ),
+              SizedBox(width: 8.px),
+              CLText.bodyMedium(
+                Localized.text('ox_chat.find_and_add'),
+                customColor: ColorToken.onPrimary.of(context),
               ),
             ],
           ),
