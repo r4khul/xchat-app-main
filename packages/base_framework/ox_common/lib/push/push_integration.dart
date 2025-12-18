@@ -5,6 +5,8 @@ import 'package:chatcore/chat-core.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ox_common/ox_common.dart';
 import 'package:ox_common/utils/ox_chat_binding.dart';
+import 'package:ox_common/model/chat_type.dart';
+import 'package:ox_common/login/login_manager.dart';
 
 import 'decision_service.dart';
 import 'core/local_notifier.dart';
@@ -110,10 +112,22 @@ class CLPushIntegration with WidgetsBindingObserver {
       return;
     }
     
+    // Skip notification if message is sent by current user
+    if (_isMessageFromCurrentUser(message)) {
+      return;
+    }
+    
     final msg = _mapToIncomingMessage(title, message);
     if (msg != null) {
       unawaited(_decision.onMessageArrived(msg));
     }
+  }
+
+  // Check if message is sent by current user
+  bool _isMessageFromCurrentUser(MessageDBISAR message) {
+    final sender = message.sender;
+    if (sender.isEmpty) return false;
+    return LoginManager.instance.isMe(sender);
   }
 
   // Map MessageDBISAR to IncomingMessage
