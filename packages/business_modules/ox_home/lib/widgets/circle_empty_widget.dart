@@ -5,6 +5,7 @@ import 'package:ox_common/component.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/page/circle_introduction_page.dart';
 import 'package:ox_localizable/ox_localizable.dart';
+import 'package:ox_common/widgets/common_image.dart';
 
 class CircleEmptyWidget extends StatelessWidget {
   final VoidCallback? onJoinCircle;
@@ -29,18 +30,10 @@ class CircleEmptyWidget extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
           children: [
           // Empty state icon
-          Container(
-            width: 120.px,
-            height: 120.px,
-            decoration: BoxDecoration(
-              color: ColorToken.xChat.of(context).withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.chat_rounded,
-              size: 64.px,
-              color: ColorToken.xChat.of(context),
-            ),
+          CommonImage(
+            iconName: 'empty.png',
+            size: 120.px,
+            package: 'ox_home',
           ),
 
           SizedBox(height: 24.px),

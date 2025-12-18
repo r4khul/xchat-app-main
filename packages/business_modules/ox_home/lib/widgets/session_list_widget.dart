@@ -9,6 +9,7 @@ import 'package:ox_common/utils/circle_join_utils.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import 'package:ox_chat/page/session/find_people_page.dart';
 import 'package:ox_usercenter/page/settings/qr_code_display_page.dart';
+import 'package:ox_common/widgets/common_image.dart';
 
 import '../page/archived_chats_page.dart';
 import 'session_list_data_controller.dart';
@@ -154,34 +155,26 @@ class _SessionListWidgetState extends State<SessionListWidget> {
             mainAxisSize: MainAxisSize.min,
             children: [
               // Empty state icon
-              Container(
-                width: 120.px,
-                height: 120.px,
-                decoration: BoxDecoration(
-                  color: ColorToken.xChat.of(context).withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.chat_rounded,
-                  size: 64.px,
-                  color: ColorToken.xChat.of(context),
-                ),
+              CommonImage(
+                iconName: 'empty.png',
+                size: 120.px,
+                package: 'ox_home',
               ),
 
-              SizedBox(height: 24.px),
+              SizedBox(height: 32.px),
 
               // Title
               CLText.titleLarge(
-                Localized.text('ox_chat.no_sessions_title'),
+                Localized.text('ox_chat.welcome_to_xchat'),
                 colorToken: ColorToken.onSurface,
                 textAlign: TextAlign.center,
               ),
 
-              SizedBox(height: 8.px),
+              SizedBox(height: 32.px),
 
               // Description
               CLText.bodyMedium(
-                Localized.text('ox_chat.no_sessions_description'),
+                Localized.text('ox_chat.welcome_description'),
                 colorToken: ColorToken.onSurfaceVariant,
                 textAlign: TextAlign.center,
                 maxLines: 3,
@@ -221,7 +214,7 @@ class _SessionListWidgetState extends State<SessionListWidget> {
                 padding: EdgeInsets.zero,
                 child: CLText.bodyMedium(
                   Localized.text('ox_chat.invite_friends_link'),
-                  customColor: CLThemeData.themeColorOf(context),
+                  customColor: ColorToken.primary.of(context),
                 ),
               ),
             ],
