@@ -170,34 +170,42 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
   }
 
   SectionListViewItem menuSection() {
-    return SectionListViewItem(
-      data: [
-        LabelItemModel(
-          icon: ListViewIcon(
-            iconName: 'icon_new_group.png',
-            package: 'ox_common',
-          ),
-          title: Localized.text('ox_chat.str_new_group'),
-          onTap: _onNewGroup,
+    final menuItems = <LabelItemModel>[
+      LabelItemModel(
+        icon: ListViewIcon(
+          iconName: 'icon_new_group.png',
+          package: 'ox_common',
         ),
+        title: Localized.text('ox_chat.str_new_group'),
+        onTap: _onNewGroup,
+      ),
+    ];
 
+    // On Android, add user button is already in the app bar, so don't show it in the list
+    if (!PlatformStyle.isUseMaterial) {
+      menuItems.add(
         LabelItemModel(
           icon: ListViewIcon.data(
-            PlatformStyle.isUseMaterial
-                ? Icons.person_add
-                : CupertinoIcons.person_add,
+            CupertinoIcons.person_add,
           ),
           title: Localized.text('ox_chat.add_friends'),
           onTap: _onAddFriends,
         ),
-        LabelItemModel(
-          icon: ListViewIcon.data(
-            Icons.share,
-          ),
-          title: Localized.text('ox_usercenter.invite'),
-          onTap: _onInviteFriends,
+      );
+    }
+
+    menuItems.add(
+      LabelItemModel(
+        icon: ListViewIcon.data(
+          Icons.share,
         ),
-      ],
+        title: Localized.text('ox_usercenter.invite'),
+        onTap: _onInviteFriends,
+      ),
+    );
+
+    return SectionListViewItem(
+      data: menuItems,
     );
   }
 
