@@ -14,7 +14,9 @@ enum MaterialBarType {
 
 class CLAppBar extends StatelessWidget {
   CLAppBar({
+    super.key,
     dynamic title,
+    this.leading,
     this.previousPageTitle,
     this.actions = const [],
     this.backgroundColor,
@@ -24,6 +26,7 @@ class CLAppBar extends StatelessWidget {
   }) : title = preferTitle(title);
 
   final Widget? title;
+  final Widget? leading;
   final String? previousPageTitle;
   final List<Widget> actions;
   final Color? backgroundColor;
@@ -71,6 +74,8 @@ class CLAppBar extends StatelessWidget {
   AppBar buildMaterialAppBar(BuildContext context) {
     return AppBar(
       title: title,
+      leading: leading,
+      leadingWidth: (leading != null && title == null) ? 250 : null,
       centerTitle: false,
       actions: actions,
       actionsPadding: EdgeInsets.only(right: 16),
@@ -88,9 +93,12 @@ class CLAppBar extends StatelessWidget {
         bottom: 12,   // Adapt for CupertinoSheetRoute
         end: 16,      // _kNavBarEdgePadding
       );
+    } else if (leading != null) {
+      padding = EdgeInsetsDirectional.zero;
     }
     return CupertinoNavigationBar(
       middle: title,
+      leading: leading,
       padding: padding,
       trailing: _buildCupertinoTrailing(context),
       bottom: bottom,

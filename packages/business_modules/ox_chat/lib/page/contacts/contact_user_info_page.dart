@@ -7,10 +7,8 @@ import 'package:ox_common/utils/took_kit.dart';
 import 'package:ox_common/utils/widget_tool.dart';
 import 'package:ox_common/utils/profile_refresh_utils.dart';
 import 'package:ox_common/widgets/avatar.dart';
-import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import 'package:ox_common/login/login_manager.dart';
-import 'package:ox_call/ox_call.dart';
 import '../../utils/chat_session_utils.dart';
 import '../../utils/block_helper.dart';
 
@@ -79,12 +77,6 @@ class _ContactUserInfoPageState extends State<ContactUserInfoPage> {
                         _buildBioItem(user),
                       ],
                     ),
-                    // Call Demo (temporary for testing)
-                    if (!LoginManager.instance.isMe(user.pubKey))
-                      SectionListViewItem.button(
-                        text: '📞 Call Demo',
-                        onTap: () => _openCallDemo(user),
-                      ),
                     if (!LoginManager.instance.isMe(user.pubKey))
                       SectionListViewItem.button(
                         text: _getBlockButtonText(user),
@@ -196,47 +188,6 @@ class _ContactUserInfoPageState extends State<ContactUserInfoPage> {
       user: user$.value,
       isPushWithReplace: true,
     );
-  }
-
-  void _openCallDemo(UserDBISAR user) async {
-    // Get privateGroupId from chatId or find existing group with user
-    String? privateGroupId = widget.chatId;
-
-    if (privateGroupId == null || privateGroupId.isEmpty) {
-      // Try to find an existing MLS group with this user
-      final groups = Groups.sharedInstance.myGroups.values;
-      final existingGroup = groups
-          .map((g) => g.value)
-          .where((g) =>
-              g.isMLSGroup &&
-              (g.members?.contains(user.pubKey) ?? false) &&
-              (g.members?.length ?? 0) == 2)
-          .firstOrNull;
-
-      if (existingGroup != null) {
-        privateGroupId = existingGroup.privateGroupId;
-      }
-    }
-
-    if (privateGroupId == null || privateGroupId.isEmpty) {
-      // No existing group, show message to create secret chat first
-      if (mounted) {
-        CommonToast.instance.show(
-          context,
-          'Please create a secret chat with this user first',
-        );
-      }
-      return;
-    }
-
-    final target = CallTarget.fromUser(user, privateGroupId);
-    if (mounted) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => CallDemoPage(target: target),
-        ),
-      );
-    }
   }
 
   void refreshUserProfile() async {
