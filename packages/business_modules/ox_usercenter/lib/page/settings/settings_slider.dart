@@ -392,7 +392,7 @@ class SettingSliderState extends State<SettingSlider> {
       ],
     );
 
-    if (shouldLogout == true) {
+    if (mounted && shouldLogout == true) {
       try {
         await LoginManager.instance.logoutAccount();
         OXNavigator.popToRoot(context);
