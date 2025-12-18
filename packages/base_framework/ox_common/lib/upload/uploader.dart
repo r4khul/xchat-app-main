@@ -28,14 +28,17 @@ class Uploader {
     return fileType!;
   }
 
-  static Future<String?> upload(
-    String localPath,
-    String imageService, {
-    String? imageServiceAddr,
+  static Future<String?> upload({
+    required String localPath,
+    required String imageService,
+    required String imageServiceAddr,
     String? fileName,
     Function(double progress)? onProgress,
   }) async {
     try{
+      if (imageServiceAddr.contains(ImageServices.POMF2_LAIN_LA)) {
+        return await Pomf2LainLa.upload(localPath, fileName: fileName, onProgress: onProgress);
+      }
       switch (imageService) {
         case ImageServices.POMF2_LAIN_LA:
           return await Pomf2LainLa.upload(localPath, fileName: fileName, onProgress: onProgress);

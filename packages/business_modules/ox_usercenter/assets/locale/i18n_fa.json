@@ -107,5 +107,7 @@
   "show_message_info_option": "نمایش گزینه اطلاعات پیام",
   "use_tor_network": "استفاده جهانی از شبکه Tor",
   "account": "حساب",
-  "chat": "چت"
+  "chat": "چت",
+  "default_file_server_group": "Default server group",
+  "default_file_server_group_subtitle": "Built-in servers"
 }

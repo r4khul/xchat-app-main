@@ -107,5 +107,7 @@
   "show_message_info_option": "Mesaj məlumatı seçimini göstər",
   "use_tor_network": "Tor şəbəkəsini qlobal olaraq istifadə et",
   "account": "Hesab",
-  "chat": "Söhbət"
+  "chat": "Söhbət",
+  "default_file_server_group": "Default server group",
+  "default_file_server_group_subtitle": "Built-in servers"
 }

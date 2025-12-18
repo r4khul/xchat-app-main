@@ -107,5 +107,7 @@
   "show_message_info_option": "Tampilkan opsi info pesan",
   "use_tor_network": "Gunakan jaringan Tor secara global",
   "account": "Akun",
-  "chat": "Obrolan"
+  "chat": "Obrolan",
+  "default_file_server_group": "Default server group",
+  "default_file_server_group_subtitle": "Built-in servers"
 }

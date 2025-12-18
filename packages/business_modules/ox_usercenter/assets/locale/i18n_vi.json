@@ -107,5 +107,7 @@
   "show_message_info_option": "Hiển thị tùy chọn thông tin tin nhắn",
   "use_tor_network": "Sử dụng mạng Tor toàn cục",
   "account": "Tài khoản",
-  "chat": "Trò chuyện"
+  "chat": "Trò chuyện",
+  "default_file_server_group": "Default server group",
+  "default_file_server_group_subtitle": "Built-in servers"
 }

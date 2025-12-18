@@ -1,16 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:chatcore/chat-core.dart';
 import 'package:ox_common/component.dart';
+import 'package:ox_common/login/login_manager.dart';
+import 'package:ox_common/model/file_server_model.dart';
+import 'package:ox_common/repository/file_server_repository.dart';
 import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/utils/extension.dart';
 import 'package:ox_localizable/ox_localizable.dart';
-import 'package:ox_common/repository/file_server_repository.dart';
-import 'add_file_server_page.dart';
-import 'package:chatcore/chat-core.dart';
-import 'package:ox_common/login/login_manager.dart';
-import 'dart:async';
 
-import 'package:ox_common/model/file_server_model.dart';
+import 'add_file_server_page.dart';
 
 /// File Server Settings page.
 class FileServerPage extends StatefulWidget {
@@ -56,9 +56,8 @@ class _FileServerPageState extends State<FileServerPage> {
     _servers$.value = fileServers;
 
     final selectedFileServerUrl = LoginManager.instance.currentCircle?.selectedFileServerUrl;
-    if (selectedFileServerUrl != null && selectedFileServerUrl.isNotEmpty) {
-      _selected$.value = selectedFileServerUrl;
-    }
+    // Empty string means the default file server group is selected.
+    _selected$.value = selectedFileServerUrl ?? '';
   }
 
   void _loadInitialSelection() {
@@ -86,19 +85,22 @@ class _FileServerPageState extends State<FileServerPage> {
             break;
           }
         }
-        matched ??= servers.isNotEmpty ? servers.first : null;
-
+        // If not found (e.g. deleted), fallback to default group.
         if (matched != null) {
           _selected$.safeUpdate(matched.url);
+        } else {
+          _selected$.safeUpdate('');
         }
         _pendingSelectedUrl = null;
       }
 
-      // If current selection has been removed, select the first available one.
+      // If current custom selection has been removed, fallback to default group.
       final selectedUrl = _selected$.value;
-      final isSelected = servers.any((e) => e.url == selectedUrl);
-      if (selectedUrl != null && !isSelected) {
-        _selected$.safeUpdate(servers.isNotEmpty ? servers.first.url : null);
+      if (selectedUrl != null && selectedUrl.isNotEmpty) {
+        final isSelected = servers.any((e) => e.url == selectedUrl);
+        if (!isSelected) {
+          _selected$.safeUpdate('');
+        }
       }
     });
 
@@ -152,22 +154,30 @@ class _FileServerPageState extends State<FileServerPage> {
     final listWidget = ValueListenableBuilder(
       valueListenable: _servers$,
       builder: (_, List<FileServerModel> list, __) {
-        if (list.isEmpty) {
-          return Padding(
-            padding: EdgeInsets.only(top: 220.py),
-            child: _buildEmptyBody(),
-          );
-        }
+        final defaultGroupItem = SelectedItemModel<String?>(
+          title: Localized.text('ox_usercenter.default_file_server_group'),
+          subtitle: Localized.text('ox_usercenter.default_file_server_group_subtitle'),
+          value: '',
+          selected$: _selected$,
+        );
 
-        return CLSectionListView(
-          items: [
+        final customItems = list
+            .map((item) => SelectedItemModel<String?>(
+                  title: item.name,
+                  subtitle: item.url,
+                  value: item.url,
+                  selected$: _selected$,
+                ))
+            .toList();
+
+        final sections = <SectionListViewItem>[
+          SectionListViewItem(
+            data: [defaultGroupItem],
+            isEditing: false,
+          ),
+          if (customItems.isNotEmpty)
             SectionListViewItem(
-              data: list.map((item) => SelectedItemModel<String?>(
-                title: item.name,
-                subtitle: item.url,
-                value: item.url,
-                selected$: _selected$,
-              )).toList(),
+              data: customItems,
               isEditing: _isEditing,
               onDelete: (item) async {
                 final urlToDelete = (item as SelectedItemModel).value;
@@ -184,7 +194,10 @@ class _FileServerPageState extends State<FileServerPage> {
                 _servers$.safeUpdate(servers);
               },
             ),
-          ],
+        ];
+
+        return CLSectionListView(
+          items: sections,
         );
       },
     );
@@ -221,17 +234,6 @@ class _FileServerPageState extends State<FileServerPage> {
               ),
             ),
           ),
-      ],
-    );
-  }
-
-  Widget _buildEmptyBody() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(CupertinoIcons.cloud, size: 56.px, color: Colors.grey),
-        SizedBox(height: 12.px),
-        CLText.bodyLarge(Localized.text('ox_usercenter.no_file_server')),
       ],
     );
   }

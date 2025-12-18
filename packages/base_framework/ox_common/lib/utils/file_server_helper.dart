@@ -1,71 +1,68 @@
+import 'package:flutter/widgets.dart';
 import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/model/file_server_model.dart';
 import 'package:chatcore/chat-core.dart';
 import 'package:ox_common/repository/file_server_repository.dart';
-import 'package:flutter/widgets.dart';
-import 'package:ox_common/component.dart';
-import 'package:ox_localizable/ox_localizable.dart';
 
 class FileServerHelper {
   FileServerHelper._();
 
-  static FileServerModel get defaultFileServer =>
-      FileServerModel(
-        id: 0,
-        type: FileServerType.blossom,
-        name: 'blossom.band',
-        url: 'https://blossom.band',
-      );
+  static List<FileServerModel> get defaultFileServerGroup =>
+      [
+        FileServerModel(
+          id: 0,
+          type: FileServerType.nip96,
+          name: 'pomf2.lain.la',
+          url: 'https://pomf2.lain.la',
+        ),
+        FileServerModel(
+          id: 0,
+          type: FileServerType.blossom,
+          name: 'blossom.lostr.space',
+          url: 'https://blossom.lostr.space',
+        ),
+      ];
 
-  /// Returns the current circle's selected [FileServerModel] asynchronously.
-  /// Returns `null` when no server is configured.
-  static Future<FileServerModel?> currentFileServer() async {
+  static bool isDefaultFileServerGroupSelected(String? selectedUrl) =>
+      selectedUrl == null || selectedUrl.isEmpty;
+
+
+  /// Get current upload candidates according to current circle selection.
+  ///
+  /// - When selected url is empty -> returns [defaultFileServerGroup].
+  /// - When selected url matches a custom server -> returns a single-item list.
+  /// - When selected url is not found (e.g. deleted) -> fallback to default
+  ///   group and persist selection to empty string.
+  static Future<List<FileServerModel>> currentUploadCandidates() async {
     final circle = LoginManager.instance.currentCircle;
     final url = circle?.selectedFileServerUrl;
-    if (url == null || url.isEmpty) return null;
+    if (isDefaultFileServerGroupSelected(url)) {
+      return defaultFileServerGroup;
+    }
 
     final repo = FileServerRepository(DBISAR.sharedInstance.isar);
     final list = await repo.watchAll().first;
+    FileServerModel? matched;
     try {
-      return list.firstWhere((e) => e.url == url);
+      matched = list.firstWhere((e) => e.url == url);
     } catch (_) {
-      return null;
+      matched = null;
     }
+
+    if (matched == null) {
+      // Fallback: revert to default group selection.
+      if (circle != null) {
+        await circle.updateSelectedFileServerUrl('');
+      }
+      return defaultFileServerGroup;
+    }
+    return [matched];
   }
 
-  /// Ensure current circle has configured file server.
-  ///
-  /// Returns `true` when already configured.
-  /// When not configured, shows an alert dialog. If the user chooses to go to
-  /// settings, the optional [onGoToSettings] callback will be invoked.
-  /// In all not-configured cases, returns `false` so caller can early bail out.
   static Future<bool> ensureFileServerConfigured(
-    BuildContext context, {
-    VoidCallback? onGoToSettings,
-  }) async {
-    final circle = LoginManager.instance.currentCircle;
-    if (circle != null && circle.selectedFileServerUrl.isNotEmpty) {
-      return true;
-    }
-
-    final result = await CLAlertDialog.show<bool>(
-      context: context,
-              title: Localized.text('ox_common.require_file_server_title'),
-        content: Localized.text('ox_common.require_file_server'),
-      actions: [
-        CLAlertAction.cancel(),
-        CLAlertAction<bool>(
-          label: Localized.text('ox_common.str_go_to_settings'),
-          value: true,
-          isDefaultAction: true,
-        ),
-      ],
-    );
-
-    if (result == true) {
-      onGoToSettings?.call();
-    }
-
-    return false;
+      BuildContext context, {
+        VoidCallback? onGoToSettings,
+      }) async {
+    return (await currentUploadCandidates()).isNotEmpty;
   }
-} 
+}

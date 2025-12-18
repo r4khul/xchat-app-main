@@ -107,5 +107,7 @@
   "show_message_info_option": "संदेश जानकारी विकल्प दिखाएं",
   "use_tor_network": "Tor नेटवर्क को वैश्विक रूप से उपयोग करें",
   "account": "खाता",
-  "chat": "चैट"
+  "chat": "चैट",
+  "default_file_server_group": "Default server group",
+  "default_file_server_group_subtitle": "Built-in servers"
 }

@@ -7,8 +7,6 @@ import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/login/login_models.dart';
 import 'package:ox_common/utils/circle_join_utils.dart';
 import 'package:ox_common/upload/upload_utils.dart';
-import 'package:ox_common/utils/file_server_helper.dart';
-import 'package:ox_common/repository/file_server_repository.dart';
 
 class OnboardingResult {
   final bool success;
@@ -75,10 +73,6 @@ extension OnboardingControllerCircleEx on OnboardingController {
       relayUrl: 'wss://relay.damus.io',
       forceJoin: true,
     );
-
-    if (result.success) {
-      _setupDefaultFileServer();
-    }
     return result;
   }
 
@@ -165,24 +159,6 @@ extension _NewAccountEx on OnboardingController {
       fileType: FileType.image,
       file: avatarFile,
       filename: 'avatar_${DateTime.now().millisecondsSinceEpoch}.png',
-      fileServer: FileServerHelper.defaultFileServer,
     );
-  }
-
-  Future<void> _setupDefaultFileServer() async {
-    final circle = LoginManager.instance.currentCircle;
-    if (circle == null) return;
-
-    final defaultServer = FileServerHelper.defaultFileServer;
-    final repo = FileServerRepository(DBISAR.sharedInstance.isar);
-
-    final existingServers = await repo.watchAll().first;
-    final serverExists = existingServers.any((e) => e.url == defaultServer.url);
-
-    if (!serverExists) {
-      await repo.create(defaultServer);
-    }
-
-    await circle.updateSelectedFileServerUrl(defaultServer.url);
   }
 }

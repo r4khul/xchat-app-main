@@ -107,5 +107,7 @@
   "show_message_info_option": "إظهار خيار معلومات الرسالة",
   "use_tor_network": "استخدام شبكة Tor عالميًا",
   "account": "الحساب",
-  "chat": "الدردشة"
+  "chat": "الدردشة",
+  "default_file_server_group": "Default server group",
+  "default_file_server_group_subtitle": "Built-in servers"
 }

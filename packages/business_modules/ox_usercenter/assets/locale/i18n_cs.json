@@ -107,5 +107,7 @@
   "show_message_info_option": "Zobrazit možnost informací o zprávě",
   "use_tor_network": "Používat síť Tor globálně",
   "account": "Účet",
-  "chat": "Chat"
+  "chat": "Chat",
+  "default_file_server_group": "Default server group",
+  "default_file_server_group_subtitle": "Built-in servers"
 }

@@ -107,5 +107,7 @@
   "show_message_info_option": "Εμφάνιση επιλογής πληροφοριών μηνύματος",
   "use_tor_network": "Χρήση δικτύου Tor παγκοσμίως",
   "account": "Λογαριασμός",
-  "chat": "Συνομιλία"
+  "chat": "Συνομιλία",
+  "default_file_server_group": "Default server group",
+  "default_file_server_group_subtitle": "Built-in servers"
 }

@@ -107,5 +107,7 @@
   "show_message_info_option": "メッセージ情報オプションを表示",
   "use_tor_network": "Torネットワークをグローバルに使用する",
   "account": "アカウント",
-  "chat": "チャット"
+  "chat": "チャット",
+  "default_file_server_group": "Default server group",
+  "default_file_server_group_subtitle": "Built-in servers"
 }

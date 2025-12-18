@@ -107,5 +107,7 @@
   "show_message_info_option": "Показать опцию информации о сообщении",
   "use_tor_network": "Использовать сеть Tor глобально",
   "account": "Аккаунт",
-  "chat": "Чат"
+  "chat": "Чат",
+  "default_file_server_group": "Default server group",
+  "default_file_server_group_subtitle": "Built-in servers"
 }

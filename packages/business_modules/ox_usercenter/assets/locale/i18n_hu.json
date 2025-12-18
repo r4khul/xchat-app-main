@@ -107,5 +107,7 @@
   "show_message_info_option": "Üzenet információ opció megjelenítése",
   "use_tor_network": "A Tor hálózat globális használata",
   "account": "Fiók",
-  "chat": "Csevegés"
+  "chat": "Csevegés",
+  "default_file_server_group": "Default server group",
+  "default_file_server_group_subtitle": "Built-in servers"
 }
