@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:chatcore/chat-core.dart';
 import 'package:isar/isar.dart';
+import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/login/login_models.dart';
 import 'package:ox_common/model/chat_session_model_isar.dart';
 import 'package:ox_common/push/push_integration.dart';
@@ -108,10 +109,11 @@ class SessionListDataController extends CLSessionHandler with OXChatObserver, Se
   @override
   void didReceiveMessageCallback(MessageDBISAR message) async {
     // 1. Message preprocessing
-    final messageIsRead =
-        OXChatBinding.sharedInstance.msgIsReaded?.call(message) ?? false;
+    final isSentByMyself = message.sender == LoginManager.instance.currentPubkey;
+    final messageIsRead = isSentByMyself ||
+        (OXChatBinding.sharedInstance.msgIsReaded?.call(message) ?? false);
     if (messageIsRead) {
-      message.read = messageIsRead;
+      message.read = true;
       Messages.saveMessageToDB(message);
     }
 
