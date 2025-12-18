@@ -108,6 +108,6 @@
   "use_tor_network": "Utilizzare la rete Tor globalmente",
   "account": "Account",
   "chat": "Chat",
-  "default_file_server_group": "Default server group",
-  "default_file_server_group_subtitle": "Built-in servers"
+  "default_file_server_group": "Server predefinito",
+  "default_file_server_group_subtitle": "Server file predefinito"
 }

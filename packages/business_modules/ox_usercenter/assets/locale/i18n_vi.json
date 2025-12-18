@@ -108,6 +108,6 @@
   "use_tor_network": "Sử dụng mạng Tor toàn cục",
   "account": "Tài khoản",
   "chat": "Trò chuyện",
-  "default_file_server_group": "Default server group",
-  "default_file_server_group_subtitle": "Built-in servers"
+  "default_file_server_group": "Máy chủ mặc định",
+  "default_file_server_group_subtitle": "Máy chủ tệp mặc định"
 }

@@ -108,6 +108,6 @@
   "use_tor_network": "全域使用Tor網路",
   "account": "帳號",
   "chat": "聊天",
-  "default_file_server_group": "預設伺服器群組",
-  "default_file_server_group_subtitle": "內建伺服器"
+  "default_file_server_group": "預設伺服器",
+  "default_file_server_group_subtitle": "預設檔案伺服器"
 }

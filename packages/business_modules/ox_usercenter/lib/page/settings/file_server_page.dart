@@ -209,11 +209,13 @@ class _FileServerPageState extends State<FileServerPage> {
           Positioned(
             bottom: 24.px,
             right: 24.px,
-            child: Visibility(
-              visible: !_isEditing,
-              child: FloatingActionButton(
-                onPressed: _addServer,
-                child: const Icon(Icons.add),
+            child: SafeArea(
+              child: Visibility(
+                visible: !_isEditing,
+                child: FloatingActionButton(
+                  onPressed: _addServer,
+                  child: const Icon(Icons.add),
+                ),
               ),
             ),
           )

@@ -108,6 +108,6 @@
   "use_tor_network": "Използвай мрежата Tor глобално",
   "account": "Акаунт",
   "chat": "Чат",
-  "default_file_server_group": "Default server group",
-  "default_file_server_group_subtitle": "Built-in servers"
+  "default_file_server_group": "Сървър по подразбиране",
+  "default_file_server_group_subtitle": "Файлов сървър по подразбиране"
 }

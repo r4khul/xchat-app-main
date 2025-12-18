@@ -108,6 +108,6 @@
   "use_tor_network": "Tor şəbəkəsini qlobal olaraq istifadə et",
   "account": "Hesab",
   "chat": "Söhbət",
-  "default_file_server_group": "Default server group",
-  "default_file_server_group_subtitle": "Built-in servers"
+  "default_file_server_group": "Varsayılan sunucu",
+  "default_file_server_group_subtitle": "Varsayılan fayl sunucusu"
 }
