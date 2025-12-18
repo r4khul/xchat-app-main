@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:chatcore/chat-core.dart';
 import 'package:ox_chat/page/session/lite_new_message_page.dart';
+import 'package:ox_chat/utils/welcome_onboarding_helper.dart';
 import 'package:ox_common/business_interface/ox_usercenter/interface.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/login/login_manager.dart';

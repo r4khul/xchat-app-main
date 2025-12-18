@@ -4,7 +4,6 @@ import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/page/circle_introduction_page.dart';
-import 'package:ox_common/widgets/common_image.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 
 class CircleEmptyWidget extends StatelessWidget {
@@ -20,7 +19,7 @@ class CircleEmptyWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
         return Transform.translate(
-      offset: Offset(0, -80.px),
+      offset: Offset(0, -120.px),
       child: Center(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 16.px),
@@ -30,10 +29,18 @@ class CircleEmptyWidget extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
           children: [
           // Empty state icon
-          CommonImage(
-            iconName: 'empty.png',
-            size: 80.px,
-            package: 'ox_home',
+          Container(
+            width: 120.px,
+            height: 120.px,
+            decoration: BoxDecoration(
+              color: ColorToken.xChat.of(context).withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.chat_rounded,
+              size: 64.px,
+              color: ColorToken.xChat.of(context),
+            ),
           ),
 
           SizedBox(height: 24.px),

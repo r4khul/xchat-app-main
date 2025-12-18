@@ -6,7 +6,6 @@ import 'package:ox_common/login/login_models.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/utils/circle_join_utils.dart';
-import 'package:ox_common/widgets/common_image.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import 'package:ox_chat/page/session/find_people_page.dart';
 import 'package:ox_usercenter/page/settings/qr_code_display_page.dart';
@@ -155,10 +154,18 @@ class _SessionListWidgetState extends State<SessionListWidget> {
             mainAxisSize: MainAxisSize.min,
             children: [
               // Empty state icon
-              CommonImage(
-                iconName: 'empty.png',
-                size: 80.px,
-                package: 'ox_home',
+              Container(
+                width: 120.px,
+                height: 120.px,
+                decoration: BoxDecoration(
+                  color: ColorToken.xChat.of(context).withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.chat_rounded,
+                  size: 64.px,
+                  color: ColorToken.xChat.of(context),
+                ),
               ),
 
               SizedBox(height: 24.px),

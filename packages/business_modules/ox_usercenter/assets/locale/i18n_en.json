@@ -110,6 +110,7 @@
   "delete_account_failed": "Failed to delete account",
   "about_xchat": "About XChat",
   "contact_us": "Contact Us",
+  "show_welcome_guide": "Show Welcome Guide",
   "advanced_settings": "Advanced",
   "show_message_info_option": "Show Message Info Option",
   "use_tor_network": "Use Tor network globally",
