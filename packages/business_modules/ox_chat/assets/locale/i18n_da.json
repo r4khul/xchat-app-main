@@ -155,5 +155,21 @@
   "send_event_info": "Send Event Info",
   "file_transfer_assistant": "Notat",
   "yourself": "Dig selv",
-  "click_to_send_message_to_yourself": "Tryk for at sende en besked til dig selv"
+  "click_to_send_message_to_yourself": "Tryk for at sende en besked til dig selv",
+  "welcome_to_xchat": "Tillykke!",
+  "welcome_description": "Du har tilsluttet dig den decentraliserede revolution. Her er kommunikation fri, privat og virkelig din.",
+  "skip_setup": "Spring opsætning over",
+  "your_public_identity": "Din offentlige identitet",
+  "public_identity_description": "Dette er dit ID (npub...). Det er som dit brugernavn. Del det frit, så venner kan identificere dig.",
+  "public_key_label": "OFFENTLIG NØGLE",
+  "your_secret_key": "Din hemmelige nøgle",
+  "secret_key_description": "KRITISK: Dette er din private nøgle. Den styrer din konto. Del den aldrig med nogen, ikke engang med os.",
+  "private_key_label": "PRIVAT NØGLE",
+  "do_not_share": "DEL IKKE",
+  "tap_to_reveal": "Tryk for at afsløre",
+  "start_connecting": "Begynd at forbinde",
+  "start_connecting_description": "Alt er klar! Din kryptografiske identitet er klar. Del dit invitationslink med venner for at begynde at chatte sikkert.",
+  "share_invite_link": "Del invitationslink",
+  "get_started": "Kom i gang",
+  "invite_friends_hint": "Du kan altid finde dette i \"Inviter venner\""
 }

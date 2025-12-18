@@ -155,5 +155,21 @@
   "send_event_info": "Send Event Info",
   "file_transfer_assistant": "메모",
   "yourself": "본인",
-  "click_to_send_message_to_yourself": "자신에게 메시지 보내려면 탭하세요"
+  "click_to_send_message_to_yourself": "자신에게 메시지 보내려면 탭하세요",
+  "welcome_to_xchat": "축하합니다!",
+  "welcome_description": "분산형 혁명에 참여하셨습니다. 여기서 커뮤니케이션은 자유롭고, 비공개이며, 진정으로 여러분의 것입니다.",
+  "skip_setup": "설정 건너뛰기",
+  "your_public_identity": "공개 신원",
+  "public_identity_description": "이것은 귀하의 ID(npub...)입니다. 사용자 이름과 같습니다. 친구들이 귀하를 식별할 수 있도록 자유롭게 공유하세요.",
+  "public_key_label": "공개 키",
+  "your_secret_key": "비밀 키",
+  "secret_key_description": "중요: 이것은 귀하의 비밀 키입니다. 계정을 제어합니다. 누구와도 공유하지 마세요. 우리와도 공유하지 마세요.",
+  "private_key_label": "비밀 키",
+  "do_not_share": "공유하지 마세요",
+  "tap_to_reveal": "탭하여 표시",
+  "start_connecting": "연결 시작",
+  "start_connecting_description": "준비 완료! 암호화된 신원이 준비되었습니다. 안전하게 채팅을 시작하려면 초대 링크를 친구들과 공유하세요.",
+  "share_invite_link": "초대 링크 공유",
+  "get_started": "시작하기",
+  "invite_friends_hint": "이것은 \"친구 초대\"에서 항상 찾을 수 있습니다"
 }

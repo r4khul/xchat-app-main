@@ -155,5 +155,21 @@
   "send_event_info": "Send Event Info",
   "file_transfer_assistant": "備忘錄",
   "yourself": "你自己",
-  "click_to_send_message_to_yourself": "點擊給自己發消息"
+  "click_to_send_message_to_yourself": "點擊給自己發消息",
+  "welcome_to_xchat": "恭喜！",
+  "welcome_description": "您已加入去中心化革命。在這裡，通訊是自由、私密且真正屬於您的。",
+  "skip_setup": "跳過設置",
+  "your_public_identity": "您的公開身份",
+  "public_identity_description": "這是您的ID（npub...）。就像您的用戶名。可以自由分享，讓朋友識別您。",
+  "public_key_label": "公鑰",
+  "your_secret_key": "您的私鑰",
+  "secret_key_description": "重要：這是您的私鑰。它控制您的帳戶。永遠不要與任何人分享，包括我們。",
+  "private_key_label": "私鑰",
+  "do_not_share": "請勿分享",
+  "tap_to_reveal": "點擊顯示",
+  "start_connecting": "開始連接",
+  "start_connecting_description": "一切就緒！您的加密身份已準備就緒。分享您的邀請連結給朋友，開始安全聊天。",
+  "share_invite_link": "分享邀請連結",
+  "get_started": "開始使用",
+  "invite_friends_hint": "您可以在「邀請朋友」中隨時找到此功能"
 }

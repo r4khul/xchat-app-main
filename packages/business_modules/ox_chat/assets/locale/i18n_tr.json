@@ -155,5 +155,21 @@
   "send_event_info": "Send Event Info",
   "file_transfer_assistant": "Not",
   "yourself": "Kendiniz",
-  "click_to_send_message_to_yourself": "Kendinize mesaj göndermek için dokunun"
+  "click_to_send_message_to_yourself": "Kendinize mesaj göndermek için dokunun",
+  "welcome_to_xchat": "Tebrikler!",
+  "welcome_description": "Merkezi olmayan devrime katıldınız. Burada iletişim özgür, gizli ve gerçekten sizin.",
+  "skip_setup": "Kurulumu Atla",
+  "your_public_identity": "Halka Açık Kimliğiniz",
+  "public_identity_description": "Bu sizin ID'nizdir (npub...). Kullanıcı adınız gibi. Arkadaşların sizi tanıması için bunu özgürce paylaşabilirsiniz.",
+  "public_key_label": "GENEL ANAHTAR",
+  "your_secret_key": "Gizli Anahtarınız",
+  "secret_key_description": "KRİTİK: Bu sizin Gizli Anahtarınızdır. Hesabınızı kontrol eder. Bunu kimseyle paylaşmayın, bizimle bile.",
+  "private_key_label": "GİZLİ ANAHTAR",
+  "do_not_share": "PAYLAŞMAYIN",
+  "tap_to_reveal": "Göstermek için dokunun",
+  "start_connecting": "Bağlanmaya Başla",
+  "start_connecting_description": "Hazırsınız! Kriptografik kimliğiniz hazır. Güvenli sohbet etmeye başlamak için davet bağlantınızı arkadaşlarınızla paylaşın.",
+  "share_invite_link": "Davet Bağlantısını Paylaş",
+  "get_started": "Başlayın",
+  "invite_friends_hint": "Bunu \"Arkadaşları Davet Et\" bölümünde her zaman bulabilirsiniz"
 }

@@ -155,5 +155,21 @@
   "send_event_info": "Send Event Info",
   "file_transfer_assistant": "メモ",
   "yourself": "あなた自身",
-  "click_to_send_message_to_yourself": "自分にメッセージを送信するにはタップ"
+  "click_to_send_message_to_yourself": "自分にメッセージを送信するにはタップ",
+  "welcome_to_xchat": "おめでとうございます！",
+  "welcome_description": "分散型革命に参加しました。ここでは、コミュニケーションは自由で、プライベートで、真にあなたのものです。",
+  "skip_setup": "セットアップをスキップ",
+  "your_public_identity": "あなたの公開ID",
+  "public_identity_description": "これはあなたのID（npub...）です。ユーザー名のようなものです。友人があなたを識別できるように、自由に共有してください。",
+  "public_key_label": "公開鍵",
+  "your_secret_key": "あなたの秘密鍵",
+  "secret_key_description": "重要：これはあなたの秘密鍵です。アカウントを制御します。誰とも共有しないでください。私たちとも共有しないでください。",
+  "private_key_label": "秘密鍵",
+  "do_not_share": "共有しないでください",
+  "tap_to_reveal": "タップして表示",
+  "start_connecting": "接続を開始",
+  "start_connecting_description": "準備完了です！暗号化されたIDの準備ができました。安全にチャットを開始するために、招待リンクを友達と共有してください。",
+  "share_invite_link": "招待リンクを共有",
+  "get_started": "始める",
+  "invite_friends_hint": "これは「友達を招待」でいつでも見つけることができます"
 }

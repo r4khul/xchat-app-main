@@ -155,5 +155,21 @@
   "send_event_info": "معلومات حدث الإرسال",
   "file_transfer_assistant": "مذكرة",
   "yourself": "نفسك",
-  "click_to_send_message_to_yourself": "اضغط لإرسال رسالة لنفسك"
+  "click_to_send_message_to_yourself": "اضغط لإرسال رسالة لنفسك",
+  "welcome_to_xchat": "تهانينا!",
+  "welcome_description": "لقد انضممت إلى الثورة اللامركزية. هنا، التواصل حر وخاص وملكك حقاً.",
+  "skip_setup": "تخطي الإعداد",
+  "your_public_identity": "هويتك العامة",
+  "public_identity_description": "هذا هو معرفك (npub...). إنه مثل اسم المستخدم الخاص بك. شاركه بحرية حتى يتمكن الأصدقاء من التعرف عليك.",
+  "public_key_label": "المفتاح العام",
+  "your_secret_key": "مفتاحك السري",
+  "secret_key_description": "مهم: هذا هو مفتاحك الخاص. يتحكم في حسابك. لا تشاركه أبداً مع أي شخص، حتى معنا.",
+  "private_key_label": "المفتاح الخاص",
+  "do_not_share": "لا تشارك",
+  "tap_to_reveal": "اضغط للكشف",
+  "start_connecting": "بدء الاتصال",
+  "start_connecting_description": "كل شيء جاهز! هويتك المشفرة جاهزة. شارك رابط الدعوة مع أصدقائك لبدء الدردشة بأمان.",
+  "share_invite_link": "مشاركة رابط الدعوة",
+  "get_started": "ابدأ",
+  "invite_friends_hint": "يمكنك دائماً العثور على هذا في \"دعوة الأصدقاء\""
 }

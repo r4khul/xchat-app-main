@@ -155,5 +155,21 @@
   "send_event_info": "Send Event Info",
   "file_transfer_assistant": "Qeyd",
   "yourself": "Özünüz",
-  "click_to_send_message_to_yourself": "Özünüzə mesaj göndərmək üçün toxunun"
+  "click_to_send_message_to_yourself": "Özünüzə mesaj göndərmək üçün toxunun",
+  "welcome_to_xchat": "Təbriklər!",
+  "welcome_description": "Mərkəzləşdirilməmiş inqilaba qoşuldunuz. Burada rabitə azad, məxfi və həqiqətən sizindir.",
+  "skip_setup": "Quraşdırmadan keç",
+  "your_public_identity": "İctimai şəxsiyyətiniz",
+  "public_identity_description": "Bu sizin ID-nizdir (npub...). İstifadəçi adınız kimi. Dostların sizi tanıya bilməsi üçün bunu azad şəkildə paylaşın.",
+  "public_key_label": "İCTİMAİ AÇAR",
+  "your_secret_key": "Gizli açarınız",
+  "secret_key_description": "KRİTİK: Bu sizin şəxsi açarınızdır. Hesabınızı idarə edir. Bunu heç kimlə paylaşmayın, hətta bizimlə də.",
+  "private_key_label": "ŞƏXSİ AÇAR",
+  "do_not_share": "PAYLAŞMAYIN",
+  "tap_to_reveal": "Göstərmək üçün toxunun",
+  "start_connecting": "Qoşulmağa başla",
+  "start_connecting_description": "Hər şey hazırdır! Kriptoqrafik şəxsiyyətiniz hazırdır. Təhlükəsiz söhbətə başlamaq üçün dəvət linkinizi dostlarınızla paylaşın.",
+  "share_invite_link": "Dəvət linkini paylaş",
+  "get_started": "Başla",
+  "invite_friends_hint": "Bunu həmişə \"Dostları dəvət et\" bölməsində tapa bilərsiniz"
 }

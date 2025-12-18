@@ -155,5 +155,21 @@
   "send_event_info": "Send Event Info",
   "file_transfer_assistant": "یادداشت",
   "yourself": "خودتان",
-  "click_to_send_message_to_yourself": "برای ارسال پیام به خودتان ضربه بزنید"
+  "click_to_send_message_to_yourself": "برای ارسال پیام به خودتان ضربه بزنید",
+  "welcome_to_xchat": "تبریک!",
+  "welcome_description": "شما به انقلاب غیرمتمرکز پیوسته‌اید. در اینجا، ارتباطات آزاد، خصوصی و واقعاً متعلق به شماست.",
+  "skip_setup": "رد کردن تنظیمات",
+  "your_public_identity": "هویت عمومی شما",
+  "public_identity_description": "این شناسه شماست (npub...). مانند نام کاربری شماست. آن را آزادانه به اشتراک بگذارید تا دوستان بتوانند شما را شناسایی کنند.",
+  "public_key_label": "کلید عمومی",
+  "your_secret_key": "کلید مخفی شما",
+  "secret_key_description": "مهم: این کلید خصوصی شماست. حساب شما را کنترل می‌کند. هرگز آن را با کسی به اشتراک نگذارید، حتی با ما.",
+  "private_key_label": "کلید خصوصی",
+  "do_not_share": "به اشتراک نگذارید",
+  "tap_to_reveal": "ضربه بزنید تا نمایش داده شود",
+  "start_connecting": "شروع اتصال",
+  "start_connecting_description": "همه چیز آماده است! هویت رمزنگاری شده شما آماده است. لینک دعوت خود را با دوستان به اشتراک بگذارید تا شروع به چت امن کنید.",
+  "share_invite_link": "اشتراک‌گذاری لینک دعوت",
+  "get_started": "شروع کنید",
+  "invite_friends_hint": "شما همیشه می‌توانید این را در \"دعوت از دوستان\" پیدا کنید"
 }

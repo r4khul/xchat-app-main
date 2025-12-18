@@ -155,5 +155,21 @@
   "send_event_info": "Send Event Info",
   "file_transfer_assistant": "मेमो",
   "yourself": "आप खुद",
-  "click_to_send_message_to_yourself": "अपने आप को संदेश भेजने के लिए टैप करें"
+  "click_to_send_message_to_yourself": "अपने आप को संदेश भेजने के लिए टैप करें",
+  "welcome_to_xchat": "बधाई हो!",
+  "welcome_description": "आप विकेंद्रीकृत क्रांति में शामिल हो गए हैं। यहाँ, संचार स्वतंत्र, निजी और वास्तव में आपका है।",
+  "skip_setup": "सेटअप छोड़ें",
+  "your_public_identity": "आपकी सार्वजनिक पहचान",
+  "public_identity_description": "यह आपकी ID (npub...) है। यह आपके उपयोगकर्ता नाम की तरह है। इसे स्वतंत्र रूप से साझा करें ताकि मित्र आपको पहचान सकें।",
+  "public_key_label": "सार्वजनिक कुंजी",
+  "your_secret_key": "आपकी गुप्त कुंजी",
+  "secret_key_description": "महत्वपूर्ण: यह आपकी निजी कुंजी है। यह आपके खाते को नियंत्रित करती है। इसे कभी भी किसी के साथ साझा न करें, हमारे साथ भी नहीं।",
+  "private_key_label": "निजी कुंजी",
+  "do_not_share": "साझा न करें",
+  "tap_to_reveal": "प्रकट करने के लिए टैप करें",
+  "start_connecting": "कनेक्ट करना शुरू करें",
+  "start_connecting_description": "सब तैयार है! आपकी क्रिप्टोग्राफिक पहचान तैयार है। सुरक्षित रूप से चैट शुरू करने के लिए अपना आमंत्रण लिंक मित्रों के साथ साझा करें।",
+  "share_invite_link": "आमंत्रण लिंक साझा करें",
+  "get_started": "शुरू करें",
+  "invite_friends_hint": "आप इसे हमेशा \"मित्रों को आमंत्रित करें\" में पा सकते हैं"
 }

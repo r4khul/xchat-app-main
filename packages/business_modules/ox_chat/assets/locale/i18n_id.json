@@ -155,5 +155,21 @@
   "send_event_info": "Send Event Info",
   "file_transfer_assistant": "Memo",
   "yourself": "Anda sendiri",
-  "click_to_send_message_to_yourself": "Ketuk untuk mengirim pesan ke diri sendiri"
+  "click_to_send_message_to_yourself": "Ketuk untuk mengirim pesan ke diri sendiri",
+  "welcome_to_xchat": "Selamat!",
+  "welcome_description": "Anda telah bergabung dengan revolusi terdesentralisasi. Di sini, komunikasi bebas, pribadi, dan benar-benar milik Anda.",
+  "skip_setup": "Lewati pengaturan",
+  "your_public_identity": "Identitas publik Anda",
+  "public_identity_description": "Ini adalah ID Anda (npub...). Seperti nama pengguna Anda. Bagikan secara bebas agar teman dapat mengidentifikasi Anda.",
+  "public_key_label": "KUNCI PUBLIK",
+  "your_secret_key": "Kunci rahasia Anda",
+  "secret_key_description": "KRITIS: Ini adalah kunci privat Anda. Ini mengontrol akun Anda. Jangan pernah membagikannya kepada siapa pun, bahkan kepada kami.",
+  "private_key_label": "KUNCI PRIVAT",
+  "do_not_share": "JANGAN BAGIKAN",
+  "tap_to_reveal": "Ketuk untuk mengungkapkan",
+  "start_connecting": "Mulai menghubungkan",
+  "start_connecting_description": "Semuanya siap! Identitas kriptografis Anda siap. Bagikan tautan undangan Anda kepada teman untuk mulai mengobrol dengan aman.",
+  "share_invite_link": "Bagikan tautan undangan",
+  "get_started": "Mulai",
+  "invite_friends_hint": "Anda selalu dapat menemukan ini di \"Undang teman\""
 }

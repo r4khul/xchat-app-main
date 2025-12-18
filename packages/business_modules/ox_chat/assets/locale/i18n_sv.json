@@ -155,5 +155,21 @@
   "send_event_info": "Send Event Info",
   "file_transfer_assistant": "Anteckning",
   "yourself": "Dig själv",
-  "click_to_send_message_to_yourself": "Tryck för att skicka ett meddelande till dig själv"
+  "click_to_send_message_to_yourself": "Tryck för att skicka ett meddelande till dig själv",
+  "welcome_to_xchat": "Grattis!",
+  "welcome_description": "Du har gått med i den decentraliserade revolutionen. Här är kommunikation fri, privat och verkligen din.",
+  "skip_setup": "Hoppa över installation",
+  "your_public_identity": "Din offentliga identitet",
+  "public_identity_description": "Detta är ditt ID (npub...). Det är som ditt användarnamn. Dela det fritt så att vänner kan identifiera dig.",
+  "public_key_label": "OFFENTLIG NYCKEL",
+  "your_secret_key": "Din hemliga nyckel",
+  "secret_key_description": "KRITISKT: Detta är din privata nyckel. Den kontrollerar ditt konto. Dela den aldrig med någon, inte ens med oss.",
+  "private_key_label": "PRIVAT NYCKEL",
+  "do_not_share": "DELA INTE",
+  "tap_to_reveal": "Tryck för att visa",
+  "start_connecting": "Börja ansluta",
+  "start_connecting_description": "Allt klart! Din kryptografiska identitet är redo. Dela din inbjudningslänk med vänner för att börja chatta säkert.",
+  "share_invite_link": "Dela inbjudningslänk",
+  "get_started": "Kom igång",
+  "invite_friends_hint": "Du kan alltid hitta detta i \"Bjud in vänner\""
 }

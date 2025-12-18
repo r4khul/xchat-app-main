@@ -165,5 +165,21 @@
   "send_event_info": "发送事件信息",
   "file_transfer_assistant": "备忘录",
   "yourself": "你自己",
-  "click_to_send_message_to_yourself": "点击给自己发消息"
+  "click_to_send_message_to_yourself": "点击给自己发消息",
+  "welcome_to_xchat": "恭喜！",
+  "welcome_description": "您已加入去中心化革命。在这里，通信是自由、私密且真正属于您的。",
+  "skip_setup": "跳过设置",
+  "your_public_identity": "您的公开身份",
+  "public_identity_description": "这是您的ID（npub...）。就像您的用户名。可以自由分享，让朋友识别您。",
+  "public_key_label": "公钥",
+  "your_secret_key": "您的私钥",
+  "secret_key_description": "重要：这是您的私钥。它控制您的账户。永远不要与任何人分享，包括我们。",
+  "private_key_label": "私钥",
+  "do_not_share": "请勿分享",
+  "tap_to_reveal": "点击显示",
+  "start_connecting": "开始连接",
+  "start_connecting_description": "一切就绪！您的加密身份已准备就绪。分享您的邀请链接给朋友，开始安全聊天。",
+  "share_invite_link": "分享邀请链接",
+  "get_started": "开始使用",
+  "invite_friends_hint": "您可以在\"邀请朋友\"中随时找到此功能"
 }

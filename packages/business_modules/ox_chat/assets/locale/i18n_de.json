@@ -155,5 +155,21 @@
   "send_event_info": "Send Event Info",
   "file_transfer_assistant": "Notiz",
   "yourself": "Sie selbst",
-  "click_to_send_message_to_yourself": "Tippen Sie, um sich selbst eine Nachricht zu senden"
+  "click_to_send_message_to_yourself": "Tippen Sie, um sich selbst eine Nachricht zu senden",
+  "welcome_to_xchat": "Herzlichen Glückwunsch!",
+  "welcome_description": "Sie sind der dezentralen Revolution beigetreten. Hier ist Kommunikation frei, privat und wirklich Ihr.",
+  "skip_setup": "Einrichtung überspringen",
+  "your_public_identity": "Ihre öffentliche Identität",
+  "public_identity_description": "Das ist Ihre ID (npub...). Es ist wie Ihr Benutzername. Teilen Sie dies frei, damit Freunde Sie identifizieren können.",
+  "public_key_label": "ÖFFENTLICHER SCHLÜSSEL",
+  "your_secret_key": "Ihr geheimer Schlüssel",
+  "secret_key_description": "KRITISCH: Dies ist Ihr privater Schlüssel. Er kontrolliert Ihr Konto. Teilen Sie dies niemals mit jemandem, nicht einmal mit uns.",
+  "private_key_label": "PRIVATER SCHLÜSSEL",
+  "do_not_share": "NICHT TEILEN",
+  "tap_to_reveal": "Tippen zum Anzeigen",
+  "start_connecting": "Verbindung starten",
+  "start_connecting_description": "Alles bereit! Ihre kryptografische Identität ist bereit. Teilen Sie Ihren Einladungslink mit Freunden, um sicher zu chatten.",
+  "share_invite_link": "Einladungslink teilen",
+  "get_started": "Loslegen",
+  "invite_friends_hint": "Sie finden dies immer unter \"Freunde einladen\""
 }

@@ -155,5 +155,21 @@
   "send_event_info": "Send Event Info",
   "file_transfer_assistant": "Ghi chú",
   "yourself": "Chính bạn",
-  "click_to_send_message_to_yourself": "Nhấn để gửi tin nhắn cho chính mình"
+  "click_to_send_message_to_yourself": "Nhấn để gửi tin nhắn cho chính mình",
+  "welcome_to_xchat": "Chúc mừng!",
+  "welcome_description": "Bạn đã tham gia cuộc cách mạng phi tập trung. Ở đây, giao tiếp là tự do, riêng tư và thực sự thuộc về bạn.",
+  "skip_setup": "Bỏ qua thiết lập",
+  "your_public_identity": "Danh tính công khai của bạn",
+  "public_identity_description": "Đây là ID của bạn (npub...). Nó giống như tên người dùng của bạn. Chia sẻ tự do để bạn bè có thể nhận diện bạn.",
+  "public_key_label": "KHÓA CÔNG KHAI",
+  "your_secret_key": "Khóa bí mật của bạn",
+  "secret_key_description": "QUAN TRỌNG: Đây là khóa riêng tư của bạn. Nó kiểm soát tài khoản của bạn. Không bao giờ chia sẻ với bất kỳ ai, kể cả chúng tôi.",
+  "private_key_label": "KHÓA RIÊNG TƯ",
+  "do_not_share": "KHÔNG CHIA SẺ",
+  "tap_to_reveal": "Nhấn để hiển thị",
+  "start_connecting": "Bắt đầu kết nối",
+  "start_connecting_description": "Tất cả đã sẵn sàng! Danh tính mã hóa của bạn đã sẵn sàng. Chia sẻ liên kết mời với bạn bè để bắt đầu trò chuyện an toàn.",
+  "share_invite_link": "Chia sẻ liên kết mời",
+  "get_started": "Bắt đầu",
+  "invite_friends_hint": "Bạn luôn có thể tìm thấy điều này trong \"Mời bạn bè\""
 }

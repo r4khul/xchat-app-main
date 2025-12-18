@@ -155,5 +155,21 @@
   "send_event_info": "Send Event Info",
   "file_transfer_assistant": "Nota",
   "yourself": "Tu mateix",
-  "click_to_send_message_to_yourself": "Toca per enviar-te un missatge"
+  "click_to_send_message_to_yourself": "Toca per enviar-te un missatge",
+  "welcome_to_xchat": "Enhorabona!",
+  "welcome_description": "T'has unit a la revolució descentralitzada. Aquí, la comunicació és lliure, privada i realment teva.",
+  "skip_setup": "Ometre la configuració",
+  "your_public_identity": "La teva identitat pública",
+  "public_identity_description": "Aquest és el teu ID (npub...). És com el teu nom d'usuari. Comparteix-lo lliurement perquè els amics puguin identificar-te.",
+  "public_key_label": "CLAU PÚBLICA",
+  "your_secret_key": "La teva clau secreta",
+  "secret_key_description": "CRÍTIC: Aquesta és la teva clau privada. Controla el teu compte. No la comparteixis mai amb ningú, ni tan sols amb nosaltres.",
+  "private_key_label": "CLAU PRIVADA",
+  "do_not_share": "NO COMPARTEIXIS",
+  "tap_to_reveal": "Toca per revelar",
+  "start_connecting": "Començar a connectar",
+  "start_connecting_description": "Tot a punt! La teva identitat criptogràfica està a punt. Comparteix el teu enllaç d'invitació amb els amics per començar a xatejar de forma segura.",
+  "share_invite_link": "Compartir enllaç d'invitació",
+  "get_started": "Començar",
+  "invite_friends_hint": "Sempre pots trobar això a \"Convida amics\""
 }

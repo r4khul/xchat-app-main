@@ -155,5 +155,21 @@
   "send_event_info": "Send Event Info",
   "file_transfer_assistant": "Jegyzet",
   "yourself": "Önmaga",
-  "click_to_send_message_to_yourself": "Kattintson, hogy magának küldjön üzenetet"
+  "click_to_send_message_to_yourself": "Kattintson, hogy magának küldjön üzenetet",
+  "welcome_to_xchat": "Gratulálunk!",
+  "welcome_description": "Csatlakozott a decentralizált forradalomhoz. Itt a kommunikáció szabad, privát és valóban az öné.",
+  "skip_setup": "Beállítás kihagyása",
+  "your_public_identity": "Nyilvános identitása",
+  "public_identity_description": "Ez az Ön azonosítója (npub...). Olyan, mint a felhasználóneve. Ossza meg szabadon, hogy a barátok azonosíthassák.",
+  "public_key_label": "NYILVÁNOS KULCS",
+  "your_secret_key": "Titkos kulcsa",
+  "secret_key_description": "KRITIKUS: Ez az Ön privát kulcsa. Irányítja a fiókját. Soha ne ossza meg senkivel, még velünk sem.",
+  "private_key_label": "PRIVÁT KULCS",
+  "do_not_share": "NE OSSZA MEG",
+  "tap_to_reveal": "Kattintson a megjelenítéshez",
+  "start_connecting": "Kapcsolódás indítása",
+  "start_connecting_description": "Minden kész! A kriptográfiai identitása kész. Ossza meg meghívó linkjét barátaival, hogy biztonságosan kezdjen el csevegni.",
+  "share_invite_link": "Meghívó link megosztása",
+  "get_started": "Kezdés",
+  "invite_friends_hint": "Ezt mindig megtalálhatja a \"Barátok meghívása\" menüben"
 }

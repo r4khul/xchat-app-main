@@ -155,5 +155,21 @@
   "send_event_info": "Send Event Info",
   "file_transfer_assistant": "Poznámka",
   "yourself": "Vy sami",
-  "click_to_send_message_to_yourself": "Klepněte pro odeslání zprávy sobě"
+  "click_to_send_message_to_yourself": "Klepněte pro odeslání zprávy sobě",
+  "welcome_to_xchat": "Gratulujeme!",
+  "welcome_description": "Připojili jste se k decentralizované revoluci. Zde je komunikace svobodná, soukromá a opravdu vaše.",
+  "skip_setup": "Přeskočit nastavení",
+  "your_public_identity": "Vaše veřejná identita",
+  "public_identity_description": "Toto je vaše ID (npub...). Je to jako vaše uživatelské jméno. Sdílejte to volně, aby vás přátelé mohli identifikovat.",
+  "public_key_label": "VEŘEJNÝ KLÍČ",
+  "your_secret_key": "Váš tajný klíč",
+  "secret_key_description": "KRITICKÉ: Toto je váš soukromý klíč. Ovládá váš účet. Nikdy ho nesdílejte s nikým, ani s námi.",
+  "private_key_label": "SOUKROMÝ KLÍČ",
+  "do_not_share": "NESDÍLET",
+  "tap_to_reveal": "Klepněte pro zobrazení",
+  "start_connecting": "Začít připojovat",
+  "start_connecting_description": "Vše je připraveno! Vaše kryptografická identita je připravena. Sdílejte svůj pozvánkový odkaz s přáteli, abyste mohli začít bezpečně chatovat.",
+  "share_invite_link": "Sdílet pozvánkový odkaz",
+  "get_started": "Začít",
+  "invite_friends_hint": "Toto vždy najdete v \"Pozvat přátele\""
 }

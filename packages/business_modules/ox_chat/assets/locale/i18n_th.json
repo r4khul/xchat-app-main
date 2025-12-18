@@ -155,5 +155,21 @@
   "send_event_info": "Send Event Info",
   "file_transfer_assistant": "บันทึก",
   "yourself": "ตัวคุณเอง",
-  "click_to_send_message_to_yourself": "แตะเพื่อส่งข้อความถึงตัวเอง"
+  "click_to_send_message_to_yourself": "แตะเพื่อส่งข้อความถึงตัวเอง",
+  "welcome_to_xchat": "ยินดีด้วย!",
+  "welcome_description": "คุณได้เข้าร่วมการปฏิวัติแบบกระจายอำนาจ ที่นี่ การสื่อสารเป็นอิสระ เป็นส่วนตัว และเป็นของคุณอย่างแท้จริง",
+  "skip_setup": "ข้ามการตั้งค่า",
+  "your_public_identity": "ตัวตนสาธารณะของคุณ",
+  "public_identity_description": "นี่คือ ID ของคุณ (npub...) มันเหมือนชื่อผู้ใช้ของคุณ แชร์ได้อย่างอิสระเพื่อให้เพื่อนสามารถระบุตัวคุณได้",
+  "public_key_label": "คีย์สาธารณะ",
+  "your_secret_key": "คีย์ลับของคุณ",
+  "secret_key_description": "สำคัญ: นี่คือคีย์ส่วนตัวของคุณ มันควบคุมบัญชีของคุณ อย่าแชร์กับใครเลย แม้แต่กับเรา",
+  "private_key_label": "คีย์ส่วนตัว",
+  "do_not_share": "ห้ามแชร์",
+  "tap_to_reveal": "แตะเพื่อเปิดเผย",
+  "start_connecting": "เริ่มเชื่อมต่อ",
+  "start_connecting_description": "พร้อมแล้ว! ตัวตนเข้ารหัสของคุณพร้อมแล้ว แชร์ลิงก์เชิญกับเพื่อนเพื่อเริ่มแชทอย่างปลอดภัย",
+  "share_invite_link": "แชร์ลิงก์เชิญ",
+  "get_started": "เริ่มต้น",
+  "invite_friends_hint": "คุณสามารถค้นหาสิ่งนี้ได้เสมอใน \"เชิญเพื่อน\""
 }

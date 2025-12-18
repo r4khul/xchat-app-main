@@ -155,5 +155,21 @@
   "send_event_info": "Send Event Info",
   "file_transfer_assistant": "Memo",
   "yourself": "Jezelf",
-  "click_to_send_message_to_yourself": "Tik om jezelf een bericht te sturen"
+  "click_to_send_message_to_yourself": "Tik om jezelf een bericht te sturen",
+  "welcome_to_xchat": "Gefeliciteerd!",
+  "welcome_description": "Je hebt je aangesloten bij de gedecentraliseerde revolutie. Hier is communicatie vrij, privé en echt van jou.",
+  "skip_setup": "Setup overslaan",
+  "your_public_identity": "Je publieke identiteit",
+  "public_identity_description": "Dit is je ID (npub...). Het is zoals je gebruikersnaam. Deel dit vrijelijk zodat vrienden je kunnen identificeren.",
+  "public_key_label": "OPENBARE SLEUTEL",
+  "your_secret_key": "Je geheime sleutel",
+  "secret_key_description": "KRITIEK: Dit is je privésleutel. Het controleert je account. Deel dit nooit met iemand, zelfs niet met ons.",
+  "private_key_label": "PRIVÉSLEUTEL",
+  "do_not_share": "NIET DELEN",
+  "tap_to_reveal": "Tik om te onthullen",
+  "start_connecting": "Beginnen met verbinden",
+  "start_connecting_description": "Alles klaar! Je cryptografische identiteit is klaar. Deel je uitnodigingslink met vrienden om veilig te beginnen met chatten.",
+  "share_invite_link": "Uitnodigingslink delen",
+  "get_started": "Aan de slag",
+  "invite_friends_hint": "Je kunt dit altijd vinden in \"Vrienden uitnodigen\""
 }

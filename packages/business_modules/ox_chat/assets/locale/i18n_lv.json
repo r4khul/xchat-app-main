@@ -155,5 +155,21 @@
   "send_event_info": "Send Event Info",
   "file_transfer_assistant": "Piezīme",
   "yourself": "Jūs paši",
-  "click_to_send_message_to_yourself": "Pieskarieties, lai nosūtītu ziņojumu sev"
+  "click_to_send_message_to_yourself": "Pieskarieties, lai nosūtītu ziņojumu sev",
+  "welcome_to_xchat": "Apsveicam!",
+  "welcome_description": "Jūs esat pievienojušies decentralizētajai revolūcijai. Šeit komunikācija ir brīva, privāta un patiešām jūsu.",
+  "skip_setup": "Izlaist iestatīšanu",
+  "your_public_identity": "Jūsu publiskā identitāte",
+  "public_identity_description": "Šis ir jūsu ID (npub...). Tas ir kā jūsu lietotājvārds. Dalieties ar to brīvi, lai draugi varētu jūs identificēt.",
+  "public_key_label": "PUBLISKĀ ATSLĒGA",
+  "your_secret_key": "Jūsu slepenā atslēga",
+  "secret_key_description": "KRITISKI: Šī ir jūsu privātā atslēga. Tā kontrolē jūsu kontu. Nekad nedalieties ar to ar nevienu, pat ar mums.",
+  "private_key_label": "PRIVĀTĀ ATSLĒGA",
+  "do_not_share": "NEDALĪTIES",
+  "tap_to_reveal": "Pieskarieties, lai atklātu",
+  "start_connecting": "Sākt savienot",
+  "start_connecting_description": "Viss ir gatavs! Jūsu kriptogrāfiskā identitāte ir gatava. Dalieties ar savu uzaicinājuma saiti ar draugiem, lai sāktu droši tērzēt.",
+  "share_invite_link": "Dalīties ar uzaicinājuma saiti",
+  "get_started": "Sākt",
+  "invite_friends_hint": "Jūs vienmēr varat to atrast sadaļā \"Uzaicināt draugus\""
 }

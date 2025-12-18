@@ -155,5 +155,21 @@
   "send_event_info": "Send Event Info",
   "file_transfer_assistant": "Märkus",
   "yourself": "Ise",
-  "click_to_send_message_to_yourself": "Puudutage, et saata endale sõnum"
+  "click_to_send_message_to_yourself": "Puudutage, et saata endale sõnum",
+  "welcome_to_xchat": "Palju õnne!",
+  "welcome_description": "Olete liitunud detsentraliseeritud revolutsiooniga. Siin on suhtlus vaba, privaatne ja tõesti teie oma.",
+  "skip_setup": "Jäta seadistamine vahele",
+  "your_public_identity": "Teie avalik identiteet",
+  "public_identity_description": "See on teie ID (npub...). See on nagu teie kasutajanimi. Jagage seda vabalt, et sõbrad saaksid teid tuvastada.",
+  "public_key_label": "AVALIK VÕTI",
+  "your_secret_key": "Teie salajane võti",
+  "secret_key_description": "KRITILINE: See on teie privaatvõti. See kontrollib teie kontot. Ärge jagage seda kunagi kellegagi, isegi mitte meiega.",
+  "private_key_label": "PRIVAATVÕTI",
+  "do_not_share": "ÄRA JAGA",
+  "tap_to_reveal": "Puudutage, et näidata",
+  "start_connecting": "Alusta ühendamist",
+  "start_connecting_description": "Kõik on valmis! Teie krüptograafiline identiteet on valmis. Jagage oma kutselinki sõpradega, et alustada turvalist vestlust.",
+  "share_invite_link": "Jaga kutselinki",
+  "get_started": "Alusta",
+  "invite_friends_hint": "Selle leiate alati jaotisest \"Kutsu sõpru\""
 }
