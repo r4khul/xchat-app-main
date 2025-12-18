@@ -19,9 +19,11 @@ enum ColorToken {
   onError,
   surface,
   onSurface,
+  onSurfaceXChat,
   onSurfaceVariant,
   surfaceContainer,
   surfaceContainerHigh,
+  cardContainer,
 
   white,
   black,
@@ -65,12 +67,16 @@ extension AppColorResolver on ColorToken {
           return scheme.surface;
         case ColorToken.onSurface:
           return scheme.onSurface;
+        case ColorToken.onSurfaceXChat:
+          return CLThemeData.themeColorLight;
         case ColorToken.onSurfaceVariant:
           return scheme.onSurfaceVariant;
         case ColorToken.surfaceContainer:
           return scheme.surfaceContainer;
         case ColorToken.surfaceContainerHigh:
           return scheme.surfaceContainerHigh;
+        case ColorToken.cardContainer:
+          return scheme.surfaceContainer;
         case ColorToken.white:
           return Colors.white;
         case ColorToken.black:
@@ -115,12 +121,16 @@ extension AppColorResolver on ColorToken {
         case ColorToken.onSurface:
           return cupertino.textTheme.textStyle.color ??
               CupertinoColors.label.resolveFrom(context);
+        case ColorToken.onSurfaceXChat:
+          return CLThemeData.themeColorLight;
         case ColorToken.onSurfaceVariant:
           return CupertinoColors.secondaryLabel.resolveFrom(context);
         case ColorToken.surfaceContainer:
           return CupertinoColors.secondarySystemFill.resolveFrom(context);
         case ColorToken.surfaceContainerHigh:
           return CupertinoColors.secondarySystemFill.resolveFrom(context);
+        case ColorToken.cardContainer:
+          return CupertinoColors.secondarySystemGroupedBackground.resolveFrom(context);
         case ColorToken.white:
           return CupertinoColors.white;
         case ColorToken.black:

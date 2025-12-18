@@ -195,12 +195,12 @@ class _SessionListWidgetState extends State<SessionListWidget> {
                           ? Icons.person_add
                           : CupertinoIcons.person_add,
                       size: 20.px,
-                      color: ColorToken.onPrimary.of(context),
+                      color: ColorToken.white.of(context),
                     ),
                     SizedBox(width: 8.px),
                     CLText.bodyMedium(
                       Localized.text('ox_chat.add_friends_to_chat'),
-                      customColor: ColorToken.onPrimary.of(context),
+                      customColor: ColorToken.white.of(context),
                     ),
                   ],
                 ),
@@ -214,7 +214,7 @@ class _SessionListWidgetState extends State<SessionListWidget> {
                 padding: EdgeInsets.zero,
                 child: CLText.bodyMedium(
                   Localized.text('ox_chat.invite_friends_link'),
-                  customColor: ColorToken.primary.of(context),
+                  colorToken: ColorToken.onSurfaceXChat,
                 ),
               ),
             ],

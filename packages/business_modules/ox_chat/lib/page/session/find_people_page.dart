@@ -29,32 +29,40 @@ class _FindPeoplePageState extends State<FindPeoplePage> {
     super.dispose();
   }
 
+  Future<void> _onPasteFromClipboard() async {
+    final clipboard = await Clipboard.getData('text/plain');
+    final text = clipboard?.text;
+    if (text == null || text.isEmpty) return;
+    _userIdController.text = text;
+    _userIdController.selection = TextSelection.collapsed(offset: text.length);
+  }
+
   @override
   Widget build(BuildContext context) {
     return CLScaffold(
       appBar: CLAppBar(
         title: Localized.text('ox_chat.add_friends_to_chat'),
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(CLLayout.horizontalPadding),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            SizedBox(height: 16.px),
-            
-            // Privacy notice
-            _buildPrivacyNotice(context),
-            
-            SizedBox(height: 32.px),
-            
-            // METHOD 1: SCAN
-            _buildMethod1Scan(context),
-            
-            SizedBox(height: 32.px),
-            
-            // METHOD 2: PASTE ID
-            _buildMethod2PasteId(context),
-          ],
+      body: LoseFocusWrap(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(CLLayout.horizontalPadding),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Privacy notice
+              _buildPrivacyNotice(context),
+              
+              SizedBox(height: 32.px),
+              
+              // METHOD 1: SCAN
+              _buildMethod1Scan(context),
+              
+              SizedBox(height: 32.px),
+              
+              // METHOD 2: PASTE ID
+              _buildMethod2PasteId(context),
+            ],
+          ),
         ),
       ),
     );
@@ -64,7 +72,7 @@ class _FindPeoplePageState extends State<FindPeoplePage> {
     return Container(
       padding: EdgeInsets.all(16.px),
       decoration: BoxDecoration(
-        color: ColorToken.surfaceContainer.of(context),
+        color: ColorToken.cardContainer.of(context),
         borderRadius: BorderRadius.circular(12.px),
       ),
       child: Row(
@@ -78,8 +86,8 @@ class _FindPeoplePageState extends State<FindPeoplePage> {
               shape: BoxShape.circle,
               gradient: CLThemeData.themeGradientOf(context),
             ),
-            child: Icon(
-              PlatformStyle.isUseMaterial
+            child: CLIcon(
+              icon: PlatformStyle.isUseMaterial
                   ? Icons.help_outline
                   : CupertinoIcons.question_circle,
               size: 16.px,
@@ -118,8 +126,8 @@ class _FindPeoplePageState extends State<FindPeoplePage> {
             ),
             child: Column(
               children: [
-                Icon(
-                  PlatformStyle.isUseMaterial
+                CLIcon(
+                  icon: PlatformStyle.isUseMaterial
                       ? Icons.qr_code_scanner
                       : CupertinoIcons.qrcode_viewfinder,
                   size: 64.px,
@@ -147,71 +155,24 @@ class _FindPeoplePageState extends State<FindPeoplePage> {
           colorToken: ColorToken.onSurface,
         ),
         SizedBox(height: 12.px),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12.px),
-            border: Border.all(
-              color: CLThemeData.themeColorOf(context),
-              width: 1.5.px,
+        CLTextField(
+          controller: _userIdController,
+          focusNode: _userIdFocusNode,
+          placeholder: Localized.text('ox_chat.enter_user_id'),
+          suffixIcon: GestureDetector(
+            onTap: _onPasteFromClipboard,
+            child: Padding(
+              padding: EdgeInsets.all(12.px),
+              child: CLIcon(
+                icon: PlatformStyle.isUseMaterial
+                    ? Icons.paste
+                    : CupertinoIcons.doc_on_clipboard,
+                size: 20.px,
+                color: CLThemeData.themeColorOf(context),
+              ),
             ),
           ),
-          child: Row(
-            children: [
-              Expanded(
-                child: PlatformStyle.isUseMaterial
-                    ? TextField(
-                        controller: _userIdController,
-                        focusNode: _userIdFocusNode,
-                        decoration: InputDecoration(
-                          hintText: Localized.text('ox_chat.enter_user_id'),
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 16.px,
-                            vertical: 12.px,
-                          ),
-                          hintStyle: TextStyle(
-                            color: ColorToken.onSurfaceVariant.of(context).withOpacity(0.5),
-                          ),
-                        ),
-                        style: TextStyle(
-                          color: ColorToken.onSurface.of(context),
-                          fontSize: 16.px,
-                        ),
-                      )
-                    : CupertinoTextField(
-                        controller: _userIdController,
-                        focusNode: _userIdFocusNode,
-                        placeholder: Localized.text('ox_chat.enter_user_id'),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 16.px,
-                          vertical: 12.px,
-                        ),
-                        decoration: null,
-                      ),
-              ),
-                    GestureDetector(
-                      onTap: () async {
-                        // Paste from clipboard
-                        final clipboard = await Clipboard.getData('text/plain');
-                        if (clipboard?.text != null) {
-                          _userIdController.text = clipboard!.text!;
-                        }
-                      },
-                      child: Padding(
-                        padding: EdgeInsets.all(12.px),
-                        child: Icon(
-                          PlatformStyle.isUseMaterial
-                              ? Icons.paste
-                              : CupertinoIcons.doc_on_clipboard,
-                          size: 20.px,
-                          color: CLThemeData.themeColorOf(context),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+        ),
         SizedBox(height: 16.px),
         CLButton.filled(
           // Use theme gradient (purple) by default when backgroundColor is null
@@ -221,8 +182,8 @@ class _FindPeoplePageState extends State<FindPeoplePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                PlatformStyle.isUseMaterial
+              CLIcon(
+                icon: PlatformStyle.isUseMaterial
                     ? Icons.person_add
                     : CupertinoIcons.person_add,
                 size: 20.px,

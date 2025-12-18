@@ -218,7 +218,6 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
           ),
         ] : <Widget>[],
       ),
-      isSectionListPage: true,
       body: _buildBody(),
     );
   }
@@ -311,7 +310,7 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
     return Container(
       padding: EdgeInsets.all(24.px),
       decoration: BoxDecoration(
-        color: ColorToken.surface.of(context).withValues(alpha: 0.3),
+        color: ColorToken.cardContainer.of(context).withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(16.px),
         border: Border.all(
           color: ColorToken.onSurfaceVariant.of(context).withValues(alpha: 0.1),
@@ -344,7 +343,7 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
     return Container(
       padding: EdgeInsets.all(16.px),
       decoration: BoxDecoration(
-        color: ColorToken.surface.of(context),
+        color: ColorToken.cardContainer.of(context),
         borderRadius: BorderRadius.circular(12.px),
       ),
       child: Row(
