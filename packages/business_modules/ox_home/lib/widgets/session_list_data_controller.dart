@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:chatcore/chat-core.dart';
@@ -18,9 +16,6 @@ class SessionListDataController extends CLSessionHandler with OXChatObserver, Se
   SessionListDataController(this.ownerPubkey, this.circle);
   final String ownerPubkey;
   final Circle circle;
-
-  HashMap<String, SessionListViewModel> allSessionCache =
-    HashMap<String, SessionListViewModel>();
 
   ValueNotifier<bool> hasArchivedChats$ = ValueNotifier(false);
 
@@ -132,14 +127,13 @@ class SessionListDataController extends CLSessionHandler with OXChatObserver, Se
       if (!messageIsRead) {
         sessionModel.unreadCount = 1;
       }
+      await _saveSessionToDB(sessionModel);
     } else {
       sessionModel = session;
-      sessionModel.updateWithMessage(message);
-    }
-
-    await _saveSessionToDB(sessionModel, isNewSession);
-    if (!isNewSession) {
-      OXChatBinding.sharedInstance.notifySessionUpdate(session);
+      updateWithMessage(
+        chatId: message.chatId,
+        message: message,
+      );
     }
 
     // 3. Push notification
@@ -154,12 +148,9 @@ class SessionListDataController extends CLSessionHandler with OXChatObserver, Se
 
   @override
   void didChatMessageUpdateCallBack(MessageDBISAR message, String replacedMessageId) {
-    _updateSession(
+    updateWithMessage(
       chatId: message.chatId,
-      handler: (session) {
-        session.updateWithMessage(message);
-        return true;
-      },
+      message: message,
     );
   }
 
@@ -329,7 +320,38 @@ class SessionListDataController extends CLSessionHandler with OXChatObserver, Se
       session.isArchived = isArchived;
       return true;
     },
-    synchronize: true,
+  );
+
+  Future<void> updateWithMessage({
+    required String chatId,
+    required MessageDBISAR message,
+  }) => _updateSession(
+    chatId: chatId,
+    handler: (session) {
+      final sessionMessageTextBuilder =
+          OXChatBinding.sharedInstance.sessionMessageTextBuilder;
+      final text = sessionMessageTextBuilder?.call(message) ?? '';
+
+      // Convert message createTime from seconds to milliseconds
+      bool updated = false;
+      final createTimeInMs = message.createTime * 1000;
+      if (session.createTime < createTimeInMs) {
+        session.createTime = createTimeInMs;
+        session.content = text;
+        updated = true;
+      }
+      if (session.lastActivityTime < createTimeInMs) {
+        session.lastActivityTime = createTimeInMs;
+        updated = true;
+      }
+
+      if (!message.read) {
+        session.unreadCount += 1;
+        updated = true;
+      }
+
+      return updated;
+    },
   );
 }
 
@@ -360,26 +382,42 @@ extension _SessionListDataControllerEx on SessionListDataController {
   Future<void> _updateSession({
     required String chatId,
     required bool Function(ChatSessionModelISAR session) handler,
-    bool synchronize = false,
   }) async {
-    ChatSessionModelISAR? session = fetchSessionFromDB(chatId);
-    if (session == null) return;
+    // IMPORTANT:
+    // Read-modify-write must happen in a single Isar write transaction to avoid
+    // lost updates when multiple async calls update the same session concurrently.
+    final isar = DBISAR.sharedInstance.isar;
+    ChatSessionModelISAR? updatedSession = await isar.writeAsync<ChatSessionModelISAR?>((isar) {
+      final session = isar.chatSessionModelISARs
+          .where()
+          .chatIdEqualTo(chatId)
+          .findFirst();
+      if (session == null) return null;
 
-    final isNeedsUpdate = handler(session);
-    if (!isNeedsUpdate) return;
+      final isNeedsUpdate = handler(session);
+      if (!isNeedsUpdate) return null;
 
-    await _saveSessionToDB(session, synchronize);
-    OXChatBinding.sharedInstance.notifySessionUpdate(session);
+      // Keep the same id for updates; only assign id for brand new objects.
+      if (session.id == 0) {
+        session.id = isar.chatSessionModelISARs.autoIncrement();
+      }
+
+      isar.chatSessionModelISARs.put(session);
+      return session;
+    });
+
+    if (updatedSession != null) {
+      OXChatBinding.sharedInstance.notifySessionUpdate(updatedSession);
+    }
   }
 
-  Future<void> _saveSessionToDB(ChatSessionModelISAR chatSessionModel, [bool synchronize = false]) async {
-    if (synchronize) {
-      await DBISAR.sharedInstance.isar.writeAsyncWith(chatSessionModel, (isar, chatSessionModel) {
-        chatSessionModel.id = isar.chatSessionModelISARs.autoIncrement();
-        isar.chatSessionModelISARs.put(chatSessionModel);
-      });
-    } else {
-      await DBISAR.sharedInstance.saveToDB(chatSessionModel);
-    }
+  Future<void> _saveSessionToDB(ChatSessionModelISAR chatSessionModel) async {
+    // Note: keep for callers outside _updateSession (e.g. create session).
+    await DBISAR.sharedInstance.isar.writeAsyncWith(chatSessionModel, (isar, model) {
+      if (model.id == 0) {
+        model.id = isar.chatSessionModelISARs.autoIncrement();
+      }
+      isar.chatSessionModelISARs.put(model);
+    });
   }
 }
