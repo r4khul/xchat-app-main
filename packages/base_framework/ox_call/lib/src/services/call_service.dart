@@ -71,6 +71,7 @@ class CallService {
       null,
       (context) => CallPage(session: session),
       type: OXPushPageType.present,
+      fullscreenDialog: true,
     );
   }
 
