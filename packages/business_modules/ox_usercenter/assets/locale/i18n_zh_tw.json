@@ -77,7 +77,7 @@
   "qr_code_saved": "QR 碼已儲存到相簿",
   "save_failed": "儲存失敗",
   "select_operation": "選擇操作",
-  "scan_qr_to_find_me": "掃描 QR 碼連接",
+  "scan_qr_to_find_me": "讓朋友掃描這個",
   "qr_generation_failed": "QR 碼產生失敗，請重試",
   "save_qr_code": "儲存 QR 碼",
   "share_invite_link": "分享邀請連結",
@@ -90,7 +90,7 @@
   "sms_invite_message_template": "你好！\n\n我是${name}，我在安全聊天軟體 - XChat 建立了帳號，你可以透過這個連結聯繫我：\n${link}",
   "empty_invite_link": "空邀請連結",
   "invite": "邀請好友",
-  "generate_invite_link": "產生邀請連結",
+  "generate_invite_link": "我的邀請連結",
   "one_time_keypackage_confirm_title": "產生一次性連結",
   "one_time_keypackage_confirm_content": "產生一次性連結，只能使用一次",
   "permanent_keypackage_confirm_title": "產生永久連結",
@@ -107,5 +107,7 @@
   "show_message_info_option": "顯示訊息資訊選項",
   "use_tor_network": "全域使用Tor網路",
   "account": "帳號",
-  "chat": "聊天"
+  "chat": "聊天",
+  "default_file_server_group": "預設伺服器",
+  "default_file_server_group_subtitle": "預設檔案伺服器"
 }

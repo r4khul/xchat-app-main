@@ -77,7 +77,7 @@
   "qr_code_saved": "QR kood salvestatud galeriisse",
   "save_failed": "Salvestamine ebaõnnestus",
   "select_operation": "Vali toiming",
-  "scan_qr_to_find_me": "Skaneeri QR kood ühendamiseks",
+  "scan_qr_to_find_me": "Palu sõbral seda skaneerida",
   "qr_generation_failed": "QR koodi genereerimine ebaõnnestus, palun proovige uuesti",
   "save_qr_code": "Salvesta QR kood",
   "share_invite_link": "Jaga kutselinki",
@@ -90,7 +90,7 @@
   "sms_invite_message_template": "Tere!\n\nOlen ${name}, olen loonud konto XChat-is, turvalises sõnumivahetuse rakenduses. Võite minuga ühendust võtta selle lingi kaudu:\n${link}",
   "empty_invite_link": "Tühi kutselink",
   "invite": "Kutsu sõpru",
-  "generate_invite_link": "Genereeri kutselink",
+  "generate_invite_link": "Minu kutselink",
   "one_time_keypackage_confirm_title": "Genereeri ühekordne link",
   "one_time_keypackage_confirm_content": "Genereeri ühekordne link, mida saab kasutada ainult üks kord",
   "permanent_keypackage_confirm_title": "Genereeri püsiv link",
@@ -107,5 +107,7 @@
   "show_message_info_option": "Kuva sõnumi info valik",
   "use_tor_network": "Kasuta Tor-võrku globaalselt",
   "account": "Konto",
-  "chat": "Vestlus"
+  "chat": "Vestlus",
+  "default_file_server_group": "Vaikimisi server",
+  "default_file_server_group_subtitle": "Vaikimisi failiserver"
 }

@@ -77,7 +77,7 @@
   "qr_code_saved": "QR кодът е запазен в галерията",
   "save_failed": "Запазването не бе успешно",
   "select_operation": "Изберете операция",
-  "scan_qr_to_find_me": "Сканирайте QR код за свързване",
+  "scan_qr_to_find_me": "Помолете приятел да сканира това",
   "qr_generation_failed": "Генерирането на QR код не бе успешно, моля опитайте отново",
   "save_qr_code": "Запазване на QR код",
   "share_invite_link": "Споделяне на линк за покана",
@@ -90,7 +90,7 @@
   "sms_invite_message_template": "Здравейте!\n\nАз съм ${name}, създадох акаунт в XChat, безопасно приложение за съобщения. Можете да се свържете с мен чрез тази връзка:\n${link}",
   "empty_invite_link": "Празен линк за покана",
   "invite": "Покана на приятели",
-  "generate_invite_link": "Генериране на линк за покана",
+  "generate_invite_link": "Моят линк за покана",
   "one_time_keypackage_confirm_title": "Генериране на еднократен линк",
   "one_time_keypackage_confirm_content": "Генериране на еднократен линк, който може да се използва само веднъж",
   "permanent_keypackage_confirm_title": "Генериране на постоянен линк",
@@ -107,5 +107,7 @@
   "show_message_info_option": "Покажи опция за информация за съобщението",
   "use_tor_network": "Използвай мрежата Tor глобално",
   "account": "Акаунт",
-  "chat": "Чат"
+  "chat": "Чат",
+  "default_file_server_group": "Сървър по подразбиране",
+  "default_file_server_group_subtitle": "Файлов сървър по подразбиране"
 }

@@ -4,8 +4,8 @@ import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/page/circle_introduction_page.dart';
-import 'package:ox_common/widgets/common_image.dart';
 import 'package:ox_localizable/ox_localizable.dart';
+import 'package:ox_common/widgets/common_image.dart';
 
 class CircleEmptyWidget extends StatelessWidget {
   final VoidCallback? onJoinCircle;
@@ -32,7 +32,7 @@ class CircleEmptyWidget extends StatelessWidget {
           // Empty state icon
           CommonImage(
             iconName: 'empty.png',
-            size: 80.px,
+            size: 120.px,
             package: 'ox_home',
           ),
 

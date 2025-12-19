@@ -77,7 +77,7 @@
   "qr_code_saved": "QR-код збережено в галерею",
   "save_failed": "Збереження не вдалося",
   "select_operation": "Вибрати операцію",
-  "scan_qr_to_find_me": "Сканувати QR-код для підключення",
+  "scan_qr_to_find_me": "Попросите друга відсканувати це",
   "qr_generation_failed": "Не вдалося згенерувати QR-код, будь ласка, спробуйте ще раз",
   "save_qr_code": "Зберегти QR-код",
   "share_invite_link": "Поділитися посиланням-запрошенням",
@@ -90,7 +90,7 @@
   "sms_invite_message_template": "Привіт!\n\nЯ ${name}, я створив обліковий запис у XChat, безпечному месенджері. Ви можете зв'язатися зі мною через це посилання:\n${link}",
   "empty_invite_link": "Порожнє посилання-запрошення",
   "invite": "Запросити друзів",
-  "generate_invite_link": "Згенерувати посилання-запрошення",
+  "generate_invite_link": "Моє посилання-запрошення",
   "one_time_keypackage_confirm_title": "Згенерувати одноразове посилання",
   "one_time_keypackage_confirm_content": "Згенерувати одноразове посилання, яке можна використати лише один раз",
   "permanent_keypackage_confirm_title": "Згенерувати постійне посилання",
@@ -107,5 +107,7 @@
   "show_message_info_option": "Показати опцію інформації про повідомлення",
   "use_tor_network": "Використовувати мережу Tor глобально",
   "account": "Обліковий запис",
-  "chat": "Чат"
+  "chat": "Чат",
+  "default_file_server_group": "Сервер за замовчуванням",
+  "default_file_server_group_subtitle": "Файловий сервер за замовчуванням"
 }

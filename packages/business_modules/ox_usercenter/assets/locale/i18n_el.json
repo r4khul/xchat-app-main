@@ -77,7 +77,7 @@
   "qr_code_saved": "QR κώδικας αποθηκεύτηκε στη συλλογή",
   "save_failed": "Αποθήκευση απέτυχε",
   "select_operation": "Επιλογή Λειτουργίας",
-  "scan_qr_to_find_me": "Σάρωση QR κώδικα για σύνδεση",
+  "scan_qr_to_find_me": "Ζητήστε από έναν φίλο να σαρώσει αυτό",
   "qr_generation_failed": "Η δημιουργία QR κώδικα απέτυχε, παρακαλώ δοκιμάστε ξανά",
   "save_qr_code": "Αποθήκευση QR Κώδικα",
   "share_invite_link": "Κοινοποίηση Συνδέσμου Πρόσκλησης",
@@ -90,7 +90,7 @@
   "sms_invite_message_template": "Γεια σας!\n\nΕίμαι ο/η ${name}, έχω δημιουργήσει λογαριασμό στο XChat, μια ασφαλή εφαρμογή ανταλλαγής μηνυμάτων. Μπορείτε να επικοινωνήσετε μαζί μου μέσω αυτού του συνδέσμου:\n${link}",
   "empty_invite_link": "Άδειος σύνδεσμος πρόσκλησης",
   "invite": "Πρόσκληση Φίλων",
-  "generate_invite_link": "Δημιουργία Συνδέσμου Πρόσκλησης",
+  "generate_invite_link": "Ο Σύνδεσμός Πρόσκλησής μου",
   "one_time_keypackage_confirm_title": "Δημιουργία Μίας Χρήσης Συνδέσμου",
   "one_time_keypackage_confirm_content": "Δημιουργία συνδέσμου μίας χρήσης που μπορεί να χρησιμοποιηθεί μόνο μία φορά",
   "permanent_keypackage_confirm_title": "Δημιουργία Μόνιμου Συνδέσμου",
@@ -107,5 +107,7 @@
   "show_message_info_option": "Εμφάνιση επιλογής πληροφοριών μηνύματος",
   "use_tor_network": "Χρήση δικτύου Tor παγκοσμίως",
   "account": "Λογαριασμός",
-  "chat": "Συνομιλία"
+  "chat": "Συνομιλία",
+  "default_file_server_group": "Προεπιλεγμένος διακομιστής",
+  "default_file_server_group_subtitle": "Προεπιλεγμένος διακομιστής αρχείων"
 }

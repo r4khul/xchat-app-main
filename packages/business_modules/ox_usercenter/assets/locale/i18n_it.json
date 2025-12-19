@@ -77,7 +77,7 @@
   "qr_code_saved": "Codice QR salvato nella galleria",
   "save_failed": "Salvataggio fallito",
   "select_operation": "Seleziona operazione",
-  "scan_qr_to_find_me": "Scansiona codice QR per connetterti",
+  "scan_qr_to_find_me": "Fai scansionare questo a un amico",
   "qr_generation_failed": "Generazione codice QR fallita, riprova",
   "save_qr_code": "Salva codice QR",
   "share_invite_link": "Condividi link invito",
@@ -90,7 +90,7 @@
   "sms_invite_message_template": "Ciao!\n\nSono ${name}, ho creato un account su XChat, un'app di messaggistica sicura. Puoi contattarmi tramite questo link:\n${link}",
   "empty_invite_link": "Link invito vuoto",
   "invite": "Invita amici",
-  "generate_invite_link": "Genera link invito",
+  "generate_invite_link": "Il mio link invito",
   "one_time_keypackage_confirm_title": "Genera link monouso",
   "one_time_keypackage_confirm_content": "Genera un link monouso che può essere utilizzato solo una volta",
   "permanent_keypackage_confirm_title": "Genera link permanente",
@@ -107,5 +107,7 @@
   "show_message_info_option": "Mostra opzione informazioni messaggio",
   "use_tor_network": "Utilizzare la rete Tor globalmente",
   "account": "Account",
-  "chat": "Chat"
+  "chat": "Chat",
+  "default_file_server_group": "Server predefinito",
+  "default_file_server_group_subtitle": "Server file predefinito"
 }

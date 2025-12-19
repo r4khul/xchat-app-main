@@ -1,10 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ox_common/component.dart';
+import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/login/login_models.dart';
+import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/utils/adapt.dart';
-import 'package:ox_common/widgets/common_image.dart';
+import 'package:ox_common/utils/circle_join_utils.dart';
 import 'package:ox_localizable/ox_localizable.dart';
+import 'package:ox_chat/page/session/find_people_page.dart';
+import 'package:ox_usercenter/page/settings/qr_code_display_page.dart';
+import 'package:ox_common/widgets/common_image.dart';
 
 import '../page/archived_chats_page.dart';
 import 'session_list_data_controller.dart';
@@ -152,32 +157,91 @@ class _SessionListWidgetState extends State<SessionListWidget> {
               // Empty state icon
               CommonImage(
                 iconName: 'empty.png',
-                size: 80.px,
+                size: 120.px,
                 package: 'ox_home',
               ),
 
-              SizedBox(height: 24.px),
+              SizedBox(height: 32.px),
 
               // Title
-              CLText.titleMedium(
-                Localized.text('ox_chat.no_sessions_title'),
+              CLText.titleLarge(
+                Localized.text('ox_chat.welcome_to_xchat'),
                 colorToken: ColorToken.onSurface,
                 textAlign: TextAlign.center,
               ),
 
-              SizedBox(height: 8.px),
+              SizedBox(height: 32.px),
 
               // Description
               CLText.bodyMedium(
-                Localized.text('ox_chat.no_sessions_description'),
+                Localized.text('ox_chat.welcome_description'),
                 colorToken: ColorToken.onSurfaceVariant,
                 textAlign: TextAlign.center,
                 maxLines: 3,
+              ),
+
+              SizedBox(height: 32.px),
+
+              // Find People to Chat button
+              CLButton.filled(
+                expanded: true,
+                onTap: () => _navigateToFindPeople(context),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      PlatformStyle.isUseMaterial
+                          ? Icons.person_add
+                          : CupertinoIcons.person_add,
+                      size: 20.px,
+                      color: ColorToken.white.of(context),
+                    ),
+                    SizedBox(width: 8.px),
+                    CLText.bodyMedium(
+                      Localized.text('ox_chat.add_friends_to_chat'),
+                      customColor: ColorToken.white.of(context),
+                    ),
+                  ],
+                ),
+              ),
+
+              // SizedBox(height: 16.px),
+
+              // Invite Friends link
+              CupertinoButton(
+                onPressed: () => _navigateToInviteFriends(context),
+                padding: EdgeInsets.zero,
+                child: CLText.bodyMedium(
+                  Localized.text('ox_chat.invite_friends_link'),
+                  colorToken: ColorToken.onSurfaceXChat,
+                ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  void _navigateToFindPeople(BuildContext context) {
+    OXNavigator.pushPage(
+      context,
+      (context) => const FindPeoplePage(),
+      type: OXPushPageType.present,
+    );
+  }
+
+  void _navigateToInviteFriends(BuildContext context) {
+    final circle = LoginManager.instance.currentCircle;
+    if (circle == null) {
+      CircleJoinUtils.showJoinCircleGuideDialog(context: OXNavigator.rootContext);
+      return;
+    }
+    
+    OXNavigator.pushPage(
+      context,
+      (context) => const QRCodeDisplayPage(),
     );
   }
 

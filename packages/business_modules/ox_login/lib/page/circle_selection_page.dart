@@ -8,6 +8,8 @@ import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import '../controller/onboarding_controller.dart';
 
+enum CircleType { public, private }
+
 class CircleSelectionPage extends StatefulWidget {
   const CircleSelectionPage({
     super.key,
@@ -22,6 +24,7 @@ class CircleSelectionPage extends StatefulWidget {
 
 class _CircleSelectionPageState extends State<CircleSelectionPage> {
   bool _isProcessing = false;
+  CircleType? _selectedCircleType;
 
   OnboardingController get _controller => widget.controller;
 
@@ -35,6 +38,7 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
     return CLScaffold(
       appBar: CLAppBar(),
       body: _buildBody(),
+      bottomWidget: _buildNextButton(),
     );
   }
 
@@ -89,16 +93,18 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
           icon: Icons.public_rounded,
           title: Localized.text('ox_login.use_public_circle'),
           subtitle: Localized.text('ox_login.use_public_circle_desc'),
-          isRecommended: true,
-          onTap: _isProcessing ? null : _onUsePublicCircle,
+          isRecommended: false,
+          isSelected: _selectedCircleType == CircleType.public,
+          onTap: () => setState(() => _selectedCircleType = CircleType.public),
         ),
         SizedBox(height: 16.px),
         _buildCircleOption(
           icon: Icons.lock_rounded,
           title: Localized.text('ox_login.use_private_circle'),
           subtitle: Localized.text('ox_login.use_private_circle_desc'),
-          isRecommended: false,
-          onTap: _isProcessing ? null : _onUsePrivateCircle,
+          isRecommended: true,
+          isSelected: _selectedCircleType == CircleType.private,
+          onTap: () => setState(() => _selectedCircleType = CircleType.private),
         ),
       ],
     );
@@ -109,6 +115,7 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
     required String title,
     required String subtitle,
     required bool isRecommended,
+    required bool isSelected,
     required VoidCallback? onTap,
   }) {
     final isDisabled = onTap == null;
@@ -123,12 +130,14 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
           decoration: BoxDecoration(
             color: ColorToken.surface.of(context),
             borderRadius: BorderRadius.circular(16.px),
-            border: isRecommended
-                ? Border.all(
-                    color: ColorToken.xChat.of(context),
-                    width: 2,
-                  )
-                : null,
+            border: Border.all(
+              color: isSelected
+                  ? ColorToken.xChat.of(context)
+                  : (isRecommended
+                      ? ColorToken.xChat.of(context).withValues(alpha: 0.3)
+                      : ColorToken.onSurfaceVariant.of(context).withValues(alpha: 0.2)),
+              width: isSelected ? 2 : 1,
+            ),
           ),
           child: Row(
             children: [
@@ -136,17 +145,15 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
                 width: 56.px,
                 height: 56.px,
                 decoration: BoxDecoration(
-                  color: isRecommended
-                      ? ColorToken.xChat.of(context).withValues(alpha: 0.1)
-                      : ColorToken.surfaceContainerHigh.of(context),
+                  color: isSelected
+                      ? ColorToken.xChat.of(context).withValues(alpha: 0.15)
+                      : ColorToken.xChat.of(context).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12.px),
                 ),
                 child: Icon(
                   icon,
                   size: 28.px,
-                  color: isRecommended
-                      ? ColorToken.xChat.of(context)
-                      : ColorToken.onSurfaceVariant.of(context),
+                  color: ColorToken.xChat.of(context),
                 ),
               ),
               SizedBox(width: 16.px),
@@ -156,27 +163,20 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
                   children: [
                     Row(
                       children: [
-                        Expanded(
+                        Flexible(
                           child: CLText.titleMedium(
                             title,
                             colorToken: ColorToken.onSurface,
                           ),
                         ),
-                        // if (isRecommended)
-                        //   Container(
-                        //     padding: EdgeInsets.symmetric(
-                        //       horizontal: 8.px,
-                        //       vertical: 4.px,
-                        //     ),
-                        //     decoration: BoxDecoration(
-                        //       color: ColorToken.xChat.of(context),
-                        //       borderRadius: BorderRadius.circular(4.px),
-                        //     ),
-                        //     child: CLText.labelSmall(
-                        //       Localized.text('ox_login.recommended'),
-                        //       customColor: ColorToken.onPrimary.of(context),
-                        //     ),
-                        //   ),
+                        if (isRecommended) ...[
+                          SizedBox(width: 6.px),
+                          Icon(
+                            Icons.star_rounded,
+                            size: 20.px,
+                            color: Colors.amber,
+                          ),
+                        ],
                       ],
                     ),
                     SizedBox(height: 4.px),
@@ -189,10 +189,29 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
                 ),
               ),
               SizedBox(width: 8.px),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: ColorToken.onSurfaceVariant.of(context),
-                size: 24.px,
+              // Radio button indicator
+              Container(
+                width: 24.px,
+                height: 24.px,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isSelected
+                        ? ColorToken.xChat.of(context)
+                        : ColorToken.onSurfaceVariant.of(context),
+                    width: 2,
+                  ),
+                  color: isSelected
+                      ? ColorToken.xChat.of(context)
+                      : Colors.transparent,
+                ),
+                child: isSelected
+                    ? Icon(
+                        Icons.check,
+                        size: 16.px,
+                        color: Colors.white,
+                      )
+                    : null,
               ),
             ],
           ),
@@ -271,17 +290,40 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
     );
   }
 
+  Widget _buildNextButton() {
+    return CLButton.filled(
+      text: Localized.text('ox_common.next'),
+      onTap: _selectedCircleType != null && !_isProcessing ? _onNextTap : null,
+      expanded: true,
+      height: 48.px,
+    );
+  }
+
+  Future<void> _onNextTap() async {
+    if (_selectedCircleType == CircleType.public) {
+      await _onUsePublicCircle();
+    } else if (_selectedCircleType == CircleType.private) {
+      await _onUsePrivateCircle();
+    }
+  }
+
   Future<void> _onUsePublicCircle() async {
+    setState(() => _isProcessing = true);
     OXLoading.show();
 
     final result = await _controller.joinPublicCircle();
     _handleOnboardingResult(result);
+    
+    if (mounted) {
+      setState(() => _isProcessing = false);
+    }
   }
 
   Future<void> _onUsePrivateCircle() async {
     final relayUrl = await _showAddCircleDialog();
     if (relayUrl == null || relayUrl.isEmpty) return;
 
+    setState(() => _isProcessing = true);
     OXLoading.show();
 
     final result = await _controller.joinPrivateCircle(
@@ -289,6 +331,10 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
       context: context,
     );
     _handleOnboardingResult(result);
+    
+    if (mounted) {
+      setState(() => _isProcessing = false);
+    }
   }
 
   void _handleOnboardingResult(OnboardingResult result) {

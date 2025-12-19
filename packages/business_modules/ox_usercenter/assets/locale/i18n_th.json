@@ -77,7 +77,7 @@
   "qr_code_saved": "QR code ถูกบันทึกลงในแกลเลอรี",
   "save_failed": "บันทึกล้มเหลว",
   "select_operation": "เลือกการดำเนินการ",
-  "scan_qr_to_find_me": "สแกน QR code เพื่อเชื่อมต่อ",
+  "scan_qr_to_find_me": "ให้เพื่อนสแกนสิ่งนี้",
   "qr_generation_failed": "การสร้าง QR code ล้มเหลว กรุณาลองอีกครั้ง",
   "save_qr_code": "บันทึก QR Code",
   "share_invite_link": "แชร์ลิงก์เชิญ",
@@ -90,7 +90,7 @@
   "sms_invite_message_template": "สวัสดี!\n\nฉันคือ ${name} ฉันได้สร้างบัญชีบน XChat แอปส่งข้อความที่ปลอดภัย คุณสามารถติดต่อฉันผ่านลิงก์นี้:\n${link}",
   "empty_invite_link": "ลิงก์เชิญว่างเปล่า",
   "invite": "เชิญเพื่อน",
-  "generate_invite_link": "สร้างลิงก์เชิญ",
+  "generate_invite_link": "ลิงก์เชิญของฉัน",
   "one_time_keypackage_confirm_title": "สร้างลิงก์ครั้งเดียว",
   "one_time_keypackage_confirm_content": "สร้างลิงก์ครั้งเดียวที่ใช้ได้เพียงครั้งเดียว",
   "permanent_keypackage_confirm_title": "สร้างลิงก์ถาวร",
@@ -107,5 +107,7 @@
   "show_message_info_option": "แสดงตัวเลือกข้อมูลข้อความ",
   "use_tor_network": "ใช้งานเครือข่าย Tor ทั่วโลก",
   "account": "บัญชี",
-  "chat": "แชท"
+  "chat": "แชท",
+  "default_file_server_group": "เซิร์ฟเวอร์เริ่มต้น",
+  "default_file_server_group_subtitle": "เซิร์ฟเวอร์ไฟล์เริ่มต้น"
 }

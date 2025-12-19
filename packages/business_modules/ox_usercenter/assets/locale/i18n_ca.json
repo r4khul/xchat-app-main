@@ -77,7 +77,7 @@
   "qr_code_saved": "Codi QR desat a la galeria",
   "save_failed": "Desar ha fallat",
   "select_operation": "Seleccionar operació",
-  "scan_qr_to_find_me": "Escanejar codi QR per connectar",
+  "scan_qr_to_find_me": "Demana a un amic que escanegeixi això",
   "qr_generation_failed": "La generació del codi QR ha fallat, si us plau torneu-ho a provar",
   "save_qr_code": "Desar codi QR",
   "share_invite_link": "Compartir enllaç d'invitació",
@@ -90,7 +90,7 @@
   "sms_invite_message_template": "Hola!\n\nSóc ${name}, he creat un compte a XChat, una aplicació de missatgeria segura. Podeu contactar amb mi a través d'aquest enllaç:\n${link}",
   "empty_invite_link": "Enllaç d'invitació buit",
   "invite": "Convidar amics",
-  "generate_invite_link": "Generar enllaç d'invitació",
+  "generate_invite_link": "El meu enllaç d'invitació",
   "one_time_keypackage_confirm_title": "Generar enllaç d'un sol ús",
   "one_time_keypackage_confirm_content": "Generar un enllaç d'un sol ús que només es pot utilitzar una vegada",
   "permanent_keypackage_confirm_title": "Generar enllaç permanent",
@@ -107,5 +107,7 @@
   "show_message_info_option": "Mostrar opció d'informació del missatge",
   "use_tor_network": "Utilitza la xarxa Tor globalment",
   "account": "Compte",
-  "chat": "Xat"
+  "chat": "Xat",
+  "default_file_server_group": "Servidor per defecte",
+  "default_file_server_group_subtitle": "Servidor de fitxers per defecte"
 }

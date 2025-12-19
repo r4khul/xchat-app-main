@@ -132,7 +132,7 @@ class _CLTextFieldState extends State<CLTextField> {
             color: _hasFocus 
                 ? ColorToken.xChat.of(context)
                 : ColorToken.onSurfaceVariant.of(context),
-            width: 2.px,
+            width: 1,
           ),
         ),
       padding: EdgeInsets.symmetric(horizontal: 16.px, vertical: 12.px),

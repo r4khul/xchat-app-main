@@ -1,21 +1,20 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/login/login_models.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/utils/circle_join_utils.dart';
-import 'package:ox_common/utils/scan_utils.dart';
 import 'package:ox_common/utils/user_search_manager.dart';
 import 'package:ox_common/widgets/avatar.dart';
-import 'package:ox_common/widgets/common_scan_page.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import 'package:chatcore/chat-core.dart';
 import 'package:lpinyin/lpinyin.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 import 'select_group_members_page.dart';
+import 'find_people_page.dart';
 import '../../utils/chat_session_utils.dart';
 import 'package:ox_usercenter/page/settings/qr_code_display_page.dart';
 
@@ -119,9 +118,10 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
         actions: [
           if (PlatformStyle.isUseMaterial)
             CLButton.icon(
-              iconName: 'icon_scan_qr.png',
-              package: 'ox_common',
-              onTap: _onScanQRCode,
+              icon: PlatformStyle.isUseMaterial
+                  ? Icons.person_add
+                  : CupertinoIcons.person_add,
+              onTap: _onAddFriends,
             ),
         ],
         bottom: PreferredSize(
@@ -170,34 +170,42 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
   }
 
   SectionListViewItem menuSection() {
-    return SectionListViewItem(
-      data: [
-        LabelItemModel(
-          icon: ListViewIcon(
-            iconName: 'icon_new_group.png',
-            package: 'ox_common',
-          ),
-          title: Localized.text('ox_chat.str_new_group'),
-          onTap: _onNewGroup,
+    final menuItems = <LabelItemModel>[
+      LabelItemModel(
+        icon: ListViewIcon(
+          iconName: 'icon_new_group.png',
+          package: 'ox_common',
         ),
+        title: Localized.text('ox_chat.str_new_group'),
+        onTap: _onNewGroup,
+      ),
+    ];
 
-        if (!PlatformStyle.isUseMaterial)
-          LabelItemModel(
-            icon: ListViewIcon(
-              iconName: 'icon_scan_qr.png',
-              package: 'ox_common',
-            ),
-            title: Localized.text('ox_common.str_scan'),
-            onTap: _onScanQRCode,
-          ),
+    // On Android, add user button is already in the app bar, so don't show it in the list
+    if (!PlatformStyle.isUseMaterial) {
+      menuItems.add(
         LabelItemModel(
           icon: ListViewIcon.data(
-            Icons.share,
+            CupertinoIcons.person_add,
           ),
-          title: Localized.text('ox_usercenter.invite'),
-          onTap: _onInviteFriends,
+          title: Localized.text('ox_chat.add_friends'),
+          onTap: _onAddFriends,
         ),
-      ],
+      );
+    }
+
+    menuItems.add(
+      LabelItemModel(
+        icon: ListViewIcon.data(
+          Icons.share,
+        ),
+        title: Localized.text('ox_usercenter.invite'),
+        onTap: _onInviteFriends,
+      ),
+    );
+
+    return SectionListViewItem(
+      data: menuItems,
     );
   }
 
@@ -435,39 +443,11 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
 
 
 
-  void _onScanQRCode() async {
-    // Check camera permission first
-    if (await Permission.camera.request().isGranted) {
-      // Navigate to scan page and get result
-      String? result = await OXNavigator.pushPage(
-        context,
-            (context) => CommonScanPage(),
-      );
-
-      if (result != null && result.isNotEmpty) {
-        // Use ScanUtils to analyze the scanned result
-        // This will automatically handle npubkey and navigate to user detail page
-        await ScanUtils.analysis(context, result);
-      }
-    } else {
-      // Show permission dialog if camera permission is denied
-      CLAlertDialog.show<bool>(
-        context: context,
-        content: Localized.text('ox_common.str_permission_camera_hint'),
-        actions: [
-          CLAlertAction.cancel(),
-          CLAlertAction<bool>(
-            label: Localized.text('ox_common.str_go_to_settings'),
-            value: true,
-            isDefaultAction: true,
-          ),
-        ],
-      ).then((result) {
-        if (result == true) {
-          openAppSettings();
-        }
-      });
-    }
+  void _onAddFriends() {
+    OXNavigator.pushPage(
+      context,
+      (context) => const FindPeoplePage(),
+    );
   }
 
   void _onNewGroup() {

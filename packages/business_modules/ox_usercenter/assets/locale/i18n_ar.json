@@ -77,7 +77,7 @@
   "qr_code_saved": "تم حفظ رمز QR في المعرض",
   "save_failed": "فشل الحفظ",
   "select_operation": "اختر العملية",
-  "scan_qr_to_find_me": "امسح رمز QR للاتصال",
+  "scan_qr_to_find_me": "اطلب من صديق مسح هذا",
   "qr_generation_failed": "فشل إنشاء رمز QR، يرجى المحاولة مرة أخرى",
   "save_qr_code": "حفظ رمز QR",
   "share_invite_link": "مشاركة رابط الدعوة",
@@ -90,7 +90,7 @@
   "sms_invite_message_template": "مرحباً!\n\nأنا ${name}، لقد أنشأت حساباً على XChat، تطبيق مراسلة آمن. يمكنك الاتصال بي من خلال هذا الرابط:\n${link}",
   "empty_invite_link": "رابط دعوة فارغ",
   "invite": "دعوة الأصدقاء",
-  "generate_invite_link": "إنشاء رابط دعوة",
+  "generate_invite_link": "رابط دعوتي",
   "one_time_keypackage_confirm_title": "إنشاء رابط لمرة واحدة",
   "one_time_keypackage_confirm_content": "إنشاء رابط لمرة واحدة يمكن استخدامه مرة واحدة فقط",
   "permanent_keypackage_confirm_title": "إنشاء رابط دائم",
@@ -107,5 +107,7 @@
   "show_message_info_option": "إظهار خيار معلومات الرسالة",
   "use_tor_network": "استخدام شبكة Tor عالميًا",
   "account": "الحساب",
-  "chat": "الدردشة"
+  "chat": "الدردشة",
+  "default_file_server_group": "الخادم الافتراضي",
+  "default_file_server_group_subtitle": "خادم الملفات الافتراضي"
 }

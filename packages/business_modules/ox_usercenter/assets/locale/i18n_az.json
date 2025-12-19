@@ -77,7 +77,7 @@
   "qr_code_saved": "QR kodu qalereyaya saxlanıldı",
   "save_failed": "Saxlama uğursuz oldu",
   "select_operation": "Əməliyyat seç",
-  "scan_qr_to_find_me": "Qoşulmaq üçün QR kodunu skan edin",
+  "scan_qr_to_find_me": "Bir dostdan bunu skan etməsini xahiş edin",
   "qr_generation_failed": "QR kodun yaradılması uğursuz oldu, zəhmət olmasa yenidən cəhd edin",
   "save_qr_code": "QR kodunu saxla",
   "share_invite_link": "Dəvət linkini paylaş",
@@ -90,7 +90,7 @@
   "sms_invite_message_template": "Salam!\n\nMən ${name}, təhlükəsiz mesajlaşma tətbiqi olan XChat-də hesab yaratdım. Bu link vasitəsilə mənimlə əlaqə saxlaya bilərsiniz:\n${link}",
   "empty_invite_link": "Boş dəvət linki",
   "invite": "Dostları dəvət et",
-  "generate_invite_link": "Dəvət linki yarat",
+  "generate_invite_link": "Mənim dəvət linkim",
   "one_time_keypackage_confirm_title": "Bir dəfəlik link yarat",
   "one_time_keypackage_confirm_content": "Yalnız bir dəfə istifadə oluna bilən bir dəfəlik link yarat",
   "permanent_keypackage_confirm_title": "Daimi link yarat",
@@ -107,5 +107,7 @@
   "show_message_info_option": "Mesaj məlumatı seçimini göstər",
   "use_tor_network": "Tor şəbəkəsini qlobal olaraq istifadə et",
   "account": "Hesab",
-  "chat": "Söhbət"
+  "chat": "Söhbət",
+  "default_file_server_group": "Varsayılan sunucu",
+  "default_file_server_group_subtitle": "Varsayılan fayl sunucusu"
 }

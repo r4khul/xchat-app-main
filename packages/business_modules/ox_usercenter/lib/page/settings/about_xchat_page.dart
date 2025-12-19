@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:ox_chat/widget/welcome_onboarding_dialog.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_localizable/ox_localizable.dart';
@@ -84,6 +85,11 @@ class _AboutXChatPageState extends State<AboutXChatPage> {
                 title: Localized.text('ox_login.privacy_policy'),
                 onTap: _privacyPolicyOnTap,
               ),
+              LabelItemModel(
+                icon: ListViewIcon.data(CupertinoIcons.book),
+                title: Localized.text('ox_usercenter.show_welcome_guide'),
+                onTap: _showWelcomeGuideOnTap,
+              ),
             ],
           ),
         ],
@@ -156,5 +162,14 @@ class _AboutXChatPageState extends State<AboutXChatPage> {
     } catch (e) {
       CommonToast.instance.show(context, 'Failed to open GitHub project: $e');
     }
+  }
+
+  void _showWelcomeGuideOnTap() {
+    // Show welcome onboarding dialog
+    // For manual trigger, we show all steps (as if it's a new registration)
+    WelcomeOnboardingDialog.show(
+      context: context,
+      isNewRegistration: true,
+    );
   }
 }

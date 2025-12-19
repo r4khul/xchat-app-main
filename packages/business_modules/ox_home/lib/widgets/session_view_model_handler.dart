@@ -195,28 +195,6 @@ mixin SessionViewModelHandler on OXChatObserver {
   }
 }
 
-extension ChatSessionModelISARUpdateEx on ChatSessionModelISAR {
-  void updateWithMessage(MessageDBISAR message) {
-    final sessionMessageTextBuilder =
-        OXChatBinding.sharedInstance.sessionMessageTextBuilder;
-    final text = sessionMessageTextBuilder?.call(message) ?? '';
-
-    // Convert message createTime from seconds to milliseconds
-    final createTimeInMs = message.createTime * 1000;
-    if (createTime < createTimeInMs) {
-      createTime = createTimeInMs;
-      content = text;
-    }
-    if (lastActivityTime < createTimeInMs) {
-      lastActivityTime = createTimeInMs;
-    }
-
-    if (!message.read) {
-      unreadCount += 1;
-    }
-  }
-}
-
 extension MessageDBISAREx on MessageDBISAR {
   String get chatId {
     return groupId;

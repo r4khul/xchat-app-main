@@ -10,6 +10,7 @@ class AppReviewManager {
     service: AppReviewService(
       config: const AppReviewConfig(
         appStoreId: '6747972868',
+        googlePlayId: 'com.oxchat.lite',
       ),
     ),
   );

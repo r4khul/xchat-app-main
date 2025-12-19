@@ -77,7 +77,7 @@
   "qr_code_saved": "QR-kode gemt i galleri",
   "save_failed": "Gem mislykkedes",
   "select_operation": "Vælg handling",
-  "scan_qr_to_find_me": "Scan QR-kode for at oprette forbindelse",
+  "scan_qr_to_find_me": "Bed en ven om at scanne dette",
   "qr_generation_failed": "Generering af QR-kode mislykkedes, prøv venligst igen",
   "save_qr_code": "Gem QR-kode",
   "share_invite_link": "Del invitationslink",
@@ -90,7 +90,7 @@
   "sms_invite_message_template": "Hej!\n\nJeg er ${name}, jeg har oprettet en konto på XChat, en sikker messaging-app. Du kan kontakte mig via dette link:\n${link}",
   "empty_invite_link": "Tomt invitationslink",
   "invite": "Inviter venner",
-  "generate_invite_link": "Generer invitationslink",
+  "generate_invite_link": "Mit invitationslink",
   "one_time_keypackage_confirm_title": "Generer engangslink",
   "one_time_keypackage_confirm_content": "Generer et engangslink, der kun kan bruges én gang",
   "permanent_keypackage_confirm_title": "Generer permanent link",
@@ -107,5 +107,7 @@
   "show_message_info_option": "Vis beskedinfo-option",
   "use_tor_network": "Brug Tor-netværket globalt",
   "account": "Konto",
-  "chat": "Chat"
+  "chat": "Chat",
+  "default_file_server_group": "Standardserver",
+  "default_file_server_group_subtitle": "Standard filserver"
 }

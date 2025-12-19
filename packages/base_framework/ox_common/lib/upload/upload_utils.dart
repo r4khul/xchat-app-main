@@ -15,7 +15,10 @@ import 'package:http/http.dart';
 import 'package:dio/dio.dart';
 import 'package:uuid/uuid.dart';
 
+import 'blossom_uploader.dart';
 import 'file_type.dart';
+import 'nip96_uploader.dart';
+import 'pomf2_lain_la.dart';
 export 'file_type.dart';
 
 class UploadUtils {
@@ -31,61 +34,95 @@ class UploadUtils {
     bool autoStoreImage = true,
     Function(double progress)? onProgress,
   }) async {
-    File uploadFile = file;
-    fileServer ??= await FileServerHelper.currentFileServer();
-    if (fileServer == null) {
+    final uploadFile = file;
+    final candidates = fileServer != null
+        ? <FileServerModel>[fileServer]
+        : await FileServerHelper.currentUploadCandidates();
+
+    if (candidates.isEmpty) {
       return UploadResult.error('No file server configured.');
     }
 
-    String url = '';
     if (showLoading) OXLoading.show();
-    try {
-      final type = fileServer.type;
-      switch (type) {
-        case FileServerType.nip96:
-        case FileServerType.blossom:
-          var imageServices = fileServer.name;
-          if (FileServerType.blossom == type) imageServices = ImageServices.BLOSSOM;
-          url = await Uploader.upload(
+
+    UploadResult? lastError;
+    for (final server in candidates) {
+      try {
+        String url = '';
+        switch (server.type) {
+          case FileServerType.nip96:
+            final uri = Uri.tryParse(server.url);
+            if (uri?.host.contains(ImageServices.POMF2_LAIN_LA) ?? false) {
+              url = await Pomf2LainLa.upload(
                 uploadFile.path,
-                imageServices,
                 fileName: filename,
-                imageServiceAddr: fileServer.url,
                 onProgress: onProgress,
-              ) ??
-              '';
-          break;
-        case FileServerType.minio:
-          MinioUploader.init(
-            url: fileServer.url,
-            accessKey: fileServer.accessKey,
-            secretKey: fileServer.secretKey,
-            bucketName: fileServer.bucketName,
+              ) ?? '';
+            } else {
+              url = await NIP96Uploader.upload(
+                server.url,
+                uploadFile.path,
+                fileName: filename, onProgress: onProgress,
+              ) ?? '';
+            }
+            break;
+          case FileServerType.blossom:
+            url = await BolssomUploader.upload(
+              server.url,
+              uploadFile.path,
+              fileName: filename,
+              onProgress: onProgress,
+            ) ?? '';
+            break;
+          case FileServerType.minio:
+            MinioUploader.init(
+              url: server.url,
+              accessKey: server.accessKey,
+              secretKey: server.secretKey,
+              bucketName: server.bucketName,
+            );
+            url = await MinioUploader.instance.uploadFile(
+              file: uploadFile,
+              filename: filename,
+              fileType: fileType,
+              onProgress: onProgress,
+            );
+            break;
+        }
+
+        if (url.isEmpty) {
+          // Treat empty url as failure and try next candidate.
+          lastError = UploadResult.error(UploadExceptionHandler.errorMessage);
+
+          LogUtil.i('[Upload File] server(${server.url}) upload failed');
+          continue;
+        }
+
+        if (fileType == FileType.image && autoStoreImage) {
+          final cacheManager =
+          await CLCacheManager.getCircleCacheManager(CacheFileType.image);
+          await cacheManager.putFile(
+            url,
+            file.readAsBytesSync(),
+            fileExtension: file.path.getFileExtension(),
           );
-          url = await MinioUploader.instance.uploadFile(
-            file: uploadFile,
-            filename: filename,
-            fileType: fileType,
-            onProgress: onProgress,
-          );
-          break;
+        }
+
+        if (showLoading) OXLoading.dismiss();
+
+        LogUtil.i('[Upload File] result: success, server: ${server.url}, imageUrl: $url');
+
+        return UploadResult.success(url, encryptedKey, encryptedNonce);
+      } catch (e, s) {
+        // Try next server when current one fails.
+        LogUtil.i('[Upload File] server(${server.url}) upload failed: $e');
+        lastError = UploadExceptionHandler.handleException(e, s);
       }
-      if (showLoading) OXLoading.dismiss();
-    } catch (e, s) {
-      if (showLoading) OXLoading.dismiss();
-      return UploadExceptionHandler.handleException(e, s);
     }
 
-    if (fileType == FileType.image && autoStoreImage) {
-      final cacheManager = await CLCacheManager.getCircleCacheManager(CacheFileType.image);
-      await cacheManager.putFile(
-        url,
-        file.readAsBytesSync(),
-        fileExtension: file.path.getFileExtension(),
-      );
-    }
+    if (showLoading) OXLoading.dismiss();
 
-    return UploadResult.success(url, encryptedKey, encryptedNonce);
+    return lastError ?? UploadResult.error(UploadExceptionHandler.errorMessage);
   }
 }
 
@@ -159,7 +196,7 @@ class UploadExceptionHandler {
 
 class UploadManager {
   static final UploadManager shared = UploadManager._internal();
-  UploadManager._internal() {}
+  UploadManager._internal();
 
   // Key: _cacheKey(uploadId, pubkey)
   Map<String, StreamController<double>> uploadStreamMap = {};
@@ -170,7 +207,7 @@ class UploadManager {
   StreamController prepareUploadStream(String uploadId, String? pubkey) {
     return uploadStreamMap.putIfAbsent(
       _cacheKey(uploadId, pubkey),
-      () => StreamController<double>.broadcast(),
+          () => StreamController<double>.broadcast(),
     );
   }
 

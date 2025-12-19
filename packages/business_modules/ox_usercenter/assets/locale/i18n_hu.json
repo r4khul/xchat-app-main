@@ -77,7 +77,7 @@
   "qr_code_saved": "QR kód mentve a galériába",
   "save_failed": "Mentés sikertelen",
   "select_operation": "Művelet kiválasztása",
-  "scan_qr_to_find_me": "QR kód beolvasása a kapcsolódáshoz",
+  "scan_qr_to_find_me": "Kérj meg egy barátot, hogy olvassa be ezt",
   "qr_generation_failed": "QR kód generálása sikertelen, kérjük próbálja újra",
   "save_qr_code": "QR kód mentése",
   "share_invite_link": "Meghívó link megosztása",
@@ -90,7 +90,7 @@
   "sms_invite_message_template": "Üdv!\n\nÉn ${name} vagyok, létrehoztam egy fiókot az XChat-en, egy biztonságos üzenetküldő alkalmazáson. Ezen a linken keresztül léphet velem kapcsolatba:\n${link}",
   "empty_invite_link": "Üres meghívó link",
   "invite": "Barátok meghívása",
-  "generate_invite_link": "Meghívó link generálása",
+  "generate_invite_link": "Az én meghívó linkem",
   "one_time_keypackage_confirm_title": "Egyszeri link generálása",
   "one_time_keypackage_confirm_content": "Egyszeri link generálása, amely csak egyszer használható",
   "permanent_keypackage_confirm_title": "Állandó link generálása",
@@ -107,5 +107,7 @@
   "show_message_info_option": "Üzenet információ opció megjelenítése",
   "use_tor_network": "A Tor hálózat globális használata",
   "account": "Fiók",
-  "chat": "Csevegés"
+  "chat": "Csevegés",
+  "default_file_server_group": "Alapértelmezett szerver",
+  "default_file_server_group_subtitle": "Alapértelmezett fájlszerver"
 }

@@ -1,6 +1,6 @@
-# XChat - for Nostr
+# XChat
 
-Secure messaging with end-to-end encryption. Connect with friends and family through private, encrypted chats. No ads, no tracking, just pure communication.
+Private messenger based on NIP-EE. Connect with friends and family through private, encrypted chats. No ads, no tracking, just pure communication.
 
 ## Quick Start
 
