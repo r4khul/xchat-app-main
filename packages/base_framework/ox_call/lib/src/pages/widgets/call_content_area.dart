@@ -78,7 +78,6 @@ class _VoiceCallContent extends StatelessWidget {
             OXUserAvatar(
               user: remoteUser,
               size: 120.px,
-              isCircular: false,
             ),
             SizedBox(height: 16.px),
             CLText.headlineSmall(
@@ -270,7 +269,6 @@ class _VideoCallContentState extends State<_VideoCallContent> {
                 OXUserAvatar(
                   user: remoteUser,
                   size: 80.px,
-                  isCircular: false,
                 ),
                 SizedBox(height: 12.px),
                 CLText.titleLarge(
