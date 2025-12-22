@@ -269,7 +269,7 @@ extension ChatMessageSendEx on ChatGeneralHandler {
       // If the message is not sent within a short period of time, change the status to the sending state
       _setMessageSendingStatusIfNeeded(sendFinish, message);
     } else if (session.isSelfChat) {
-      _updateMessageStatus(message, types.Status.sent);
+      _updateMessageStatus(message, types.Status.sent, true);
     }
   }
 
@@ -296,15 +296,17 @@ extension ChatMessageSendEx on ChatGeneralHandler {
     });
   }
 
-  void _updateMessageStatus(types.Message message, types.Status status) {
+  void _updateMessageStatus(types.Message message, types.Status status, [bool isSaveDB = false]) {
     final updatedMessage = message.copyWith(
       status: status,
     );
     dataController.updateMessage(updatedMessage);
-    ChatMessageHelper.updateMessageWithMessageId(
-      messageId: updatedMessage.remoteId!,
-      status: status,
-    );
+    if (isSaveDB) {
+      ChatMessageHelper.updateMessageWithMessageId(
+        messageId: updatedMessage.remoteId!,
+        status: status,
+      );
+    }
   }
 
   FutureOr<String?> messageContentEncoder(types.Message message) {

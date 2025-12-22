@@ -327,34 +327,35 @@ class SessionListDataController extends CLSessionHandler with OXChatObserver, Se
   Future<void> updateWithMessage({
     required String chatId,
     required MessageDBISAR message,
-  }) => _updateSession(
-    chatId: chatId,
-    handler: (session) {
-      final sessionMessageTextBuilder =
-          OXChatBinding.sharedInstance.sessionMessageTextBuilder;
-      final text = sessionMessageTextBuilder?.call(message) ?? '';
+  }) {
+    final sessionMessageTextBuilder =
+        OXChatBinding.sharedInstance.sessionMessageTextBuilder;
+    final text = sessionMessageTextBuilder?.call(message) ?? '';
+    return _updateSession(
+      chatId: chatId,
+      handler: (session) {
+        // Convert message createTime from seconds to milliseconds
+        bool updated = false;
+        final createTimeInMs = message.createTime * 1000;
+        if (session.createTime < createTimeInMs) {
+          session.createTime = createTimeInMs;
+          session.content = text;
+          updated = true;
+        }
+        if (session.lastActivityTime < createTimeInMs) {
+          session.lastActivityTime = createTimeInMs;
+          updated = true;
+        }
 
-      // Convert message createTime from seconds to milliseconds
-      bool updated = false;
-      final createTimeInMs = message.createTime * 1000;
-      if (session.createTime < createTimeInMs) {
-        session.createTime = createTimeInMs;
-        session.content = text;
-        updated = true;
-      }
-      if (session.lastActivityTime < createTimeInMs) {
-        session.lastActivityTime = createTimeInMs;
-        updated = true;
-      }
+        if (!message.read) {
+          session.unreadCount += 1;
+          updated = true;
+        }
 
-      if (!message.read) {
-        session.unreadCount += 1;
-        updated = true;
-      }
-
-      return updated;
-    },
-  );
+        return updated;
+      },
+    );
+  }
 }
 
 extension _SessionListDataControllerEx on SessionListDataController {
@@ -368,10 +369,12 @@ extension _SessionListDataControllerEx on SessionListDataController {
 
   ChatSessionModelISAR? fetchSessionFromDB(String chatId) {
     final isar = DBISAR.sharedInstance.isar;
-    return isar.chatSessionModelISARs
+    return isar.read((isar) {
+      return isar.chatSessionModelISARs
         .where()
         .chatIdEqualTo(chatId)
         .findFirst();
+    });
   }
 
   List<ChatSessionModelISAR> fetchAllSessionFromDB() {
