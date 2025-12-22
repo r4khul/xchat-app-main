@@ -8,29 +8,26 @@ extension CallManagerCallLifecycle on CallManager {
   /// [callType] - Audio or video call
   /// [additionalParticipants] - Additional participants for group calls
   Future<void> startCall({
-    required CallTarget target,
+    required UserDBISAR target,
+    required String privateGroupId,
     required CallType callType,
-    List<CallTarget>? additionalParticipants,
+    List<UserDBISAR>? additionalParticipants,
   }) async {
     final sessionId = _generateSessionId();
     final currentPubkey = Account.sharedInstance.currentPubkey;
 
-    final callerTarget = CallTarget(
-      pubkey: currentPubkey,
-      privateGroupId: target.privateGroupId,
-    );
-
-    final participants = [
-      callerTarget,
-      target,
-      ...?additionalParticipants,
+    final participantPubkeys = [
+      currentPubkey,
+      target.pubKey,
+      ...?additionalParticipants?.map((t) => t.pubKey),
     ];
 
     final session = CallSession(
       sessionId: sessionId,
-      callerTarget: callerTarget,
-      calleeTarget: target,
-      participants: participants,
+      privateGroupId: privateGroupId,
+      localPubkey: currentPubkey,
+      remotePubkey: target.pubKey,
+      participantPubkeys: participantPubkeys,
       callType: callType,
       direction: CallDirection.outgoing,
       state: CallState.initiating,
@@ -64,16 +61,17 @@ extension CallManagerCallLifecycle on CallManager {
         'sdp': offerSdp,
         'type': offer.type,
         'media': callType == CallType.video ? 'video' : 'audio',
+        'privateGroupId': privateGroupId,
       });
 
       CallLogger.debug(
-        'Send offer, friendPubkey: ${target.pubkey}, '
-        'privateGroupId: ${target.privateGroupId}, '
+        'Send offer, friendPubkey: ${target.pubKey}, '
+        'privateGroupId: $privateGroupId, '
       );
       await Contacts.sharedInstance.sendOffer(
-        sessionId,
-        target.pubkey,
-        target.privateGroupId,
+        session.sessionId,
+        session.remotePubkey,
+        session.privateGroupId,
         offerJson,
       );
 
@@ -144,7 +142,7 @@ extension CallManagerCallLifecycle on CallManager {
 
       await Contacts.sharedInstance.sendAnswer(
         offerId,
-        session.callerPubkey,
+        session.remotePubkey,
         session.privateGroupId,
         answerJson,
       );
@@ -160,19 +158,19 @@ extension CallManagerCallLifecycle on CallManager {
     }
   }
 
-  Future<void> rejectCall(String offerId, [String? reason]) async {
-    final session = _getSession(offerId);
+  Future<void> rejectCall(String sessionId, [String? reason]) async {
+    final session = _getSession(sessionId);
     if (session == null) {
-      CallLogger.error('Session not found for offerId: $offerId');
+      CallLogger.error('Session not found for offerId: $sessionId');
       return;
     }
 
-    CallLogger.info('Rejecting call: sessionId=${session.sessionId}');
+    CallLogger.info('Rejecting call: sessionId=${session.sessionId}, privateGroupId: ${session.privateGroupId}');
 
     final disconnectContent = jsonEncode({'reason': reason ?? 'reject'});
     await Contacts.sharedInstance.sendDisconnect(
-      offerId,
-      session.callerPubkey,
+      sessionId,
+      session.remotePubkey,
       session.privateGroupId,
       disconnectContent,
     );
@@ -187,13 +185,9 @@ extension CallManagerCallLifecycle on CallManager {
     if (session == null) return;
 
     final disconnectContent = jsonEncode({'reason': 'hangUp'});
-    final targetPubkey = session.direction == CallDirection.outgoing
-        ? session.calleePubkey
-        : session.callerPubkey;
-
     await Contacts.sharedInstance.sendDisconnect(
       session.sessionId,
-      targetPubkey,
+      session.remotePubkey,
       session.privateGroupId,
       disconnectContent,
     );
@@ -206,7 +200,6 @@ extension CallManagerCallLifecycle on CallManager {
     if (session == null) return;
 
     _cancelOfferTimer(sessionId);
-    _pendingPrivateGroupIds.remove(session.sessionId);
 
     final endTime = DateTime.now().millisecondsSinceEpoch;
     final duration = endTime - session.startTime;

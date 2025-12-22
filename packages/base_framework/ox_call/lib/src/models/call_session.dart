@@ -1,18 +1,23 @@
 import 'package:flutter/foundation.dart';
 import 'package:chatcore/chat-core.dart';
 import 'package:ox_call/src/models/call_state.dart';
-import 'package:ox_call/src/models/call_target.dart';
 
 class CallSession {
   final String sessionId;
 
-  /// The caller target (who initiated the call).
-  final CallTarget callerTarget;
+  /// The private group ID for signaling context.
+  /// All participants in this call share the same privateGroupId.
+  final String privateGroupId;
 
-  /// The callee target (who receives the call).
-  final CallTarget calleeTarget;
+  /// The local user's pubkey (current user).
+  final String localPubkey;
 
-  final List<CallTarget> participants;
+  /// The remote user's pubkey (the other party in the call).
+  final String remotePubkey;
+
+  /// All participant pubkeys (for multi-party calls).
+  final List<String> participantPubkeys;
+
   final CallType callType;
   final CallDirection direction;
   CallState state;
@@ -24,17 +29,12 @@ class CallSession {
   /// Remote SDP offer (stored for incoming calls until accepted).
   final String? remoteSdp;
 
-  /// ValueNotifier for caller user info, lazily loaded.
-  final ValueNotifier<UserDBISAR?> callerUser$;
-
-  /// ValueNotifier for callee user info, lazily loaded.
-  final ValueNotifier<UserDBISAR?> calleeUser$;
-
   CallSession({
     required this.sessionId,
-    required this.callerTarget,
-    required this.calleeTarget,
-    required this.participants,
+    required this.privateGroupId,
+    required this.localPubkey,
+    required this.remotePubkey,
+    required this.participantPubkeys,
     required this.callType,
     required this.direction,
     required this.state,
@@ -43,36 +43,15 @@ class CallSession {
     this.endReason,
     this.duration,
     this.remoteSdp,
-  })  : callerUser$ = callerTarget.user$,
-        calleeUser$ = calleeTarget.user$;
+  });
 
-  /// Convenience getter for caller pubkey.
-  String get callerPubkey => callerTarget.pubkey;
+  /// Get the remote user info (lazily loaded).
+  ValueNotifier<UserDBISAR?> get remoteUser$ {
+    return Account.sharedInstance.getUserNotifier(remotePubkey);
+  }
 
-  /// Convenience getter for callee pubkey.
-  String get calleePubkey => calleeTarget.pubkey;
-
-  /// Get the private group ID for this call session.
-  /// Uses the callee's privateGroupId as the signaling context.
-  String get privateGroupId => calleeTarget.privateGroupId;
-
-  /// Get the remote target based on call direction.
-  CallTarget get remoteTarget =>
-      direction == CallDirection.outgoing ? calleeTarget : callerTarget;
-
-  /// Get the local target based on call direction.
-  CallTarget get localTarget =>
-      direction == CallDirection.outgoing ? callerTarget : calleeTarget;
-
-  /// Get the remote user based on call direction.
-  ValueNotifier<UserDBISAR?> get remoteUser$ =>
-      direction == CallDirection.outgoing ? calleeUser$ : callerUser$;
-
-  /// Get the local user based on call direction.
-  ValueNotifier<UserDBISAR?> get localUser$ =>
-      direction == CallDirection.outgoing ? callerUser$ : calleeUser$;
-
-  /// Get participant pubkeys for backward compatibility.
-  List<String> get participantPubkeys =>
-      participants.map((t) => t.pubkey).toList();
+  /// Get the local user info (lazily loaded).
+  ValueNotifier<UserDBISAR?> get localUser$ {
+    return Account.sharedInstance.getUserNotifier(localPubkey);
+  }
 }

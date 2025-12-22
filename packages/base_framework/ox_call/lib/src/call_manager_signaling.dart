@@ -30,19 +30,28 @@ extension CallManagerSignaling on CallManager {
     if (offerId == null) return;
 
     CallLogger.info('Received offer: offerId=$offerId');
+    String privateGroupId = '';
 
     try {
       final offerData = jsonDecode(data) as Map<String, dynamic>;
       final sdp = offerData['sdp'] as String;
       final media = offerData['media'] as String? ?? 'audio';
       final callType = media == 'video' ? CallType.video : CallType.audio;
+      privateGroupId = offerData['privateGroupId'];
 
       final sessionId = offerId;
+      if (offerId.isEmpty) {
+        CallLogger.warning('offerId is empty');
+        return;
+      }
+      if (privateGroupId.isEmpty) {
+        CallLogger.warning('privateGroupId is empty');
+        return;
+      }
 
       // Check if already in a call
       if (_hasActiveSessions()) {
         CallLogger.warning('Already in a call, rejecting incoming call');
-        final privateGroupId = _pendingPrivateGroupIds[sessionId] ?? '';
         final disconnectContent = jsonEncode({'reason': 'inCalling'});
         await Contacts.sharedInstance.sendDisconnect(
           sessionId,
@@ -53,19 +62,14 @@ extension CallManagerSignaling on CallManager {
         return;
       }
 
-      // Get privateGroupId from the signaling context
-      // This should be passed through the signaling layer
-      final privateGroupId = _extractPrivateGroupId(sessionId, caller) ?? '';
-
       final currentPubkey = Account.sharedInstance.currentPubkey;
-      final callerTarget = CallTarget(pubkey: caller, privateGroupId: privateGroupId);
-      final calleeTarget = CallTarget(pubkey: currentPubkey, privateGroupId: privateGroupId);
 
       final session = CallSession(
         sessionId: sessionId,
-        callerTarget: callerTarget,
-        calleeTarget: calleeTarget,
-        participants: [callerTarget, calleeTarget],
+        privateGroupId: privateGroupId,
+        localPubkey: currentPubkey,
+        remotePubkey: caller,
+        participantPubkeys: [caller, currentPubkey],
         callType: callType,
         direction: CallDirection.incoming,
         state: CallState.ringing,
@@ -81,7 +85,6 @@ extension CallManagerSignaling on CallManager {
       CallLogger.info('Incoming call ringing: offerId=$offerId, waiting for user to accept');
     } catch (e) {
       CallLogger.error('Failed to handle offer: $e');
-      final privateGroupId = _pendingPrivateGroupIds[offerId] ?? '';
       final disconnectContent = jsonEncode({'reason': 'error'});
       await Contacts.sharedInstance.sendDisconnect(
         offerId,
@@ -90,38 +93,6 @@ extension CallManagerSignaling on CallManager {
         disconnectContent,
       );
     }
-  }
-
-  /// Extract privateGroupId from signaling context.
-  /// This needs to be implemented based on how the signaling layer passes this information.
-  String? _extractPrivateGroupId(String offerId, String remotePubkey) {
-    // Check if we have a pending privateGroupId stored
-    if (_pendingPrivateGroupIds.containsKey(offerId)) {
-      return _pendingPrivateGroupIds[offerId];
-    }
-
-    // Try to find from existing sessions
-    final existingSession = _getSession(offerId);
-    if (existingSession != null) {
-      return existingSession.privateGroupId;
-    }
-
-    // Default: try to find a private group between current user and remote
-    // This is a fallback and may need to be improved based on app requirements
-    return _findPrivateGroupWithUser(remotePubkey);
-  }
-
-  /// Find a private group ID that contains both current user and the specified user.
-  String? _findPrivateGroupWithUser(String userPubkey) {
-    // This should be implemented based on how private groups are stored
-    // For now, return null and let the signaling layer handle it
-    return null;
-  }
-
-  /// Register a privateGroupId for an upcoming incoming call.
-  /// Call this when you know the privateGroupId before the offer arrives.
-  void registerPendingPrivateGroupId(String offerId, String privateGroupId) {
-    _pendingPrivateGroupIds[offerId] = privateGroupId;
   }
 
   Future<void> _handleAnswer(String callee, String data, String? offerId) async {
@@ -239,28 +210,24 @@ extension CallManagerSignaling on CallManager {
         'sdpMid': candidate.sdpMid,
       });
 
-      final targetPubkey = session.direction == CallDirection.outgoing
-          ? session.calleePubkey
-          : session.callerPubkey;
-
       await Contacts.sharedInstance.sendCandidate(
         session.sessionId,
-        targetPubkey,
+        session.remotePubkey,
         session.privateGroupId,
         candidateJson,
       );
 
       // Send to additional participants
-      for (final participant in session.participants) {
-        if (participant.pubkey != targetPubkey &&
-            participant.pubkey != Account.sharedInstance.currentPubkey) {
+      for (final participantPubkey in session.participantPubkeys) {
+        if (participantPubkey != session.remotePubkey &&
+            participantPubkey != session.localPubkey) {
           await Contacts.sharedInstance.sendCandidate(
             session.sessionId,
-            participant.pubkey,
-            participant.privateGroupId,
+            participantPubkey,
+            session.privateGroupId,
             candidateJson,
           );
-          CallLogger.debug('ICE candidate sent to additional participant: ${participant.pubkey}');
+          CallLogger.debug('ICE candidate sent to additional participant: $participantPubkey');
         }
       }
     } catch (e) {

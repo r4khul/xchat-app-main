@@ -283,9 +283,9 @@ class CommonChatWidgetState extends State<CommonChatWidget> with OXChatObserver 
         throw Exception('PrivateGroupId is empty');
       }
 
-      final target = CallTarget.fromUser(user, groupId);
       await CallManager().startCall(
-        target: target,
+        target: user,
+        privateGroupId: groupId,
         callType: callType,
       );
     } catch (e) {

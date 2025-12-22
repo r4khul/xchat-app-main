@@ -8,7 +8,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:ox_call/src/models/call_state.dart';
 import 'package:ox_call/src/models/call_error.dart';
 import 'package:ox_call/src/models/call_session.dart';
-import 'package:ox_call/src/models/call_target.dart';
 import 'package:ox_call/src/models/call_device_info.dart';
 import 'package:ox_call/src/utils/call_logger.dart';
 import 'package:ox_call/src/utils/background_keep_alive.dart';
@@ -44,9 +43,6 @@ class CallManager {
   final Map<String, MediaStream?> _localStreams = {};
   final Map<String, MediaStream?> _remoteStreams = {};
   final Map<String, Timer?> _offerTimers = {};
-
-  /// Store privateGroupId for incoming calls (before session is created).
-  final Map<String, String> _pendingPrivateGroupIds = {};
 
   /// Multiple listeners support
   final List<CallStateCallback> _stateCallbacks = [];
