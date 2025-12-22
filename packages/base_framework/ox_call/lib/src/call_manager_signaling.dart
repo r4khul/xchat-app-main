@@ -40,12 +40,12 @@ extension CallManagerSignaling on CallManager {
       final sessionId = offerId;
 
       // Check if already in a call
-      if (_activeSessions.isNotEmpty) {
+      if (_hasActiveSessions()) {
         CallLogger.warning('Already in a call, rejecting incoming call');
-        final privateGroupId = _pendingPrivateGroupIds[offerId] ?? '';
+        final privateGroupId = _pendingPrivateGroupIds[sessionId] ?? '';
         final disconnectContent = jsonEncode({'reason': 'inCalling'});
         await Contacts.sharedInstance.sendDisconnect(
-          offerId,
+          sessionId,
           caller,
           privateGroupId,
           disconnectContent,
@@ -55,7 +55,7 @@ extension CallManagerSignaling on CallManager {
 
       // Get privateGroupId from the signaling context
       // This should be passed through the signaling layer
-      final privateGroupId = _extractPrivateGroupId(offerId, caller) ?? '';
+      final privateGroupId = _extractPrivateGroupId(sessionId, caller) ?? '';
 
       final currentPubkey = Account.sharedInstance.currentPubkey;
       final callerTarget = CallTarget(pubkey: caller, privateGroupId: privateGroupId);
@@ -63,7 +63,6 @@ extension CallManagerSignaling on CallManager {
 
       final session = CallSession(
         sessionId: sessionId,
-        offerId: offerId,
         callerTarget: callerTarget,
         calleeTarget: calleeTarget,
         participants: [callerTarget, calleeTarget],
@@ -74,7 +73,7 @@ extension CallManagerSignaling on CallManager {
         remoteSdp: sdp,
       );
 
-      _activeSessions[sessionId] = session;
+      _addSession(sessionId, session);
       _notifyStateChange(session);
 
       _startOfferTimer(sessionId);
@@ -102,7 +101,7 @@ extension CallManagerSignaling on CallManager {
     }
 
     // Try to find from existing sessions
-    final existingSession = _findSessionByOfferId(offerId);
+    final existingSession = _getSession(offerId);
     if (existingSession != null) {
       return existingSession.privateGroupId;
     }
@@ -128,7 +127,7 @@ extension CallManagerSignaling on CallManager {
   Future<void> _handleAnswer(String callee, String data, String? offerId) async {
     if (offerId == null) return;
 
-    final session = _findSessionByOfferId(offerId);
+    final session = _getSession(offerId);
     if (session == null) {
       CallLogger.error('Session not found for offerId: $offerId');
       return;
@@ -161,7 +160,7 @@ extension CallManagerSignaling on CallManager {
   Future<void> _handleCandidate(String peer, String data, String? offerId) async {
     if (offerId == null) return;
 
-    final session = _findSessionByOfferId(offerId);
+    final session = _getSession(offerId);
     if (session == null) {
       CallLogger.debug('Session not found for offerId: $offerId (candidate may be late)');
       return;
@@ -192,7 +191,7 @@ extension CallManagerSignaling on CallManager {
   Future<void> _handleDisconnect(String peer, String data, String? offerId) async {
     if (offerId == null) return;
 
-    final session = _findSessionByOfferId(offerId);
+    final session = _getSession(offerId);
     if (session == null) {
       CallLogger.debug('Session not found for offerId: $offerId');
       return;
@@ -230,7 +229,7 @@ extension CallManagerSignaling on CallManager {
   }
 
   Future<void> _sendIceCandidate(String sessionId, RTCIceCandidate candidate) async {
-    final session = _activeSessions[sessionId];
+    final session = _getSession(sessionId);
     if (session == null) return;
 
     try {
@@ -245,7 +244,7 @@ extension CallManagerSignaling on CallManager {
           : session.callerPubkey;
 
       await Contacts.sharedInstance.sendCandidate(
-        session.offerId,
+        session.sessionId,
         targetPubkey,
         session.privateGroupId,
         candidateJson,
@@ -256,7 +255,7 @@ extension CallManagerSignaling on CallManager {
         if (participant.pubkey != targetPubkey &&
             participant.pubkey != Account.sharedInstance.currentPubkey) {
           await Contacts.sharedInstance.sendCandidate(
-            session.offerId,
+            session.sessionId,
             participant.pubkey,
             participant.privateGroupId,
             candidateJson,

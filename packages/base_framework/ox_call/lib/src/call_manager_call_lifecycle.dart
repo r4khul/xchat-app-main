@@ -13,7 +13,6 @@ extension CallManagerCallLifecycle on CallManager {
     List<CallTarget>? additionalParticipants,
   }) async {
     final sessionId = _generateSessionId();
-    final offerId = sessionId;
     final currentPubkey = Account.sharedInstance.currentPubkey;
 
     final callerTarget = CallTarget(
@@ -29,7 +28,6 @@ extension CallManagerCallLifecycle on CallManager {
 
     final session = CallSession(
       sessionId: sessionId,
-      offerId: offerId,
       callerTarget: callerTarget,
       calleeTarget: target,
       participants: participants,
@@ -39,7 +37,7 @@ extension CallManagerCallLifecycle on CallManager {
       startTime: DateTime.now().millisecondsSinceEpoch,
     );
 
-    _activeSessions[sessionId] = session;
+    _addSession(sessionId, session);
     _notifyStateChange(session);
 
     try {
@@ -73,6 +71,7 @@ extension CallManagerCallLifecycle on CallManager {
         'privateGroupId: ${target.privateGroupId}, '
       );
       await Contacts.sharedInstance.sendOffer(
+        sessionId,
         target.pubkey,
         target.privateGroupId,
         offerJson,
@@ -90,7 +89,7 @@ extension CallManagerCallLifecycle on CallManager {
   }
 
   Future<void> acceptCall(String offerId) async {
-    final session = _findSessionByOfferId(offerId);
+    final session = _getSession(offerId);
     if (session == null) {
       CallLogger.error('Session not found for offerId: $offerId');
       return;
@@ -162,7 +161,7 @@ extension CallManagerCallLifecycle on CallManager {
   }
 
   Future<void> rejectCall(String offerId, [String? reason]) async {
-    final session = _findSessionByOfferId(offerId);
+    final session = _getSession(offerId);
     if (session == null) {
       CallLogger.error('Session not found for offerId: $offerId');
       return;
@@ -184,7 +183,7 @@ extension CallManagerCallLifecycle on CallManager {
   Future<void> endCall(String sessionId) async {
     CallLogger.info('Ending call: sessionId=$sessionId');
 
-    final session = _activeSessions[sessionId];
+    final session = _getSession(sessionId);
     if (session == null) return;
 
     final disconnectContent = jsonEncode({'reason': 'hangUp'});
@@ -193,7 +192,7 @@ extension CallManagerCallLifecycle on CallManager {
         : session.callerPubkey;
 
     await Contacts.sharedInstance.sendDisconnect(
-      session.offerId,
+      session.sessionId,
       targetPubkey,
       session.privateGroupId,
       disconnectContent,
@@ -203,11 +202,11 @@ extension CallManagerCallLifecycle on CallManager {
   }
 
   Future<void> _endCall(String sessionId, CallEndReason reason) async {
-    final session = _activeSessions[sessionId];
+    final session = _getSession(sessionId);
     if (session == null) return;
 
     _cancelOfferTimer(sessionId);
-    _pendingPrivateGroupIds.remove(session.offerId);
+    _pendingPrivateGroupIds.remove(session.sessionId);
 
     final endTime = DateTime.now().millisecondsSinceEpoch;
     final duration = endTime - session.startTime;
@@ -220,9 +219,9 @@ extension CallManagerCallLifecycle on CallManager {
     _notifyStateChange(session);
 
     await _cleanupSession(sessionId);
-    _activeSessions.remove(sessionId);
+    _removeSession(sessionId);
 
-    if (_activeSessions.isEmpty) {
+    if (!_hasActiveSessions()) {
       await _backgroundKeepAlive.deactivate();
     }
   }

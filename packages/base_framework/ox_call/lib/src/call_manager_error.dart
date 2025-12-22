@@ -3,7 +3,7 @@ part of 'call_manager.dart';
 /// Extension for handling call errors.
 extension CallManagerError on CallManager {
   Future<void> _handleError(String sessionId, CallErrorType type, String message, dynamic originalError) async {
-    final session = _activeSessions[sessionId];
+    final session = _getSession(sessionId);
     if (session == null) return;
 
     final error = CallError(

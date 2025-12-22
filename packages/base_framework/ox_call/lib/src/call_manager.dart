@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:chatcore/chat-core.dart';
-import 'package:nostr_core_dart/nostr.dart' show SignalingState;
+import 'package:nostr_core_dart/nostr.dart' show SignalingState, generate64RandomHexChars;
 import 'package:ox_common/login/login_manager.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:ox_call/src/models/call_state.dart';
@@ -95,7 +95,7 @@ class CallManager {
 
   // Public API - Session access
   CallSession? getSession(String sessionId) {
-    return _activeSessions[sessionId];
+    return _getSession(sessionId);
   }
 
   MediaStream? getLocalStream(String sessionId) {
@@ -107,6 +107,6 @@ class CallManager {
   }
 
   List<CallSession> getActiveSessions() {
-    return _activeSessions.values.toList();
+    return _getAllSessions();
   }
 }

@@ -1,9 +1,28 @@
 part of 'call_manager.dart';
 
-/// Extension for managing call sessions and state.
 extension CallManagerSession on CallManager {
+  CallSession? _getSession(String sessionId) {
+    return _activeSessions[sessionId];
+  }
+
+  void _addSession(String sessionId, CallSession session) {
+    _activeSessions[sessionId] = session;
+  }
+
+  void _removeSession(String sessionId) {
+    _activeSessions.remove(sessionId);
+  }
+
+  bool _hasActiveSessions() {
+    return _activeSessions.isNotEmpty;
+  }
+
+  List<CallSession> _getAllSessions() {
+    return _activeSessions.values.toList();
+  }
+
   void _updateSession(String sessionId, {required CallState state}) {
-    final session = _activeSessions[sessionId];
+    final session = _getSession(sessionId);
     if (session == null) return;
 
     session.state = state;
@@ -16,17 +35,7 @@ extension CallManagerSession on CallManager {
     }
   }
 
-  CallSession? _findSessionByOfferId(String offerId) {
-    try {
-      return _activeSessions.values.firstWhere(
-            (session) => session.offerId == offerId,
-      );
-    } catch (e) {
-      return _activeSessions[offerId];
-    }
-  }
-
   String _generateSessionId() {
-    return DateTime.now().millisecondsSinceEpoch.toString();
+    return generate64RandomHexChars();
   }
 }

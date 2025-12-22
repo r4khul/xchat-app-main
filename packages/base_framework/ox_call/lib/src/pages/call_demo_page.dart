@@ -43,7 +43,6 @@ class CallDemoPage extends StatelessWidget {
 
     return CallSession(
       sessionId: 'mock-session-${DateTime.now().millisecondsSinceEpoch}',
-      offerId: 'mock-offer-id',
       callerTarget: callerTarget,
       calleeTarget: calleeTarget,
       participants: [callerTarget, calleeTarget],

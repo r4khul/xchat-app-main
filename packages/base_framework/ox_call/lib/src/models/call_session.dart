@@ -5,7 +5,6 @@ import 'package:ox_call/src/models/call_target.dart';
 
 class CallSession {
   final String sessionId;
-  final String offerId;
 
   /// The caller target (who initiated the call).
   final CallTarget callerTarget;
@@ -33,7 +32,6 @@ class CallSession {
 
   CallSession({
     required this.sessionId,
-    required this.offerId,
     required this.callerTarget,
     required this.calleeTarget,
     required this.participants,

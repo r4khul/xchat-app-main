@@ -49,7 +49,7 @@ extension CallManagerWebRTC on CallManager {
   void _handleConnectionStateChange(String sessionId, RTCPeerConnectionState state) {
     CallLogger.debug('Connection state changed: sessionId=$sessionId, state=$state');
 
-    final session = _activeSessions[sessionId];
+    final session = _getSession(sessionId);
     if (session == null) return;
 
     switch (state) {
@@ -71,7 +71,7 @@ extension CallManagerWebRTC on CallManager {
   void _handleIceConnectionStateChange(String sessionId, RTCIceConnectionState state) {
     CallLogger.debug('ICE connection state changed: sessionId=$sessionId, state=$state');
 
-    final session = _activeSessions[sessionId];
+    final session = _getSession(sessionId);
     if (session == null) return;
 
     switch (state) {

@@ -44,7 +44,6 @@ class CallPageController {
   bool get isConnected => _session.state == CallState.connected;
   bool get isEnded => _session.state == CallState.ended;
   String get sessionId => _session.sessionId;
-  String? get offerId => _session.offerId;
 
   ValueNotifier<UserDBISAR?> get remoteUser$ => _session.remoteUser$;
   ValueNotifier<UserDBISAR?> get localUser$ => _session.localUser$;
@@ -155,11 +154,11 @@ class CallPageController {
 
   // Call actions
   Future<void> accept() async {
-    await CallManager().acceptCall(_session.offerId);
+    await CallManager().acceptCall(_session.sessionId);
   }
 
   Future<void> reject() async {
-    await CallManager().rejectCall(_session.offerId);
+    await CallManager().rejectCall(_session.sessionId);
   }
 
   Future<void> hangUp() async {

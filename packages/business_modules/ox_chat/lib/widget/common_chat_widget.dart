@@ -13,13 +13,13 @@ import 'package:ox_chat/utils/general_handler/chat_mention_handler.dart';
 import 'package:ox_chat/utils/general_handler/message_data_controller.dart';
 import 'package:ox_chat_ui/ox_chat_ui.dart';
 import 'package:chatcore/chat-core.dart';
-import 'package:ox_common/business_interface/ox_calling/interface.dart';
-import 'package:ox_common/business_interface/ox_chat/call_message_type.dart';
+import 'package:ox_call/ox_call.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/model/chat_session_model_isar.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_module_service/ox_module_service.dart';
+import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_common/utils/chat_prompt_tone.dart';
 import 'package:ox_common/utils/extension.dart';
 import 'package:ox_common/utils/ox_chat_binding.dart';
@@ -83,7 +83,6 @@ class CommonChatWidgetState extends State<CommonChatWidget> with OXChatObserver 
   @override
   void initState() {
     super.initState();
-
     // Initialize input height controller
     _inputHeightController = InputHeightController();
     
@@ -263,27 +262,37 @@ class CommonChatWidgetState extends State<CommonChatWidget> with OXChatObserver 
         iconName: 'icon_message_call.png',
         package: 'ox_chat',
         iconSize: 24.px,
-        onTap: () {
-          OXCallingInterface.pushCallingPage(
-            context,
-            otherUser,
-            CallMessageType.audio,
-          );
-        },
+        onTap: () => _startCall(otherUser, CallType.audio),
       ),
       CLButton.icon(
         iconName: 'icon_message_camera.png',
         package: 'ox_chat',
         iconSize: 24.px,
-        onTap: () {
-          OXCallingInterface.pushCallingPage(
-            context,
-            otherUser,
-            CallMessageType.video,
-          );
-        },
+        onTap: () => _startCall(otherUser, CallType.video),
       ),
     ];
+  }
+
+  Future<void> _startCall(UserDBISAR user, CallType callType) async {
+    try {
+      String groupId = session.groupId ?? '';
+      if (groupId.isEmpty) {
+        groupId = session.chatId;
+      }
+      if (groupId.isEmpty) {
+        throw Exception('PrivateGroupId is empty');
+      }
+
+      final target = CallTarget.fromUser(user, groupId);
+      await CallManager().startCall(
+        target: target,
+        callType: callType,
+      );
+    } catch (e) {
+      if (mounted) {
+        CommonToast.instance.show(context, e.toString());
+      }
+    }
   }
 
   Widget buildChatContentWidget() {
