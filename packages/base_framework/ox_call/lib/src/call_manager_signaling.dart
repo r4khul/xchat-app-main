@@ -29,6 +29,19 @@ extension CallManagerSignaling on CallManager {
   Future<void> _handleOffer(String caller, String data, String? offerId) async {
     if (offerId == null) return;
 
+    // Check if this session was already ended (out-of-order message)
+    if (_isSessionEnded(offerId)) {
+      CallLogger.debug('Ignoring offer for ended session: offerId=$offerId');
+      return;
+    }
+
+    // Check if this session already exists and is ended
+    final existingSession = _getSession(offerId);
+    if (existingSession != null && existingSession.state == CallState.ended) {
+      CallLogger.debug('Ignoring offer for ended session: offerId=$offerId');
+      return;
+    }
+
     CallLogger.info('Received offer: offerId=$offerId');
     String privateGroupId = '';
 
@@ -98,9 +111,21 @@ extension CallManagerSignaling on CallManager {
   Future<void> _handleAnswer(String callee, String data, String? offerId) async {
     if (offerId == null) return;
 
+    // Check if this session was already ended (out-of-order message)
+    if (_isSessionEnded(offerId)) {
+      CallLogger.debug('Ignoring answer for ended session: offerId=$offerId');
+      return;
+    }
+
     final session = _getSession(offerId);
     if (session == null) {
-      CallLogger.error('Session not found for offerId: $offerId');
+      CallLogger.warning('Session not found for offerId: $offerId (may be ended or not created yet)');
+      return;
+    }
+
+    // Ignore answer for ended sessions (out-of-order message)
+    if (session.state == CallState.ended) {
+      CallLogger.debug('Ignoring answer for ended session: offerId=$offerId');
       return;
     }
 
@@ -120,6 +145,9 @@ extension CallManagerSignaling on CallManager {
         RTCSessionDescription(sdp, 'answer'),
       );
 
+      // Apply any pending ICE candidates that arrived before answer
+      await _applyPendingCandidates(session.sessionId);
+
       _updateSession(session.sessionId, state: CallState.connecting);
       CallLogger.info('Answer processed: offerId=$offerId');
     } catch (e) {
@@ -131,9 +159,21 @@ extension CallManagerSignaling on CallManager {
   Future<void> _handleCandidate(String peer, String data, String? offerId) async {
     if (offerId == null) return;
 
+    // Check if this session was already ended (out-of-order message)
+    if (_isSessionEnded(offerId)) {
+      CallLogger.debug('Ignoring candidate for ended session: offerId=$offerId');
+      return;
+    }
+
     final session = _getSession(offerId);
     if (session == null) {
-      CallLogger.debug('Session not found for offerId: $offerId (candidate may be late)');
+      CallLogger.debug('Session not found for offerId: $offerId (candidate may be late or session ended)');
+      return;
+    }
+
+    // Ignore candidates for ended sessions (out-of-order message)
+    if (session.state == CallState.ended) {
+      CallLogger.debug('Ignoring candidate for ended session: offerId=$offerId');
       return;
     }
 
@@ -143,28 +183,65 @@ extension CallManagerSignaling on CallManager {
       final sdpMLineIndex = candidateData['sdpMLineIndex'] as int?;
       final sdpMid = candidateData['sdpMid'] as String?;
 
+      final iceCandidate = RTCIceCandidate(candidate, sdpMid, sdpMLineIndex);
       final peerConnection = _peerConnections[session.sessionId];
+
       if (peerConnection == null) {
-        CallLogger.debug('PeerConnection not found for session: ${session.sessionId} (candidate may be late)');
-        return;
+        // Cache candidate for later when PeerConnection is ready
+        _pendingCandidates.putIfAbsent(session.sessionId, () => []).add(iceCandidate);
+        CallLogger.debug('Cached ICE candidate for session: ${session.sessionId} (PeerConnection not ready yet)');
+      } else {
+        await peerConnection.addCandidate(iceCandidate);
+        CallLogger.debug('ICE candidate added: offerId=$offerId');
       }
-
-      await peerConnection.addCandidate(
-        RTCIceCandidate(candidate, sdpMid, sdpMLineIndex),
-      );
-
-      CallLogger.debug('ICE candidate added: offerId=$offerId');
     } catch (e) {
       CallLogger.error('Failed to handle candidate: $e');
+    }
+  }
+
+  /// Apply pending ICE candidates to a PeerConnection.
+  /// Call this after creating PeerConnection and setting remote description.
+  Future<void> _applyPendingCandidates(String sessionId) async {
+    final pendingCandidates = _pendingCandidates.remove(sessionId);
+    if (pendingCandidates == null || pendingCandidates.isEmpty) {
+      return;
+    }
+
+    final peerConnection = _peerConnections[sessionId];
+    if (peerConnection == null) {
+      CallLogger.warning('Cannot apply pending candidates: PeerConnection not found for session: $sessionId');
+      return;
+    }
+
+    CallLogger.info('Applying ${pendingCandidates.length} pending ICE candidates for session: $sessionId');
+    for (final candidate in pendingCandidates) {
+      try {
+        await peerConnection.addCandidate(candidate);
+        CallLogger.debug('Applied pending ICE candidate');
+      } catch (e) {
+        CallLogger.error('Failed to apply pending candidate: $e');
+      }
     }
   }
 
   Future<void> _handleDisconnect(String peer, String data, String? offerId) async {
     if (offerId == null) return;
 
+    // Check if this session was already ended (duplicate disconnect)
+    if (_isSessionEnded(offerId)) {
+      CallLogger.debug('Ignoring duplicate disconnect for ended session: offerId=$offerId');
+      return;
+    }
+
     final session = _getSession(offerId);
     if (session == null) {
-      CallLogger.debug('Session not found for offerId: $offerId');
+      CallLogger.debug('Session not found for offerId: $offerId (may have been ended already)');
+      return;
+    }
+
+    // Ignore duplicate disconnect messages
+    if (session.state == CallState.ended) {
+      CallLogger.debug('Ignoring disconnect for already ended session: offerId=$offerId');
       return;
     }
 

@@ -44,6 +44,19 @@ class CallManager {
   final Map<String, MediaStream?> _remoteStreams = {};
   final Map<String, Timer?> _offerTimers = {};
 
+  /// Cache for ICE candidates received before PeerConnection is ready.
+  /// Key: sessionId, Value: list of pending candidates
+  final Map<String, List<RTCIceCandidate>> _pendingCandidates = {};
+
+  /// Set of ended session IDs, used to filter out-of-order messages.
+  /// Sessions are kept here for a short period (e.g., 30 seconds) after ending
+  /// to handle delayed signaling messages.
+  final Set<String> _endedSessions = {};
+
+  /// Set of session IDs currently being ended, used to prevent concurrent _endCall execution.
+  /// This prevents race conditions when both sides hang up simultaneously.
+  final Set<String> _endingSessions = {};
+
   /// Multiple listeners support
   final List<CallStateCallback> _stateCallbacks = [];
   final List<CallErrorCallback> _errorCallbacks = [];

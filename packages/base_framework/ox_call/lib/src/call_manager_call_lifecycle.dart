@@ -86,10 +86,10 @@ extension CallManagerCallLifecycle on CallManager {
     }
   }
 
-  Future<void> acceptCall(String offerId) async {
-    final session = _getSession(offerId);
+  Future<void> acceptCall(String sessionId) async {
+    final session = _getSession(sessionId);
     if (session == null) {
-      CallLogger.error('Session not found for offerId: $offerId');
+      CallLogger.error('Session not found for sessionId: $sessionId');
       return;
     }
 
@@ -100,7 +100,7 @@ extension CallManagerCallLifecycle on CallManager {
 
     if (session.remoteSdp == null) {
       CallLogger.error('Remote SDP not found for session: ${session.sessionId}');
-      await rejectCall(offerId, 'error');
+      await rejectCall(sessionId, 'error');
       return;
     }
 
@@ -110,7 +110,7 @@ extension CallManagerCallLifecycle on CallManager {
 
     try {
       if (!await _requestPermissions(session.callType)) {
-        await rejectCall(offerId, 'permissionDenied');
+        await rejectCall(sessionId, 'permissionDenied');
         return;
       }
 
@@ -131,6 +131,9 @@ extension CallManagerCallLifecycle on CallManager {
         RTCSessionDescription(session.remoteSdp!, 'offer'),
       );
 
+      // Apply any pending ICE candidates that arrived before PeerConnection was ready
+      await _applyPendingCandidates(session.sessionId);
+
       final answer = await peerConnection.createAnswer();
       await peerConnection.setLocalDescription(answer);
 
@@ -141,7 +144,7 @@ extension CallManagerCallLifecycle on CallManager {
       });
 
       await Contacts.sharedInstance.sendAnswer(
-        offerId,
+        session.sessionId,
         session.remotePubkey,
         session.privateGroupId,
         answerJson,
@@ -151,7 +154,7 @@ extension CallManagerCallLifecycle on CallManager {
       await _backgroundKeepAlive.activate();
 
       _updateSession(session.sessionId, state: CallState.connecting);
-      CallLogger.info('Answer sent: offerId=$offerId');
+      CallLogger.info('Answer sent: sessionId=${session.sessionId}');
     } catch (e) {
       CallLogger.error('Failed to accept call: $e');
       await _handleError(session.sessionId, CallErrorType.unknown, 'Failed to accept call: $e', e);
@@ -196,31 +199,54 @@ extension CallManagerCallLifecycle on CallManager {
   }
 
   Future<void> _endCall(String sessionId, CallEndReason reason) async {
+    // Prevent concurrent execution of _endCall for the same session
+    if (_endingSessions.contains(sessionId)) {
+      CallLogger.debug('_endCall already in progress for session: $sessionId, ignoring duplicate call');
+      return;
+    }
+
     final session = _getSession(sessionId);
-    if (session == null) return;
+    if (session == null) {
+      // Session may have been removed by another concurrent _endCall
+      CallLogger.debug('Session not found for _endCall: $sessionId (may have been ended already)');
+      return;
+    }
 
-    _cancelOfferTimer(sessionId);
+    // Mark as ending to prevent concurrent execution
+    _endingSessions.add(sessionId);
 
-    final endTime = DateTime.now().millisecondsSinceEpoch;
-    final duration = endTime - session.startTime;
+    try {
+      _cancelOfferTimer(sessionId);
+      _pendingCandidates.remove(sessionId);
 
-    session.state = CallState.ended;
-    session.endTime = endTime;
-    session.endReason = reason;
-    session.duration = duration;
+      final endTime = DateTime.now().millisecondsSinceEpoch;
+      final duration = endTime - session.startTime;
 
-    _notifyStateChange(session);
+      session.state = CallState.ended;
+      session.endTime = endTime;
+      session.endReason = reason;
+      session.duration = duration;
 
-    await _cleanupSession(sessionId);
-    _removeSession(sessionId);
+      _notifyStateChange(session);
 
-    if (!_hasActiveSessions()) {
-      await _backgroundKeepAlive.deactivate();
+      await _cleanupSession(sessionId);
+      _removeSession(sessionId);
+
+      // Mark session as ended to filter out-of-order messages
+      _markSessionAsEnded(sessionId);
+
+      if (!_hasActiveSessions()) {
+        await _backgroundKeepAlive.deactivate();
+      }
+    } finally {
+      // Always remove from ending set, even if an error occurred
+      _endingSessions.remove(sessionId);
     }
   }
 
   Future<void> _cleanupSession(String sessionId) async {
     _cancelOfferTimer(sessionId);
+    _pendingCandidates.remove(sessionId);
 
     final peerConnection = _peerConnections[sessionId];
     if (peerConnection != null) {

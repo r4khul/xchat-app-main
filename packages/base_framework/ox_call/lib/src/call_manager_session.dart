@@ -38,4 +38,15 @@ extension CallManagerSession on CallManager {
   String _generateSessionId() {
     return generate64RandomHexChars();
   }
+
+  /// Mark a session as ended to filter out-of-order messages.
+  void _markSessionAsEnded(String sessionId) {
+    _endedSessions.add(sessionId);
+  }
+
+  /// Check if a session was already ended.
+  /// Returns true if the session ID is in the ended sessions set.
+  bool _isSessionEnded(String sessionId) {
+    return _endedSessions.contains(sessionId);
+  }
 }
