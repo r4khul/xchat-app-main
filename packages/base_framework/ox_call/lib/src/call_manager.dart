@@ -93,12 +93,13 @@ class CallManager {
 
   void _setupSignalingListener() {
     Contacts.sharedInstance.onCallStateChange = (
-        String friend,
-        SignalingState state,
-        String data,
-        String? offerId,
-        ) {
-      _handleSignalingMessage(friend, state, data, offerId);
+      String friend,
+      SignalingState state,
+      String data,
+      String? offerId,
+      String? groupId,
+    ) {
+      _handleSignalingMessage(friend, state, data, offerId, groupId);
     };
   }
 

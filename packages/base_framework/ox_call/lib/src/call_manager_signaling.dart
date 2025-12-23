@@ -3,16 +3,17 @@ part of 'call_manager.dart';
 /// Extension for handling signaling messages (offer, answer, candidate, disconnect).
 extension CallManagerSignaling on CallManager {
   void _handleSignalingMessage(
-      String friend,
-      SignalingState state,
-      String data,
-      String? offerId,
-      ) {
+    String friend,
+    SignalingState state,
+    String data,
+    String? offerId,
+    String? groupId,
+  ) {
     CallLogger.debug('Received signaling: friend=$friend, state=$state, offerId=$offerId');
 
     switch (state) {
       case SignalingState.offer:
-        _handleOffer(friend, data, offerId);
+        _handleOffer(friend, data, offerId, groupId);
         break;
       case SignalingState.answer:
         _handleAnswer(friend, data, offerId);
@@ -26,8 +27,8 @@ extension CallManagerSignaling on CallManager {
     }
   }
 
-  Future<void> _handleOffer(String caller, String data, String? offerId) async {
-    if (offerId == null) return;
+  Future<void> _handleOffer(String caller, String data, String? offerId, String? groupId) async {
+    if (offerId == null || offerId.isEmpty || groupId == null || groupId.isEmpty) return;
 
     // Check if this session was already ended (out-of-order message)
     if (_isSessionEnded(offerId)) {
