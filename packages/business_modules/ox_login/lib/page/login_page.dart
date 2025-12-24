@@ -44,7 +44,7 @@ class _LoginPageState extends State<LoginPage> {
           items: [
             BannerItem(
               image: CommonImage(
-                iconName: 'image_guide_1.png',
+                iconName: 'onboarding-welcome.png',
                 size: 280.px,
                 package: 'ox_login',
                 isPlatformStyle: true,
@@ -54,7 +54,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
             BannerItem(
               image: CommonImage(
-                iconName: 'image_guide_2.png',
+                iconName: 'onboarding-nostr.png',
                 size: 280.px,
                 package: 'ox_login',
                 isPlatformStyle: true,
@@ -64,7 +64,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
             BannerItem(
               image: CommonImage(
-                iconName: 'image_guide_3.png',
+                iconName: 'onboarding-circle.png',
                 size: 280.px,
                 package: 'ox_login',
                 isPlatformStyle: true,
@@ -74,7 +74,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
             BannerItem(
               image: CommonImage(
-                iconName: 'image_guide_4.png',
+                iconName: 'onboarding-relays.png',
                 size: 280.px,
                 package: 'ox_login',
                 isPlatformStyle: true,
@@ -84,7 +84,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ],
           height: 460.py,
-          interval: const Duration(seconds: 3),
+          interval: const Duration(seconds: 5),
           padding: EdgeInsets.symmetric(horizontal: 32.px),
         ),
         const Spacer(),
