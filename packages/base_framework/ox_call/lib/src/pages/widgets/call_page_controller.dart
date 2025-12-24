@@ -14,6 +14,7 @@ import 'package:ox_call/src/models/call_session.dart';
 /// Directly listens to CallManager (not through CallService).
 class CallPageController {
   CallPageController(CallSession initialSession) : _session = initialSession {
+    callState$.value = _session.state;
     _initialize();
   }
 
@@ -29,20 +30,23 @@ class CallPageController {
   final RTCVideoRenderer remoteRenderer = RTCVideoRenderer();
 
   // Observable state
-  late final ValueNotifier<CallSession> session$ = ValueNotifier<CallSession>(_session);
+  final ValueNotifier<CallState> callState$ = ValueNotifier<CallState>(CallState.initiating);
   final ValueNotifier<int> duration$ = ValueNotifier<int>(0);
   final ValueNotifier<bool> isMuted$ = ValueNotifier<bool>(false);
   final ValueNotifier<bool> isCameraOn$ = ValueNotifier<bool>(true);
   final ValueNotifier<bool> isSpeakerOn$ = ValueNotifier<bool>(true);
   final ValueNotifier<bool> isControlsVisible$ = ValueNotifier<bool>(true);
   final ValueNotifier<bool> hasPopped$ = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> actionInProgress$ = ValueNotifier<bool>(false);
 
   // Derived state getters
   bool get isVideoCall => _session.callType == CallType.video;
   bool get isIncoming => _session.direction == CallDirection.incoming;
-  bool get isRinging => _session.state == CallState.ringing;
-  bool get isConnected => _session.state == CallState.connected;
-  bool get isEnded => _session.state == CallState.ended;
+  bool get isRinging => callState$.value == CallState.ringing;
+  bool get isConnected => callState$.value == CallState.connected;
+  bool get isEnded => callState$.value == CallState.ended;
+  bool get isConnecting => callState$.value == CallState.connecting;
+  bool get isActionInProgress => actionInProgress$.value;
   String get sessionId => _session.sessionId;
 
   ValueNotifier<UserDBISAR?> get remoteUser$ => _session.remoteUser$;
@@ -73,7 +77,7 @@ class CallPageController {
     if (session.sessionId != _session.sessionId) return;
 
     _session = session;
-    session$.value = session;
+    callState$.value = session.state;
 
     if (session.state == CallState.connected) {
       _startDurationTimer();
@@ -154,15 +158,33 @@ class CallPageController {
 
   // Call actions
   Future<void> accept() async {
-    await CallManager().acceptCall(_session.sessionId);
+    if (actionInProgress$.value) return;
+    actionInProgress$.value = true;
+    try {
+      await CallManager().acceptCall(_session.sessionId);
+    } finally {
+      actionInProgress$.value = false;
+    }
   }
 
   Future<void> reject() async {
-    await CallManager().rejectCall(_session.sessionId);
+    if (actionInProgress$.value) return;
+    actionInProgress$.value = true;
+    try {
+      await CallManager().rejectCall(_session.sessionId);
+    } finally {
+      actionInProgress$.value = false;
+    }
   }
 
   Future<void> hangUp() async {
-    await CallManager().endCall(_session.sessionId);
+    if (actionInProgress$.value) return;
+    actionInProgress$.value = true;
+    try {
+      await CallManager().endCall(_session.sessionId);
+    } finally {
+      actionInProgress$.value = false;
+    }
   }
 
   Future<void> toggleMute() async {
@@ -197,12 +219,13 @@ class CallPageController {
     localRenderer.dispose();
     remoteRenderer.dispose();
 
-    session$.dispose();
+    callState$.dispose();
     duration$.dispose();
     isMuted$.dispose();
     isCameraOn$.dispose();
     isSpeakerOn$.dispose();
     isControlsVisible$.dispose();
     hasPopped$.dispose();
+    actionInProgress$.dispose();
   }
 }

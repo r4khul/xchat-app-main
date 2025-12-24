@@ -21,10 +21,10 @@ class CallContentArea extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: controller.session$,
-      builder: (context, session, _) {
+      valueListenable: controller.callState$,
+      builder: (context, state, _) {
         // Video call: show video content when connected
-        if (controller.isVideoCall && controller.isConnected) {
+        if (controller.isVideoCall && state == CallState.connected) {
           return _VideoCallContent(controller: controller);
         }
         // Voice call or video call before connected: show user info
@@ -92,9 +92,9 @@ class _VoiceCallContent extends StatelessWidget {
 
   Widget _buildStatusText() {
     return ValueListenableBuilder(
-      valueListenable: controller.session$,
-      builder: (context, session, _) {
-        final statusText = _getStatusText(session);
+      valueListenable: controller.callState$,
+      builder: (context, state, _) {
+        final statusText = _getStatusText(state);
         if (statusText.isEmpty) return const SizedBox.shrink();
 
         return CLText.bodyLarge(
@@ -105,10 +105,10 @@ class _VoiceCallContent extends StatelessWidget {
     );
   }
 
-  String _getStatusText(dynamic session) {
+  String _getStatusText(CallState state) {
     final callTypeText = controller.isVideoCall ? 'video' : 'voice';
 
-    switch (session.state) {
+    switch (state) {
       case CallState.initiating:
       case CallState.ringing:
         if (controller.isIncoming) {
