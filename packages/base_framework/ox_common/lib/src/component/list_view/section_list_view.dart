@@ -63,7 +63,7 @@ class CLSectionListView extends StatelessWidget {
     if (PlatformStyle.isUseMaterial) {
       return Divider(height: 1,).setPadding(EdgeInsets.symmetric(horizontal: 16.px));
     } else {
-      return SizedBox(height: 8.px);
+      return SizedBox();
     }
   }
 
@@ -82,14 +82,15 @@ class CLSectionListView extends StatelessWidget {
       if (headerWidget != null) {
         widgets.add(headerWidget);
       }
-      widgets.add(CLListView(
+      final listView = CLListView(
         shrinkWrap: true,
         items: model.data,
         isEditing: model.isEditing,
         onDelete: model.onDelete,
-      ));
+      );
+      widgets.add(listView);
       if (footerWidget != null) {
-        widgets.add(footerWidget);
+        widgets.add(_buildAlignedFooter(footerWidget, listView.hasLeading, true));
       }
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -101,13 +102,35 @@ class CLSectionListView extends StatelessWidget {
         isEditing: model.isEditing,
         onDelete: model.onDelete,
       );
+      final alignedFooter = footerWidget != null
+          ? _buildAlignedFooter(footerWidget, listView.hasLeading, false)
+          : null;
       return CupertinoListSection.insetGrouped(
         header: headerWidget,
-        footer: footerWidget,
+        footer: alignedFooter,
         hasLeading: listView.hasLeading,
         margin: model.margin,
         separatorColor: kSystemSeparator.resolveFrom(context),
         children: listView.asCupertinoSectionChildren(false),
+      );
+    }
+  }
+
+  Widget _buildAlignedFooter(Widget footer, bool hasLeading, bool isMaterial) {
+    if (isMaterial) {
+      return footer;
+    } else {
+      // Cupertino: wrap footer to align with list tile content
+      final listTileLeftPadding = hasLeading 
+          ? CLLayout.kNotchedPadding.left
+          : CLLayout.kNotchedPaddingWithoutLeading.start;
+      final listTileRightPadding = CLLayout.kNotchedPadding.right;
+      return Padding(
+        padding: EdgeInsetsDirectional.only(
+          start: listTileLeftPadding,
+          end: listTileRightPadding,
+        ),
+        child: footer,
       );
     }
   }
