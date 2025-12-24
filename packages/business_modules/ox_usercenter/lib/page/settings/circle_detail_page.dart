@@ -1,9 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:chatcore/chat-core.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/login/login_models.dart';
+import 'package:ox_common/login/circle_service.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/widgets/common_loading.dart' as Loading;
@@ -208,10 +208,9 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
         try {
           Loading.OXLoading.show();
           
-          // Update circle name in database
-          final updatedCircle = await Account.sharedInstance.updatecircle(
-            circleId: widget.circle.id,
-            name: newName.trim(),
+          final updatedCircle = await CircleService.updateCircleName(
+            widget.circle.id,
+            newName.trim(),
           );
 
           if (updatedCircle == null) {
@@ -220,30 +219,12 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
             return false;
           }
 
-          // Update LoginManager's circle list
-          final account = LoginManager.instance.currentState.account;
-          if (account != null) {
-            final circles = account.circles.map((c) {
-              if (c.id == widget.circle.id) {
-                return Circle(
-                  id: c.id,
-                  name: newName.trim(),
-                  relayUrl: c.relayUrl,
-                  type: c.type,
-                );
-              }
-              return c;
-            }).toList();
-            await LoginManager.instance.updatedCircles(circles);
-          }
-
           Loading.OXLoading.dismiss();
           
           setState(() {
             _circleName = newName.trim();
           });
 
-          CommonToast.instance.show(context, Localized.text('ox_common.save_success'));
           return true;
         } catch (e) {
           Loading.OXLoading.dismiss();
