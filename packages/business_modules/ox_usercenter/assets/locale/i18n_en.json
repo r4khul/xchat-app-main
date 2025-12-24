@@ -18,6 +18,8 @@
   "theme_color_light": "Light",
   "version": "Version",
   "circle_settings": "Circle Settings",
+  "edit_circle_name": "Edit Circle Name",
+  "circle_name": "Circle Name",
   "text_size": "Text Size",
   "delete_account": "Delete Account",
   "delete_account_confirm": "Delete",
@@ -117,5 +119,14 @@
   "account": "Account",
   "chat": "Chat",
   "default_file_server_group": "Default server",
-  "default_file_server_group_subtitle": "Default file server"
+  "default_file_server_group_subtitle": "Default file server",
+  "payment": "Payment",
+  "payment_summary": "Payment Summary",
+  "subscription_level": "Subscription Level",
+  "subscription_period": "Subscription Period",
+  "total": "Total",
+  "private_relay_subscription": "Private Relay Subscription",
+  "payment_success": "Payment successful",
+  "apple_pay_unavailable": "Apple Pay Unavailable",
+  "google_pay_unavailable": "Google Pay Unavailable"
 }

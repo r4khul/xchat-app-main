@@ -25,7 +25,7 @@
   "have_account": "I have a Nostr account",
   
   "profile_setup_title": "Create Your Profile",
-  "profile_setup_subtitle": "Enter your name to get started. Your secure identity is being created automatically.",
+  "profile_setup_subtitle": "Enter your name to get started. Your nostr account is being created automatically.",
   "profile_setup_avatar_hint": "Your unique avatar",
   "profile_setup_name_hint": "This is how others will see you. You can change this anytime.",
   "first_name_placeholder": "First Name",
@@ -33,9 +33,9 @@
   
   "circle_selection_title": "Join a Circle",
   "circle_selection_subtitle": "Circles use relays to connect you with others. All messages are end-to-end encrypted. Learn more",
-  "use_public_circle": "Community Relay",
+  "use_public_circle": "Community Circle",
   "use_public_circle_desc": "Free community relay. Quick setup with full encryption.",
-  "use_private_circle": "Private Relay",
+  "use_private_circle": "Private Circle",
   "use_private_circle_desc": "Self-hosted or personal relay for maximum control.",
   "recommended": "Recommended",
   

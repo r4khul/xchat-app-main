@@ -18,6 +18,8 @@
   "theme_color_light": "白天",
   "version": "版本",
   "circle_settings": "圈子设置",
+  "edit_circle_name": "编辑圈子名称",
+  "circle_name": "圈子名称",
   "text_size": "文字大小",
   "delete_account": "删除账号",
   "delete_account_confirm": "删除",
