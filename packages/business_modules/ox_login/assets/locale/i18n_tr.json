@@ -11,26 +11,23 @@
   "private_key_regular_failed": "Özel anahtar doğrulaması başarısız",
   "str_nesc_invalid_hint": "Girdiğiniz NSEC geçersiz. Lütfen tekrar girin.",
   "wait_link_service": "Servise bağlanmayı bekliyor, veya imzalama uygulamasının yetkilendirme isteyip istemediğini kontrol edin!",
-  "carousel_title_1": "Uçtan Uca Şifreleme",
-  "carousel_text_1": "Mesajları sadece siz ve alıcı okuyabilir. Başka kimse.",
-  "carousel_title_2": "Merkeziyetsiz Ağ",
-  "carousel_text_2": "Merkezi sunucu yok. Kontrol yok. Sadece özel iletişim.",
-  "carousel_title_3": "Şifreli Yerel Depolama",
-  "carousel_text_3": "Sohbetler şifrelenir ve cihazınızda saklanır.",
-  "carousel_title_4": "Anonim Mesajlaşma",
-  "carousel_text_4": "Telefon numarası yok. E-posta yok. Sadece saf anonimlik.",
+  "carousel_title_1": "XChat'e Hoş Geldiniz",
+  "carousel_text_1": "Güvenli, merkezi olmayan iletişim platformumuza hoş geldiniz. Gerçek gizliliğe yolculuğunuz burada başlıyor.",
+  "carousel_title_2": "Açık Protokol",
+  "carousel_text_2": "Nostr protokolü üzerine inşa edilmiştir. Telefon numarası yok. E-posta adresi yok. Sadece saf, merkezi olmayan iletişim.",
+  "carousel_title_3": "Özel Çemberler",
+  "carousel_text_3": "Farklı çemberler arasında sorunsuz bir şekilde geçiş yapın. Her konuşma tam gizlilik için uçtan uca şifrelenmiştir.",
+  "carousel_title_4": "Özel Sunucular",
+  "carousel_text_4": "Rölelerinizi ve dosya sunucularınızı özelleştirin. Verilerinizin nerede saklanacağı üzerinde tam kontrolünüz var.",
   "account_key_placeholder": "nsec veya bunker:// URI girin",
-  
   "get_started": "Başla",
   "have_account": "Nostr hesabım var",
-  
   "profile_setup_title": "Profilini Oluştur",
   "profile_setup_subtitle": "Başlamak için adınızı girin. Güvenli kimliğiniz otomatik olarak oluşturuluyor.",
   "profile_setup_avatar_hint": "Benzersiz avatarınız",
   "profile_setup_name_hint": "Diğerleri sizi böyle görecek. Bunu istediğiniz zaman değiştirebilirsiniz.",
   "first_name_placeholder": "Ad",
   "last_name_placeholder": "Soyad (İsteğe bağlı)",
-  
   "circle_selection_title": "Bir Çembere Katıl",
   "circle_selection_subtitle": "Çemberler başkalarıyla bağlanmak için relay kullanır. Tüm mesajlar uçtan uca şifrelenir. Daha fazla bilgi",
   "use_public_circle": "Topluluk Relay'i",
@@ -38,7 +35,6 @@
   "use_private_circle": "Özel Relay",
   "use_private_circle_desc": "Maksimum kontrol için kendi barındırdığınız veya kişisel relay.",
   "recommended": "Önerilen",
-  
   "add_circle_title": "Çember Ekle",
   "add_circle_description": "Katılmak için çember adresini girin.",
   "circle_url_placeholder": "Çember URL'si veya adı girin",
@@ -46,7 +42,6 @@
   "circle_url_empty": "Lütfen bir çember adresi girin",
   "join": "Katıl",
   "what_is_circle": "Çember nedir?",
-  
   "relay_intro_title": "Çember nedir?",
   "relay_intro_subtitle": "Özel iletişim merkeziniz",
   "relay_intro_description": "Bir Çember, tüm şifreli mesajlarınızı yöneten kendi özel posta odanız gibidir. Her şeyi güvenli ve özel tutarken arkadaşlarınızla sohbet etmenize yardımcı olur.",
@@ -75,7 +70,6 @@
   "how_to_use_step_1": "Doğrudan giriş için nsec özel anahtarınızı girin",
   "how_to_use_step_2": "Veya uzak imzalayıcı girişi için bunker:// URI kullanın",
   "how_to_use_step_3": "Uygulama güvenli bir şekilde bağlanacak ve sizi doğrulayacak",
-  
   "select_avatar": "Avatar seç",
   "camera": "Kamera"
 }

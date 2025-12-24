@@ -11,26 +11,23 @@
   "private_key_regular_failed": "私鑰驗證失敗",
   "str_nesc_invalid_hint": "您輸入的 NSEC 無效。請重新輸入。",
   "wait_link_service": "正在等待連線到服務，或請檢查簽名應用程式是否正在請求授權！",
-  "carousel_title_1": "歡迎",
-  "carousel_text_1": "歡迎使用我們安全、去中心化的通訊平台。您的隱私之旅從這裡開始。",
-  "carousel_title_2": "開放協定",
-  "carousel_text_2": "基於 Nostr 協定建構。無需電話號碼。無需電子郵件地址。純粹的去中心化通訊。",
-  "carousel_title_3": "智能圈子",
-  "carousel_text_3": "在不同圈子間無縫切換。所有對話均採用端對端加密，確保完全隱私。",
-  "carousel_title_4": "自訂伺服器",
-  "carousel_text_4": "自訂您的中繼和檔案伺服器。您完全掌控資料儲存的位置。",
+  "carousel_title_1": "Welcome to XChat",
+  "carousel_text_1": "Welcome to our secure, decentralized communication platform. Your journey to true privacy starts here.",
+  "carousel_title_2": "Open Protocol",
+  "carousel_text_2": "Built on the Nostr protocol. No phone numbers. No email addresses. Just pure, decentralized communication.",
+  "carousel_title_3": "Private Circles",
+  "carousel_text_3": "Switch seamlessly between different circles. Every conversation is end-to-end encrypted for complete privacy.",
+  "carousel_title_4": "Custom Servers",
+  "carousel_text_4": "Customize your relays and file servers. You have complete control over where your data is stored.",
   "account_key_placeholder": "輸入 nsec 或 bunker:// URI",
-  
   "get_started": "開始使用",
   "have_account": "我已有 Nostr 帳戶",
-  
   "profile_setup_title": "建立您的個人資料",
   "profile_setup_subtitle": "輸入您的名字即可開始。您的安全身分正在自動建立。",
   "profile_setup_avatar_hint": "您的專屬頭像",
   "profile_setup_name_hint": "這是其他人看到您的方式，您可以隨時更改。",
   "first_name_placeholder": "名",
   "last_name_placeholder": "姓（選填）",
-  
   "circle_selection_title": "加入圈子",
   "circle_selection_subtitle": "圈子使用中繼來連接您與他人。所有訊息都是端對端加密的。了解更多",
   "use_public_circle": "社群中繼",
@@ -38,7 +35,6 @@
   "use_private_circle": "私有中繼",
   "use_private_circle_desc": "自託管或個人中繼，獲得最大控制權。",
   "recommended": "推薦",
-  
   "add_circle_title": "新增圈子",
   "add_circle_description": "輸入圈子地址以加入。",
   "circle_url_placeholder": "輸入圈子 URL 或名稱",
@@ -46,7 +42,6 @@
   "circle_url_empty": "請輸入圈子地址",
   "join": "加入",
   "what_is_circle": "什麼是圈子？",
-  
   "relay_intro_title": "什麼是圈子？",
   "relay_intro_subtitle": "您的私密通訊中心",
   "relay_intro_description": "圈子就像您的私人信箱室，負責處理所有加密訊息。它幫助您和朋友安全私密地聊天。",
@@ -75,7 +70,6 @@
   "how_to_use_step_1": "輸入您的 nsec 私鑰進行直接登入",
   "how_to_use_step_2": "或使用 bunker:// URI 進行遠端簽名器登入",
   "how_to_use_step_3": "應用程式將安全連線並驗證您",
-  
   "select_avatar": "選擇頭像",
   "camera": "相機"
 }

@@ -11,26 +11,23 @@
   "private_key_regular_failed": "Verificación de clave privada fallida",
   "str_nesc_invalid_hint": "El NSEC que ingresó no es válido. Por favor ingréselo de nuevo.",
   "wait_link_service": "Esperando conexión al servicio, ¡o verifique si la aplicación de firma está solicitando autorización!",
-  "carousel_title_1": "Cifrado de extremo a extremo",
-  "carousel_text_1": "Solo usted y el destinatario pueden leer los mensajes. Nadie más.",
-  "carousel_title_2": "Red descentralizada",
-  "carousel_text_2": "Sin servidores centrales. Sin control. Solo comunicación privada.",
-  "carousel_title_3": "Almacenamiento local cifrado",
-  "carousel_text_3": "Los chats están cifrados y almacenados en su dispositivo.",
-  "carousel_title_4": "Mensajería anónima",
-  "carousel_text_4": "Sin número de teléfono. Sin email. Solo anonimato puro.",
+  "carousel_title_1": "Bienvenido a XChat",
+  "carousel_text_1": "Bienvenido a nuestra plataforma de comunicación segura y descentralizada. Tu viaje hacia la verdadera privacidad comienza aquí.",
+  "carousel_title_2": "Protocolo abierto",
+  "carousel_text_2": "Construido sobre el protocolo Nostr. Sin números de teléfono. Sin direcciones de correo electrónico. Solo comunicación pura y descentralizada.",
+  "carousel_title_3": "Círculos privados",
+  "carousel_text_3": "Cambia sin problemas entre diferentes círculos. Cada conversación está cifrada de extremo a extremo para una privacidad completa.",
+  "carousel_title_4": "Servidores personalizados",
+  "carousel_text_4": "Personaliza tus relés y servidores de archivos. Tienes control total sobre dónde se almacenan tus datos.",
   "account_key_placeholder": "Ingrese nsec o bunker:// URI",
-  
   "get_started": "Comenzar",
   "have_account": "Tengo una cuenta Nostr",
-  
   "profile_setup_title": "Crear tu perfil",
   "profile_setup_subtitle": "Ingresa tu nombre para comenzar. Tu identidad segura se está creando automáticamente.",
   "profile_setup_avatar_hint": "Tu avatar único",
   "profile_setup_name_hint": "Así es como otros te verán. Puedes cambiarlo en cualquier momento.",
   "first_name_placeholder": "Nombre",
   "last_name_placeholder": "Apellido (Opcional)",
-  
   "circle_selection_title": "Unirse a un Círculo",
   "circle_selection_subtitle": "Los Círculos usan relays para conectarte con otros. Todos los mensajes están cifrados de extremo a extremo. Saber más",
   "use_public_circle": "Relay Comunitario",
@@ -38,7 +35,6 @@
   "use_private_circle": "Relay Privado",
   "use_private_circle_desc": "Relay auto-alojado o personal para máximo control.",
   "recommended": "Recomendado",
-  
   "add_circle_title": "Agregar Círculo",
   "add_circle_description": "Ingresa la dirección del círculo para unirte.",
   "circle_url_placeholder": "Ingresa URL o nombre del círculo",
@@ -46,7 +42,6 @@
   "circle_url_empty": "Por favor ingresa una dirección de círculo",
   "join": "Unirse",
   "what_is_circle": "¿Qué es un Círculo?",
-  
   "relay_intro_title": "¿Qué es un Círculo?",
   "relay_intro_subtitle": "Tu centro de comunicación privado",
   "relay_intro_description": "Un Círculo es como tu propia sala de correo privada que maneja todos tus mensajes cifrados. Te ayuda a chatear con amigos mientras mantiene todo seguro y privado.",
@@ -75,7 +70,6 @@
   "how_to_use_step_1": "Ingresa tu clave privada nsec para inicio de sesión directo",
   "how_to_use_step_2": "O usa bunker:// URI para inicio de sesión con firmante remoto",
   "how_to_use_step_3": "La aplicación se conectará de forma segura y te autenticará",
-  
   "select_avatar": "Seleccionar avatar",
   "camera": "Cámara"
 }

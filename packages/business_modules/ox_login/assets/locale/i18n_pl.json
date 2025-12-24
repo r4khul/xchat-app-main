@@ -11,26 +11,23 @@
   "private_key_regular_failed": "Weryfikacja klucza prywatnego nie powiodła się",
   "str_nesc_invalid_hint": "Wprowadzony NSEC jest nieprawidłowy. Wprowadź go ponownie.",
   "wait_link_service": "Oczekiwanie na połączenie z usługą, lub sprawdź czy aplikacja do podpisywania prosi o autoryzację!",
-  "carousel_title_1": "Szyfrowanie end-to-end",
-  "carousel_text_1": "Tylko Ty i odbiorca możecie czytać wiadomości. Nikt inny.",
-  "carousel_title_2": "Zdecentralizowana sieć",
-  "carousel_text_2": "Brak centralnych serwerów. Brak kontroli. Tylko prywatna komunikacja.",
-  "carousel_title_3": "Zaszyfrowane lokalne przechowywanie",
-  "carousel_text_3": "Czaty są szyfrowane i przechowywane na Twoim urządzeniu.",
-  "carousel_title_4": "Anonimowe wiadomości",
-  "carousel_text_4": "Bez numeru telefonu. Bez e-maila. Tylko czysta anonimowość.",
+  "carousel_title_1": "Witamy w XChat",
+  "carousel_text_1": "Witamy na naszej bezpiecznej, zdecentralizowanej platformie komunikacyjnej. Twoja podróż do prawdziwej prywatności zaczyna się tutaj.",
+  "carousel_title_2": "Otwarty protokół",
+  "carousel_text_2": "Zbudowany na protokole Nostr. Bez numerów telefonów. Bez adresów e-mail. Tylko czysta, zdecentralizowana komunikacja.",
+  "carousel_title_3": "Prywatne kręgi",
+  "carousel_text_3": "Płynnie przełączaj się między różnymi kręgami. Każda rozmowa jest szyfrowana end-to-end dla pełnej prywatności.",
+  "carousel_title_4": "Niestandardowe serwery",
+  "carousel_text_4": "Dostosuj swoje przekaźniki i serwery plików. Masz pełną kontrolę nad miejscem przechowywania danych.",
   "account_key_placeholder": "Wprowadź nsec lub bunker:// URI",
-  
   "get_started": "Rozpocznij",
   "have_account": "Mam konto Nostr",
-  
   "profile_setup_title": "Utwórz swój profil",
   "profile_setup_subtitle": "Wprowadź swoje imię, aby rozpocząć. Twoja bezpieczna tożsamość jest tworzona automatycznie.",
   "profile_setup_avatar_hint": "Twój unikalny awatar",
   "profile_setup_name_hint": "Tak inni będą Cię widzieć. Możesz to zmienić w dowolnym momencie.",
   "first_name_placeholder": "Imię",
   "last_name_placeholder": "Nazwisko (Opcjonalnie)",
-  
   "circle_selection_title": "Dołącz do Kręgu",
   "circle_selection_subtitle": "Kręgi używają przekaźników do łączenia z innymi. Wszystkie wiadomości są szyfrowane end-to-end. Dowiedz się więcej",
   "use_public_circle": "Przekaźnik Społeczności",
@@ -38,7 +35,6 @@
   "use_private_circle": "Prywatny Przekaźnik",
   "use_private_circle_desc": "Własny lub osobisty przekaźnik dla maksymalnej kontroli.",
   "recommended": "Polecane",
-  
   "add_circle_title": "Dodaj Krąg",
   "add_circle_description": "Wprowadź adres kręgu, aby dołączyć.",
   "circle_url_placeholder": "Wprowadź URL lub nazwę kręgu",
@@ -46,7 +42,6 @@
   "circle_url_empty": "Wprowadź adres kręgu",
   "join": "Dołącz",
   "what_is_circle": "Czym jest Krąg?",
-  
   "relay_intro_title": "Czym jest Krąg?",
   "relay_intro_subtitle": "Twoje prywatne centrum komunikacji",
   "relay_intro_description": "Krąg jest jak twoja własna prywatna poczta, która obsługuje wszystkie twoje zaszyfrowane wiadomości. Pomaga ci rozmawiać z przyjaciółmi, zachowując wszystko bezpieczne i prywatne.",
@@ -75,7 +70,6 @@
   "how_to_use_step_1": "Wprowadź swój klucz prywatny nsec do bezpośredniego logowania",
   "how_to_use_step_2": "Lub użyj bunker:// URI do logowania przez zdalnego sygnatariusza",
   "how_to_use_step_3": "Aplikacja bezpiecznie się połączy i uwierzytelni Cię",
-  
   "select_avatar": "Wybierz awatar",
   "camera": "Aparat"
 }

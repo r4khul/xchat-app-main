@@ -11,26 +11,23 @@
   "private_key_regular_failed": "Privaatvõtme kontrollimine ebaõnnestus",
   "str_nesc_invalid_hint": "Sisestatud NSEC on kehtetu. Palun sisesta see uuesti.",
   "wait_link_service": "Ootan ühendust teenusega või kontrolli, kas allkirjastamisrakendus küsib autoriseerimist!",
-  "carousel_title_1": "Otsast-otsa krüpteerimine",
-  "carousel_text_1": "Ainult sina ja saaja saate sõnumeid lugeda. Keegi teine.",
-  "carousel_title_2": "Detsentraliseeritud võrk",
-  "carousel_text_2": "Keskservereid pole. Kontrolli pole. Ainult privaatne suhtlus.",
-  "carousel_title_3": "Krüpteeritud kohalik salvestamine",
-  "carousel_text_3": "Vestlused on krüpteeritud ja salvestatud sinu seadmes.",
-  "carousel_title_4": "Anonüümne sõnumside",
-  "carousel_text_4": "Telefoninumbrit pole. E-posti pole. Ainult puhas anonüümsus.",
+  "carousel_title_1": "Tere tulemast XChat-i",
+  "carousel_text_1": "Tere tulemast meie turvalisele, detsentraliseeritud suhtlusplatvormile. Teie teekond tõelise privaatsuse poole algab siit.",
+  "carousel_title_2": "Avatud protokoll",
+  "carousel_text_2": "Ehitatud Nostr protokollile. Telefoninumbreid pole. E-posti aadresse pole. Lihtsalt puhas, detsentraliseeritud suhtlus.",
+  "carousel_title_3": "Privaatsed ringid",
+  "carousel_text_3": "Vahetage sujuvalt erinevate ringide vahel. Iga vestlus on otsast-otsani krüpteeritud täieliku privaatsuse tagamiseks.",
+  "carousel_title_4": "Kohandatud serverid",
+  "carousel_text_4": "Kohandage oma releesid ja failiservereid. Teil on täielik kontroll selle üle, kus teie andmed hoitakse.",
   "account_key_placeholder": "Sisesta nsec või bunker:// URI",
-  
   "get_started": "Alusta",
   "have_account": "Mul on Nostr konto",
-  
   "profile_setup_title": "Loo oma profiil",
   "profile_setup_subtitle": "Sisesta oma nimi alustamiseks. Sinu turvaline identiteet luuakse automaatselt.",
   "profile_setup_avatar_hint": "Sinu unikaalne avatar",
   "profile_setup_name_hint": "Nii näevad teised sind. Saad seda igal ajal muuta.",
   "first_name_placeholder": "Eesnimi",
   "last_name_placeholder": "Perekonnanimi (Valikuline)",
-  
   "circle_selection_title": "Liitu ringiga",
   "circle_selection_subtitle": "Ringid kasutavad relesid teistega ühendamiseks. Kõik sõnumid on otsast-otsani krüpteeritud. Loe lähemalt",
   "use_public_circle": "Kogukonna Rels",
@@ -38,7 +35,6 @@
   "use_private_circle": "Privaatne Rels",
   "use_private_circle_desc": "Ise majutatud või isiklik rels maksimaalse kontrolli saamiseks.",
   "recommended": "Soovitatud",
-  
   "add_circle_title": "Lisa ring",
   "add_circle_description": "Sisesta ringi aadress liitumiseks.",
   "circle_url_placeholder": "Sisesta ringi URL või nimi",
@@ -46,7 +42,6 @@
   "circle_url_empty": "Palun sisesta ringi aadress",
   "join": "Liitu",
   "what_is_circle": "Mis on ring?",
-  
   "relay_intro_title": "Mis on Ring?",
   "relay_intro_subtitle": "Sinu privaatne suhtluskeskus",
   "relay_intro_description": "Ring on nagu sinu enda privaatne postiruum, mis haldab kõiki sinu krüpteeritud sõnumeid. See aitab sul sõpradega vestelda, hoides kõik turvalise ja privaatse.",
@@ -75,7 +70,6 @@
   "how_to_use_step_1": "Sisesta oma nsec privaatvõti otseseks sisselogimiseks",
   "how_to_use_step_2": "Või kasuta bunker:// URI-d kaugallkirjastaja kaudu sisselogimiseks",
   "how_to_use_step_3": "Rakendus ühendub turvaliselt ja autentib sind",
-  
   "select_avatar": "Vali avatar",
   "camera": "Kaamera"
 }
