@@ -11,6 +11,8 @@
   "notification_setting_failed": "通知设置更新失败，请检查网络连接后重试。",
   "zaps": "打闪",
   "keys": "密钥",
+  "public_key_description": "在开始之前，您需要保存您的 Nostr 账户 ID。您可以与家人或朋友分享。点击复制！",
+  "private_key_description": "这是您的私密账户密钥。您需要它来访问您的账户。否则，如果您将来卸载 XChat，将无法登录。不要与任何人分享！请将其保存在密码管理器中并妥善保管！",
   "language": "语言",
   "theme": "主题",
   "theme_color_default": "跟随系统(${theme})",

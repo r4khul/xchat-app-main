@@ -11,6 +11,8 @@
   "notification_setting_failed": "Failed to update notification settings. Please check your network connection and try again.",
   "zaps": "Zaps",
   "keys": "Keys",
+  "public_key_description": "This is your nostr public key. You can share it with your family or friends. Tap to copy!",
+  "private_key_description": "This is your secret account key. You need this to access your account. Otherwise you won't be able to login in the future if you ever uninstall XChat. Don't share this with anyone! Save it in a password manager and keep it safe!",
   "language": "Language",
   "theme": "Theme",
   "theme_color_default": "Automatic(${theme})",

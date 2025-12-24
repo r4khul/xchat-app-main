@@ -82,6 +82,7 @@ class _KeysPageState extends State<KeysPage> {
                     return CLSectionListView(
                       items: [
                         SectionListViewItem(
+                          footer: Localized.text('ox_usercenter.public_key_description'),
                           data: [
                             CustomItemModel(
                               title: Localized.text('ox_login.public_key'),
@@ -95,6 +96,11 @@ class _KeysPageState extends State<KeysPage> {
                               ) : CLProgressIndicator.circular(size: 16),
                               onTap: encodedPubkey.isNotEmpty ? pubkeyItemOnTap : null,
                             ),
+                          ],
+                        ),
+                        SectionListViewItem(
+                          footer: Localized.text('ox_usercenter.private_key_description'),
+                          data: [
                             CustomItemModel(
                               title: Localized.text('ox_login.private_key'),
                               subtitleWidget: isLoading 
