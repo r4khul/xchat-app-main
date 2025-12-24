@@ -58,8 +58,9 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
         items: [
           SectionListViewItem(
             headerWidget: _buildHeader(context),
-            data: _buildMainItems(context),
+            data: [],
           ),
+          ..._buildMainItems(context),
         ],
       ),
       isSectionListPage: true,
@@ -253,38 +254,34 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
     );
   }
 
-  List<ListViewItem> _buildMainItems(BuildContext context) {
+  List<SectionListViewItem> _buildMainItems(BuildContext context) {
     return [
-      // My Avatar in Circle
-      // CustomItemModel(
-      //   leading: const Icon(CupertinoIcons.person_crop_circle),
-      //   titleWidget: CLText(Localized.text('ox_usercenter.my_avatar_in_circle')),
-      //   trailing: OXUserAvatar(
-      //     user: Account.sharedInstance.me,
-      //     size: 32.px,
-      //   ),
-      //   onTap: () {
-      //     OXNavigator.pushPage(context, (_) =>
-      //         ProfileSettingsPage(previousPageTitle: widget.title));
-      //   },
-      //   isCupertinoAutoTrailing: true,
-      // ),
       // Relay Server
-      LabelItemModel(
-        icon: ListViewIcon.data(CupertinoIcons.antenna_radiowaves_left_right),
-        title: Localized.text('ox_usercenter.relay_server'),
-        value$: ValueNotifier(widget.circle.relayUrl),
-        onTap: null,
+      SectionListViewItem(
+        footer: Localized.text('ox_usercenter.relay_server_description'),
+        data: [
+          LabelItemModel(
+            icon: ListViewIcon.data(CupertinoIcons.antenna_radiowaves_left_right),
+            title: Localized.text('ox_usercenter.relay_server'),
+            value$: ValueNotifier(widget.circle.relayUrl),
+            onTap: null,
+          ),
+        ],
       ),
       // File Server Setting (Server Settings)
-      CustomItemModel(
-        leading: const Icon(CupertinoIcons.settings),
-        titleWidget: CLText(Localized.text('ox_usercenter.file_server_setting')),
-        onTap: () {
-          OXNavigator.pushPage(context, (_) => FileServerPage(
-            previousPageTitle: widget.title,
-          ));
-        },
+      SectionListViewItem(
+        footer: Localized.text('ox_usercenter.file_server_setting_description'),
+        data: [
+          CustomItemModel(
+            leading: const Icon(CupertinoIcons.settings),
+            titleWidget: CLText(Localized.text('ox_usercenter.file_server_setting')),
+            onTap: () {
+              OXNavigator.pushPage(context, (_) => FileServerPage(
+                previousPageTitle: widget.title,
+              ));
+            },
+          ),
+        ],
       ),
     ];
   }
