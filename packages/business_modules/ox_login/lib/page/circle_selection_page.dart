@@ -7,8 +7,9 @@ import 'package:ox_common/widgets/common_loading.dart';
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import '../controller/onboarding_controller.dart';
+import 'private_relay_upgrade_page.dart';
 
-enum CircleType { public, private }
+enum CircleType { invite, private, custom }
 
 class CircleSelectionPage extends StatefulWidget {
   const CircleSelectionPage({
@@ -38,7 +39,7 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
     return CLScaffold(
       appBar: CLAppBar(),
       body: _buildBody(),
-      bottomWidget: _buildNextButton(),
+      bottomWidget: _buildConnectButton(),
     );
   }
 
@@ -51,7 +52,7 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
       child: Column(
         children: [
           _buildHeader(),
-          SizedBox(height: 48.px),
+          SizedBox(height: 32.px),
           _buildCircleOptions(),
           const Spacer(),
         ],
@@ -63,24 +64,16 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
     return Column(
       children: [
         CLText.titleLarge(
-          Localized.text('ox_login.circle_selection_title'),
+          Localized.text('ox_login.join_circle'),
           colorToken: ColorToken.onSurface,
           textAlign: TextAlign.center,
         ),
         SizedBox(height: 12.px),
         CLText.bodyMedium(
-          Localized.text('ox_login.circle_selection_subtitle'),
+          Localized.text('ox_login.join_circle_subtitle'),
           colorToken: ColorToken.onSurfaceVariant,
           textAlign: TextAlign.center,
           maxLines: null,
-        ).highlighted(
-          rules: [
-            CLHighlightRule(
-              pattern: RegExp(Localized.text('ox_login.learn_more')),
-              onTap: (_) => _showLearnMore(),
-              cursor: SystemMouseCursors.click,
-            ),
-          ],
         ),
       ],
     );
@@ -89,33 +82,122 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
   Widget _buildCircleOptions() {
     return Column(
       children: [
-        _buildCircleOption(
-          icon: Icons.public_rounded,
-          title: Localized.text('ox_login.use_public_circle'),
-          subtitle: Localized.text('ox_login.use_public_circle_desc'),
-          isRecommended: false,
-          isSelected: _selectedCircleType == CircleType.public,
-          onTap: () => setState(() => _selectedCircleType = CircleType.public),
-        ),
+        _buildInviteOption(),
+        SizedBox(height: 24.px),
+        _buildSeparator(),
+        SizedBox(height: 24.px),
+        _buildPrivateCloudOption(),
         SizedBox(height: 16.px),
-        _buildCircleOption(
-          icon: Icons.lock_rounded,
-          title: Localized.text('ox_login.use_private_circle'),
-          subtitle: Localized.text('ox_login.use_private_circle_desc'),
-          isRecommended: true,
-          isSelected: _selectedCircleType == CircleType.private,
-          onTap: () => setState(() => _selectedCircleType = CircleType.private),
+        _buildCustomRelayOption(),
+      ],
+    );
+  }
+
+  Widget _buildInviteOption() {
+    return _buildOptionCard(
+      icon: Icons.qr_code_scanner_rounded,
+      iconColor: ColorToken.xChat.of(context),
+      title: Localized.text('ox_login.i_have_an_invite'),
+      subtitle: Localized.text('ox_login.enter_invitation_code'),
+      showArrow: true,
+      isSelected: _selectedCircleType == CircleType.invite,
+      onTap: () => setState(() => _selectedCircleType = CircleType.invite),
+    );
+  }
+
+  Widget _buildSeparator() {
+    return Row(
+      children: [
+        Expanded(
+          child: Divider(
+            color: ColorToken.onSurfaceVariant.of(context).withValues(alpha: 0.2),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.px),
+          child: CLText.labelSmall(
+            Localized.text('ox_login.or_connect_via'),
+            colorToken: ColorToken.onSurfaceVariant,
+          ),
+        ),
+        Expanded(
+          child: Divider(
+            color: ColorToken.onSurfaceVariant.of(context).withValues(alpha: 0.2),
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildCircleOption({
+  Widget _buildPrivateCloudOption() {
+    return Stack(
+      children: [
+        _buildOptionCard(
+          icon: Icons.workspace_premium,
+          iconColor: ColorToken.xChat.of(context),
+          title: Localized.text('ox_login.private_cloud'),
+          subtitle: Localized.text('ox_login.private_cloud_desc'),
+          showArrow: false,
+          isSelected: _selectedCircleType == CircleType.private,
+          isRecommended: true,
+          tags: [
+            _buildTag(
+              icon: Icons.bolt_rounded,
+              label: Localized.text('ox_login.zero_config'),
+              color: Colors.amber,
+            ),
+            _buildTag(
+              icon: Icons.lock_rounded,
+              label: Localized.text('ox_login.encrypted'),
+              color: Colors.blue,
+            ),
+          ],
+          onTap: () => setState(() => _selectedCircleType = CircleType.private),
+        ),
+        Positioned(
+          top: 0,
+          right: 0,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 8.px, vertical: 4.px),
+            decoration: BoxDecoration(
+              color: Colors.green,
+              borderRadius: BorderRadius.only(
+                topRight: Radius.circular(16.px),
+                bottomLeft: Radius.circular(8.px),
+              ),
+            ),
+            child: CLText.labelSmall(
+              Localized.text('ox_login.recommended'),
+              customColor: Colors.white,
+              isBold: true,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCustomRelayOption() {
+    return _buildOptionCard(
+      icon: Icons.dns_rounded,
+      iconColor: Colors.purple,
+      title: Localized.text('ox_login.custom_relay'),
+      subtitle: Localized.text('ox_login.custom_relay_desc'),
+      showArrow: true,
+      isSelected: _selectedCircleType == CircleType.custom,
+      onTap: () => setState(() => _selectedCircleType = CircleType.custom),
+    );
+  }
+
+  Widget _buildOptionCard({
     required IconData icon,
+    required Color iconColor,
     required String title,
     required String subtitle,
-    required bool isRecommended,
+    required bool showArrow,
     required bool isSelected,
+    bool isRecommended = false,
+    List<Widget>? tags,
     required VoidCallback? onTap,
   }) {
     final isDisabled = onTap == null;
@@ -133,89 +215,96 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
             border: Border.all(
               color: isSelected
                   ? ColorToken.xChat.of(context)
-                  : (isRecommended
-                      ? ColorToken.xChat.of(context).withValues(alpha: 0.3)
-                      : ColorToken.onSurfaceVariant.of(context).withValues(alpha: 0.2)),
+                  : ColorToken.onSurfaceVariant.of(context).withValues(alpha: 0.2),
               width: isSelected ? 2 : 1,
             ),
           ),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 56.px,
-                height: 56.px,
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? ColorToken.xChat.of(context).withValues(alpha: 0.15)
-                      : ColorToken.xChat.of(context).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12.px),
-                ),
-                child: Icon(
-                  icon,
-                  size: 28.px,
-                  color: ColorToken.xChat.of(context),
-                ),
-              ),
-              SizedBox(width: 16.px),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+              Row(
+                children: [
+                  Container(
+                    width: 56.px,
+                    height: 56.px,
+                    decoration: BoxDecoration(
+                      color: iconColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12.px),
+                    ),
+                    child: Icon(
+                      icon,
+                      size: 28.px,
+                      color: iconColor,
+                    ),
+                  ),
+                  SizedBox(width: 16.px),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Flexible(
-                          child: CLText.titleMedium(
-                            title,
-                            colorToken: ColorToken.onSurface,
-                          ),
+                        CLText.titleMedium(
+                          title,
+                          colorToken: ColorToken.onSurface,
                         ),
-                        if (isRecommended) ...[
-                          SizedBox(width: 6.px),
-                          Icon(
-                            Icons.star_rounded,
-                            size: 20.px,
-                            color: Colors.amber,
-                          ),
-                        ],
+                        SizedBox(height: 4.px),
+                        CLText.bodySmall(
+                          subtitle,
+                          colorToken: ColorToken.onSurfaceVariant,
+                          maxLines: 2,
+                        ),
                       ],
                     ),
-                    SizedBox(height: 4.px),
-                    CLText.bodySmall(
-                      subtitle,
-                      colorToken: ColorToken.onSurfaceVariant,
-                      maxLines: 2,
+                  ),
+                  if (showArrow) ...[
+                    SizedBox(width: 8.px),
+                    Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 16.px,
+                      color: ColorToken.onSurfaceVariant.of(context),
                     ),
                   ],
-                ),
+                ],
               ),
-              SizedBox(width: 8.px),
-              // Radio button indicator
-              Container(
-                width: 24.px,
-                height: 24.px,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isSelected
-                        ? ColorToken.xChat.of(context)
-                        : ColorToken.onSurfaceVariant.of(context),
-                    width: 2,
-                  ),
-                  color: isSelected
-                      ? ColorToken.xChat.of(context)
-                      : Colors.transparent,
+              if (tags != null && tags.isNotEmpty) ...[
+                SizedBox(height: 12.px),
+                Wrap(
+                  spacing: 8.px,
+                  runSpacing: 8.px,
+                  children: tags,
                 ),
-                child: isSelected
-                    ? Icon(
-                        Icons.check,
-                        size: 16.px,
-                        color: Colors.white,
-                      )
-                    : null,
-              ),
+              ],
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildTag({
+    required IconData icon,
+    required String label,
+    required Color color,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.px, vertical: 4.px),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8.px),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 14.px,
+            color: color,
+          ),
+          SizedBox(width: 4.px),
+          CLText.labelSmall(
+            label,
+            customColor: color,
+          ),
+        ],
       ),
     );
   }
@@ -285,33 +374,51 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
   void _showLearnMore() {
     OXNavigator.pushPage(
       context,
-          (context) => const CircleIntroductionPage(),
+      (context) => const CircleIntroductionPage(),
       type: OXPushPageType.present,
     );
   }
 
-  Widget _buildNextButton() {
-    return CLButton.filled(
-      text: Localized.text('ox_common.next'),
-      onTap: _selectedCircleType != null && !_isProcessing ? _onNextTap : null,
-      expanded: true,
-      height: 48.px,
+  Widget _buildConnectButton() {
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: CLLayout.horizontalPadding,
+        vertical: 16.px,
+      ),
+      child: CLButton.filled(
+        text: Localized.text('ox_login.connect'),
+        onTap: _selectedCircleType != null && !_isProcessing ? _onConnectTap : null,
+        expanded: true,
+        height: 48.px,
+      ),
     );
   }
 
-  Future<void> _onNextTap() async {
-    if (_selectedCircleType == CircleType.public) {
-      await _onUsePublicCircle();
+  Future<void> _onConnectTap() async {
+    if (_selectedCircleType == CircleType.invite) {
+      await _onUseInvite();
     } else if (_selectedCircleType == CircleType.private) {
       await _onUsePrivateCircle();
+    } else if (_selectedCircleType == CircleType.custom) {
+      await _onUseCustomRelay();
     }
   }
 
-  Future<void> _onUsePublicCircle() async {
+  Future<void> _onUseInvite() async {
+    // Show dialog to enter invite code
+    final inviteCode = await _showInviteCodeDialog();
+    if (inviteCode == null || inviteCode.isEmpty) return;
+
     setState(() => _isProcessing = true);
     OXLoading.show();
 
-    final result = await _controller.joinPublicCircle();
+    // Process invite code
+    // TODO: Implement invite code processing
+    // For now, treat it as a relay URL
+    final result = await _controller.joinPrivateCircle(
+      relayUrl: inviteCode,
+      context: context,
+    );
     _handleOnboardingResult(result);
     
     if (mounted) {
@@ -320,6 +427,19 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
   }
 
   Future<void> _onUsePrivateCircle() async {
+    // Navigate to payment/upgrade page as modal
+    OXNavigator.pushPage(
+      context,
+      (context) => PrivateRelayUpgradePage(
+        groupId: null, // Will be set after payment
+      ),
+      type: OXPushPageType.present,
+      fullscreenDialog: true,
+    );
+  }
+
+  Future<void> _onUseCustomRelay() async {
+    // Show dialog directly
     final relayUrl = await _showAddCircleDialog();
     if (relayUrl == null || relayUrl.isEmpty) return;
 
@@ -335,6 +455,24 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
     if (mounted) {
       setState(() => _isProcessing = false);
     }
+  }
+
+  Future<String?> _showInviteCodeDialog() async {
+    return await CLDialog.showInputDialog(
+      context: context,
+      title: Localized.text('ox_login.enter_invitation_code'),
+      description: Localized.text('ox_login.enter_invitation_code_desc'),
+      inputLabel: Localized.text('ox_login.invitation_code'),
+      confirmText: Localized.text('ox_common.confirm'),
+      onConfirm: (input) async {
+        final trimmedInput = input.trim();
+        if (trimmedInput.isEmpty) {
+          CommonToast.instance.show(context, Localized.text('ox_login.invitation_code_empty'));
+          return false;
+        }
+        return true;
+      },
+    );
   }
 
   void _handleOnboardingResult(OnboardingResult result) {
@@ -360,6 +498,7 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
       description: null,
       descriptionWidget: _buildCircleDialogDescription(),
       inputLabel: Localized.text('ox_login.circle_url_placeholder'),
+      initialValue: 'damus',
       confirmText: Localized.text('ox_login.join'),
       onConfirm: (input) async {
         final trimmedInput = input.trim();

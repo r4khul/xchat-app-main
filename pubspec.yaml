@@ -31,7 +31,7 @@ dependencies:
   cupertino_icons: ^1.0.0
   encrypt: ^5.0.3
   http_parser: 4.0.2
-  pay: ^3.3.0
+  in_app_purchase: ^3.2.3
   # Isar database - Required for code generation (build_runner)
   # Even though isar_flutter_libs already includes isar as a dependency,
   # we need to explicitly declare it here to enable the generator functionality

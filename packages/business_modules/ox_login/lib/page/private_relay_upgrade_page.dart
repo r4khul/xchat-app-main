@@ -21,6 +21,8 @@ class SubscriptionPlan {
   final double yearlyPrice;
   final Color cardColor;
   final bool isPopular;
+  final String monthlyProductId; // Product ID for monthly subscription
+  final String yearlyProductId; // Product ID for yearly subscription
 
   const SubscriptionPlan({
     required this.id,
@@ -31,6 +33,8 @@ class SubscriptionPlan {
     required this.monthlyPrice,
     required this.yearlyPrice,
     required this.cardColor,
+    required this.monthlyProductId,
+    required this.yearlyProductId,
     this.isPopular = false,
   });
 
@@ -54,6 +58,12 @@ class SubscriptionPlan {
     return period == SubscriptionPeriod.monthly
         ? '2592000' // 30 days
         : '31536000'; // 365 days
+  }
+
+  String getProductId(SubscriptionPeriod period) {
+    return period == SubscriptionPeriod.monthly
+        ? monthlyProductId
+        : yearlyProductId;
   }
 
   int getLevel() {
@@ -97,6 +107,8 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
       monthlyPrice: 1.99,
       yearlyPrice: 19.99, // ~$1.67/month with 17% discount
       cardColor: Color(0xFFFFE5F1), // Pink
+      monthlyProductId: 'com.oxchat.lite.subscription.level1.monthly',
+      yearlyProductId: 'com.oxchat.lite.subscription.level1.yearly',
     ),
     SubscriptionPlan(
       id: 'family',
@@ -108,6 +120,8 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
       yearlyPrice: 59.99, // ~$5.00/month with 17% discount
       cardColor: Color(0xFFE5F0FF), // Blue
       isPopular: true,
+      monthlyProductId: 'com.oxchat.lite.subscription.level2.monthly',
+      yearlyProductId: 'com.oxchat.lite.subscription.level2.yearly',
     ),
     SubscriptionPlan(
       id: 'community',
@@ -118,6 +132,8 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
       monthlyPrice: 19.99,
       yearlyPrice: 199.99, // ~$16.67/month with 17% discount
       cardColor: Color(0xFFF0E5FF), // Purple
+      monthlyProductId: 'com.oxchat.lite.subscription.level3.monthly',
+      yearlyProductId: 'com.oxchat.lite.subscription.level3.yearly',
     ),
   ];
 
@@ -545,6 +561,7 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
         level: _selectedPlan!.getLevel(),
         levelPeriod: _selectedPlan!.getLevelPeriod(_selectedPeriod),
         amount: _selectedPlan!.getAmountInCents(_selectedPeriod),
+        productId: _selectedPlan!.getProductId(_selectedPeriod),
         previousPageTitle: Localized.text('ox_login.private_relay'),
       ),
     );

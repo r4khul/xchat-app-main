@@ -3,15 +3,14 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:pay/pay.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:chatcore/chat-core.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 
-/// Payment page for private relay subscription using Apple Pay or Google Pay
+/// Payment page for private relay subscription using App Store / Google Play in-app purchases
 class RelayPaymentPage extends StatefulWidget {
   const RelayPaymentPage({
     super.key,
@@ -19,6 +18,7 @@ class RelayPaymentPage extends StatefulWidget {
     required this.level,
     required this.levelPeriod,
     required this.amount,
+    required this.productId, // Product ID from App Store Connect / Google Play Console
     this.previousPageTitle,
   });
 
@@ -26,6 +26,7 @@ class RelayPaymentPage extends StatefulWidget {
   final int level;
   final String levelPeriod;
   final int amount; // Amount in cents (USD)
+  final String productId; // Subscription product ID
   final String? previousPageTitle;
 
   @override
@@ -33,76 +34,131 @@ class RelayPaymentPage extends StatefulWidget {
 }
 
 class _RelayPaymentPageState extends State<RelayPaymentPage> {
-  Future<PaymentConfiguration>? _applePayConfigFuture;
-  Future<PaymentConfiguration>? _googlePayConfigFuture;
+  final InAppPurchase _inAppPurchase = InAppPurchase.instance;
+  late StreamSubscription<List<PurchaseDetails>> _subscription;
+  List<ProductDetails> _products = [];
+  bool _isAvailable = false;
   bool _isProcessing = false;
-  StreamSubscription? _paymentResultSubscription;
+  bool _purchasePending = false;
+  String? _queryProductError;
 
   @override
   void initState() {
     super.initState();
-    _loadPaymentConfigs();
-    _setupPaymentResultListener();
+    final Stream<List<PurchaseDetails>> purchaseUpdated =
+        _inAppPurchase.purchaseStream;
+    _subscription = purchaseUpdated.listen((List<PurchaseDetails> purchaseDetailsList) {
+      _listenToPurchaseUpdated(purchaseDetailsList);
+    }, onDone: () {
+      _subscription.cancel();
+    }, onError: (Object error) {
+      // Handle error here.
+      _handleError(error);
+    });
+    initStoreInfo();
   }
 
-  void _loadPaymentConfigs() {
-    if (Platform.isIOS) {
-      _applePayConfigFuture = PaymentConfiguration.fromAsset('payment_configs/apple_pay_config.json');
-    } else if (Platform.isAndroid) {
-      _googlePayConfigFuture = PaymentConfiguration.fromAsset('payment_configs/google_pay_config.json');
+  Future<void> initStoreInfo() async {
+    final bool isAvailable = await _inAppPurchase.isAvailable();
+    if (!isAvailable) {
+      setState(() {
+        _isAvailable = isAvailable;
+        _products = [];
+        _queryProductError = 'Store not available';
+      });
+      return;
     }
-  }
 
-  void _setupPaymentResultListener() {
-    // Android only: Listen to payment results via event channel
-    if (Platform.isAndroid) {
-      const eventChannel = EventChannel('plugins.flutter.io/pay/payment_result');
-      _paymentResultSubscription = eventChannel
-          .receiveBroadcastStream()
-          .map((result) => jsonDecode(result as String) as Map<String, dynamic>)
-          .listen(
-            (result) => _handlePaymentResult(result),
-            onError: (error) => _handlePaymentError(error),
-          );
+    final ProductDetailsResponse productDetailResponse =
+        await _inAppPurchase.queryProductDetails({widget.productId});
+    if (productDetailResponse.error != null) {
+      setState(() {
+        _queryProductError = productDetailResponse.error!.message;
+        _isAvailable = isAvailable;
+        _products = productDetailResponse.productDetails;
+      });
+      return;
     }
+
+    if (productDetailResponse.productDetails.isEmpty) {
+      setState(() {
+        _queryProductError = 'Product not found';
+        _isAvailable = isAvailable;
+        _products = productDetailResponse.productDetails;
+      });
+      return;
+    }
+
+    setState(() {
+      _isAvailable = isAvailable;
+      _products = productDetailResponse.productDetails;
+      _queryProductError = null;
+    });
   }
 
   @override
   void dispose() {
-    _paymentResultSubscription?.cancel();
+    _subscription.cancel();
     super.dispose();
   }
 
   String get _title => Localized.text('ox_usercenter.payment');
 
-  List<PaymentItem> get _paymentItems => [
-        PaymentItem(
-          label: Localized.text('ox_usercenter.private_relay_subscription'),
-          amount: (widget.amount / 100).toStringAsFixed(2),
-          status: PaymentItemStatus.final_price,
-        ),
-      ];
+  Future<void> _listenToPurchaseUpdated(
+      List<PurchaseDetails> purchaseDetailsList) async {
+    for (final PurchaseDetails purchaseDetails in purchaseDetailsList) {
+      if (purchaseDetails.status == PurchaseStatus.pending) {
+        setState(() {
+          _purchasePending = true;
+        });
+      } else {
+        if (purchaseDetails.status == PurchaseStatus.error) {
+          _handleError(purchaseDetails.error!);
+        } else if (purchaseDetails.status == PurchaseStatus.purchased ||
+            purchaseDetails.status == PurchaseStatus.restored) {
+          await _handlePurchaseSuccess(purchaseDetails);
+        }
+        if (purchaseDetails.pendingCompletePurchase) {
+          await _inAppPurchase.completePurchase(purchaseDetails);
+        }
+        setState(() {
+          _purchasePending = false;
+        });
+      }
+    }
+  }
 
-  Future<void> _handleApplePayResult(paymentResult) async {
+  Future<void> _handlePurchaseSuccess(PurchaseDetails purchaseDetails) async {
     if (!mounted) return;
-    
+
     try {
       setState(() => _isProcessing = true);
-      
-      // Extract payment token from result
-      final paymentData = paymentResult as Map<String, dynamic>;
-      final paymentToken = jsonEncode(paymentData);
-      
+
+      // Get receipt/purchase token
+      String receipt = '';
+      if (Platform.isIOS) {
+        // iOS: Get the base64 encoded receipt
+        receipt = purchaseDetails.verificationData.source;
+      } else if (Platform.isAndroid) {
+        // Android: Get the purchase token
+        receipt = purchaseDetails.verificationData.serverVerificationData;
+      }
+
       // Create payment on server
-      final paymentResponse = await RelayGroup.sharedInstance.createApplePayPayment(
+      final paymentResponse = await RelayGroup.sharedInstance.createInAppPurchasePayment(
         widget.groupId,
         widget.level,
         widget.levelPeriod,
         widget.amount,
-        paymentToken,
+        receipt,
+        Platform.isIOS ? 'ios' : 'android',
       );
 
       if (paymentResponse != null && mounted) {
+        // Complete the purchase
+        if (purchaseDetails.pendingCompletePurchase) {
+          await _inAppPurchase.completePurchase(purchaseDetails);
+        }
         // Check payment status
         await _checkPaymentStatus(paymentResponse.id);
       }
@@ -117,49 +173,26 @@ class _RelayPaymentPageState extends State<RelayPaymentPage> {
     }
   }
 
-  Future<void> _handleGooglePayResult(paymentResult) async {
-    if (!mounted) return;
-    
-    try {
-      setState(() => _isProcessing = true);
-      
-      // Extract payment token from result
-      final paymentData = paymentResult as Map<String, dynamic>;
-      final paymentToken = jsonEncode(paymentData);
-      
-      // Create payment on server
-      final paymentResponse = await RelayGroup.sharedInstance.createGooglePayPayment(
-        widget.groupId,
-        widget.level,
-        widget.levelPeriod,
-        widget.amount,
-        paymentToken,
-      );
-
-      if (paymentResponse != null && mounted) {
-        // Check payment status
-        await _checkPaymentStatus(paymentResponse.id);
-      }
-    } catch (e) {
-      if (mounted) {
-        _showError('Failed to process payment: $e');
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isProcessing = false);
-      }
-    }
-  }
-
-  void _handlePaymentResult(Map<String, dynamic> result) {
-    // Android payment result handler
-    _handleGooglePayResult(result);
-  }
-
-  void _handlePaymentError(dynamic error) {
+  void _handleError(dynamic error) {
     if (mounted) {
-      _showError('Payment error: $error');
-      setState(() => _isProcessing = false);
+      _showError('Purchase error: ${error.toString()}');
+      setState(() {
+        _isProcessing = false;
+        _purchasePending = false;
+      });
+    }
+  }
+
+  Future<void> _buyProduct(ProductDetails productDetails) async {
+    final PurchaseParam purchaseParam = PurchaseParam(
+      productDetails: productDetails,
+    );
+
+    if (productDetails.id == widget.productId) {
+      setState(() => _isProcessing = true);
+      // For subscriptions, use buyNonConsumable
+      // The platform will handle subscription vs one-time purchase based on product type
+      await _inAppPurchase.buyNonConsumable(purchaseParam: purchaseParam);
     }
   }
 
@@ -173,25 +206,26 @@ class _RelayPaymentPageState extends State<RelayPaymentPage> {
           widget.groupId,
           paymentId,
         );
-        
+
         if (paymentResponse?.status == 'settled') {
           if (mounted) {
             _showSuccess();
             Navigator.of(context).pop(true);
           }
           return;
-        } else if (paymentResponse?.status == 'expired' || 
-                   paymentResponse?.status == 'canceled') {
+        } else if (paymentResponse?.status == 'expired' ||
+            paymentResponse?.status == 'canceled') {
           if (mounted) {
             _showError('Payment ${paymentResponse?.status}');
           }
           return;
         }
       }
-      
+
       // Timeout
       if (mounted) {
-        _showError('Payment verification timeout. Please check your subscription status.');
+        _showError(
+            'Payment verification timeout. Please check your subscription status.');
       }
     } catch (e) {
       if (mounted) {
@@ -201,7 +235,8 @@ class _RelayPaymentPageState extends State<RelayPaymentPage> {
   }
 
   void _showSuccess() {
-    CommonToast.instance.show(context, Localized.text('ox_usercenter.payment_success'));
+    CommonToast.instance.show(
+        context, Localized.text('ox_usercenter.payment_success'));
   }
 
   void _showError(String message) {
@@ -215,7 +250,7 @@ class _RelayPaymentPageState extends State<RelayPaymentPage> {
         title: _title,
         previousPageTitle: widget.previousPageTitle,
       ),
-      body: _isProcessing
+      body: _isProcessing || _purchasePending
           ? const Center(child: CircularProgressIndicator())
           : _buildPaymentContent(),
     );
@@ -229,8 +264,12 @@ class _RelayPaymentPageState extends State<RelayPaymentPage> {
         children: [
           _buildPaymentSummary(),
           SizedBox(height: 24.px),
-          if (Platform.isIOS) _buildApplePayButton(),
-          if (Platform.isAndroid) _buildGooglePayButton(),
+          if (_queryProductError != null)
+            _buildErrorWidget(_queryProductError!)
+          else if (_products.isEmpty)
+            _buildLoadingWidget()
+          else
+            _buildPurchaseButton(),
         ],
       ),
     );
@@ -252,20 +291,49 @@ class _RelayPaymentPageState extends State<RelayPaymentPage> {
             SizedBox(height: 8.px),
             _buildSummaryRow(
               Localized.text('ox_usercenter.subscription_period'),
-              widget.levelPeriod,
+              _formatPeriod(widget.levelPeriod),
             ),
+            SizedBox(height: 8.px),
+            if (_products.isNotEmpty)
+              _buildSummaryRow(
+                'Product',
+                _products.first.title,
+              ),
             SizedBox(height: 8.px),
             Divider(),
             SizedBox(height: 8.px),
             _buildSummaryRow(
               Localized.text('ox_usercenter.total'),
-              '\$${(widget.amount / 100).toStringAsFixed(2)}',
+              _products.isNotEmpty
+                  ? _products.first.price
+                  : '\$${(widget.amount / 100).toStringAsFixed(2)}',
               isTotal: true,
             ),
           ],
         ),
       ),
     );
+  }
+
+  String _formatPeriod(String periodInSeconds) {
+    try {
+      final seconds = int.parse(periodInSeconds);
+      if (seconds >= 31536000) {
+        // 365 days
+        return '1 year';
+      } else if (seconds >= 2592000) {
+        // 30 days
+        final months = (seconds / 2592000).round();
+        return '$months ${months == 1 ? 'month' : 'months'}';
+      } else if (seconds >= 86400) {
+        // 1 day
+        final days = (seconds / 86400).round();
+        return '$days ${days == 1 ? 'day' : 'days'}';
+      }
+      return periodInSeconds;
+    } catch (e) {
+      return periodInSeconds;
+    }
   }
 
   Widget _buildSummaryRow(String label, String value, {bool isTotal = false}) {
@@ -281,63 +349,45 @@ class _RelayPaymentPageState extends State<RelayPaymentPage> {
     );
   }
 
-  Widget _buildApplePayButton() {
-    return FutureBuilder<PaymentConfiguration>(
-      future: _applePayConfigFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        
-        if (snapshot.hasError || !snapshot.hasData) {
-          return CLButton.filled(
-            text: Localized.text('ox_usercenter.apple_pay_unavailable'),
-            onTap: null,
-          );
-        }
-
-        return ApplePayButton(
-          paymentConfiguration: snapshot.data!,
-          paymentItems: _paymentItems,
-          style: ApplePayButtonStyle.black,
-          type: ApplePayButtonType.buy,
-          margin: const EdgeInsets.only(top: 15.0),
-          onPaymentResult: _handleApplePayResult,
-          loadingIndicator: const Center(
-            child: CircularProgressIndicator(),
-          ),
-        );
-      },
+  Widget _buildLoadingWidget() {
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.all(32.0),
+        child: CircularProgressIndicator(),
+      ),
     );
   }
 
-  Widget _buildGooglePayButton() {
-    return FutureBuilder<PaymentConfiguration>(
-      future: _googlePayConfigFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        
-        if (snapshot.hasError || !snapshot.hasData) {
-          return CLButton.filled(
-            text: Localized.text('ox_usercenter.google_pay_unavailable'),
-            onTap: null,
-          );
-        }
+  Widget _buildErrorWidget(String error) {
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.all(16.px),
+        child: Column(
+          children: [
+            CLText.bodyMedium(
+              'Error: $error',
+              customColor: Colors.red,
+            ),
+            SizedBox(height: 16.px),
+            CLButton.filled(
+              text: 'Retry',
+              onTap: () => initStoreInfo(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-        return GooglePayButton(
-          paymentConfiguration: snapshot.data!,
-          paymentItems: _paymentItems,
-          type: GooglePayButtonType.buy,
-          margin: const EdgeInsets.only(top: 15.0),
-          onPaymentResult: _handleGooglePayResult,
-          loadingIndicator: const Center(
-            child: CircularProgressIndicator(),
-          ),
-        );
-      },
+  Widget _buildPurchaseButton() {
+    final product = _products.first;
+    return CLButton.filled(
+      text: Platform.isIOS
+          ? 'Subscribe with App Store'
+          : 'Subscribe with Google Play',
+      onTap: _isAvailable && !_isProcessing
+          ? () => _buyProduct(product)
+          : null,
     );
   }
 }
-
