@@ -9,8 +9,12 @@ import 'package:ox_common/widgets/avatar.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/navigator/navigator.dart';
+import 'package:ox_common/utils/session_helper.dart';
+import 'package:ox_common/widgets/common_loading.dart';
+import 'package:ox_common/widgets/common_toast.dart';
 import '../../utils/chat_session_utils.dart';
 import '../../utils/block_helper.dart';
+import '../session/chat_message_page.dart';
 import 'user_remark_settings_page.dart';
 
 class ContactUserInfoPage extends StatefulWidget {
@@ -88,8 +92,8 @@ class _ContactUserInfoPageState extends State<ContactUserInfoPage> {
                 ),
               ),
               Visibility(
-                visible: widget.chatId == null && !isCurrentUser,
-                child: _buildSendMsgButton(),
+                visible: widget.chatId == null,
+                child: _buildSendMsgButton(isCurrentUser),
               ),
             ],
           );
@@ -184,7 +188,7 @@ class _ContactUserInfoPageState extends State<ContactUserInfoPage> {
     }
   }
 
-  Widget _buildSendMsgButton() {
+  Widget _buildSendMsgButton([bool isSelf = false]) {
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.only(
@@ -193,7 +197,9 @@ class _ContactUserInfoPageState extends State<ContactUserInfoPage> {
           bottom: 12.px,
         ),
         child: CLButton.filled(
-          text: Localized.text('ox_chat.send_message'),
+          text: isSelf 
+              ? Localized.text('ox_chat.file_transfer_assistant')
+              : Localized.text('ox_chat.send_message'),
           expanded: true,
           onTap: _sendMessage,
         ),
@@ -224,11 +230,78 @@ class _ContactUserInfoPageState extends State<ContactUserInfoPage> {
 
   void _sendMessage() async {
     if (!mounted) return;
-    await ChatSessionUtils.createSecretChatWithConfirmation(
-      context: context,
-      user: user$.value,
-      isPushWithReplace: true,
-    );
+    
+    final currentUserPubkey = LoginManager.instance.currentState.account?.pubkey;
+    final isCurrentUser = currentUserPubkey == user$.value.pubKey;
+    
+    if (isCurrentUser) {
+      // Create self chat (memo/file transfer assistant)
+      _createSelfChat();
+    } else {
+      await ChatSessionUtils.createSecretChatWithConfirmation(
+        context: context,
+        user: user$.value,
+        isPushWithReplace: true,
+      );
+    }
+  }
+
+  void _createSelfChat() async {
+    final myPubkey = LoginManager.instance.currentPubkey;
+    if (myPubkey.isEmpty) {
+      CommonToast.instance.show(context, 'Current account is null');
+      return;
+    }
+
+    final circle = LoginManager.instance.currentCircle;
+    if (circle == null) {
+      CommonToast.instance.show(context, 'Current circle is null');
+      return;
+    }
+
+    OXLoading.show();
+
+    try {
+      // Create group name for self chat
+      String groupName = Localized.text('ox_chat.file_transfer_assistant');
+      
+      // Create MLS group with only current user (self chat)
+      GroupDBISAR? groupDB = await Groups.sharedInstance.createMLSGroup(
+        groupName,
+        '',
+        [myPubkey], // Only current user
+        [myPubkey],
+        [circle.relayUrl],
+        onKeyPackageSelection: (pubkey, availableKeyPackages) =>
+            ChatSessionUtils.onKeyPackageSelection(
+              context: context,
+              pubkey: pubkey,
+              availableKeyPackages: availableKeyPackages,
+            ),
+      );
+
+      if (groupDB == null) {
+        await OXLoading.dismiss();
+        CommonToast.instance.show(context, 'Failed to create memo');
+        return;
+      }
+
+      await OXLoading.dismiss();
+
+      // Create session model using SessionHelper
+      final params = SessionCreateParams.fromGroup(groupDB, user$.value);
+      final sessionModel = await SessionHelper.createSessionModel(params);
+
+      // Navigate to chat page
+      ChatMessagePage.open(
+        context: null,
+        communityItem: sessionModel,
+        isPushWithReplace: true,
+      );
+    } catch (e) {
+      await OXLoading.dismiss();
+      CommonToast.instance.show(context, e.toString());
+    }
   }
 
   void refreshUserProfile() async {
