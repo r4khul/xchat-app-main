@@ -14,6 +14,7 @@ dependencies:
   in_app_review: ^2.0.11
   rate_my_app: ^2.3.2
   pull_to_refresh_notification: ^3.1.0
+  pay: ^3.3.0
 
   ox_module_service:
     path: ../../base_framework/ox_module_service
@@ -43,6 +44,7 @@ flutter:
   assets:
     - assets/images/
     - assets/locale/
+    - ../../../assets/payment_configs/
 #    - assets/theme/
   # To add assets to your plugin package, add an assets section, like this:
   # assets:

@@ -20,6 +20,8 @@ dependencies:
     path: ../../base_framework/ox_module_service
   ox_localizable:
     path: ../../base_framework/ox_localizable
+  ox_usercenter:
+    path: ../ox_usercenter
 
 dev_dependencies:
   flutter_test:
