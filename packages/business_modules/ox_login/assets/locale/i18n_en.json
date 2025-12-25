@@ -104,6 +104,8 @@
   "max_users": "Max Users",
   "storage": "Storage",
   "file_limit": "file limit",
+  "unlimited": "Unlimited",
+  "unlimited_file_server": "Unlimited file server",
   "need_more_users": "Need more users? Contact our team",
   "contact_our_team": "Contact our team",
   "custom_relay": "I want to use a custom relay",

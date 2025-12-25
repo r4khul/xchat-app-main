@@ -8,11 +8,11 @@ import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/login/login_models.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/utils/adapt.dart';
-import 'package:ox_common/utils/circle_join_utils.dart';
 import 'package:ox_common/utils/widget_tool.dart';
 import 'package:ox_common/widgets/common_loading.dart';
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_theme/ox_theme.dart';
+import 'package:ox_login/page/circle_selection_page.dart';
 
 import 'home_header_components.dart';
 import '../widgets/session_list_widget.dart';
@@ -225,11 +225,15 @@ class _HomeScaffoldState extends State<HomeScaffold> {
   void _handleJoinCircle() async {
     isContrastedChild$.value = true;
     debugPrint('HomeScaffold: Join Circle button tapped');
-    final isSuccess = await CircleJoinUtils.showJoinCircleDialog(context: context);
+    // Navigate to circle selection page
+    OXNavigator.pushPage(
+      context,
+      (context) => const CircleSelectionPage(controller: null),
+      type: OXPushPageType.present,
+      fullscreenDialog: true,
+    );
     isContrastedChild$.value = false;
-    if (isSuccess) {
-      isShowExtendBody$.value = false;
-    }
+    isShowExtendBody$.value = false;
   }
 
   void _handleCreatePaidCircle() {

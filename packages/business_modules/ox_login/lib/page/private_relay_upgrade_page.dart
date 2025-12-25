@@ -1,13 +1,19 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:http/http.dart' as http;
 import 'package:ox_common/component.dart';
-import 'package:ox_common/navigator/navigator.dart';
-import 'package:ox_common/page/circle_introduction_page.dart';
+import 'package:ox_common/const/common_constant.dart';
+import 'package:ox_common/login/login_manager.dart';
+import 'package:ox_common/login/login_models.dart';
 import 'package:ox_common/utils/adapt.dart';
+import 'package:ox_common/widgets/common_loading.dart';
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_localizable/ox_localizable.dart';
-import 'package:ox_usercenter/page/payment/relay_payment_page.dart';
 
 enum SubscriptionPeriod { monthly, yearly }
 
@@ -79,6 +85,15 @@ class SubscriptionPlan {
         return 1;
     }
   }
+
+  /// Get file limit display text
+  /// Returns "Unlimited file server" if fileSizeLimitMB is -1, otherwise returns "XMB file limit"
+  String getFileLimitDisplay() {
+    if (fileSizeLimitMB == -1) {
+      return Localized.text('ox_login.unlimited_file_server');
+    }
+    return '${fileSizeLimitMB}MB ${Localized.text('ox_login.file_limit')}';
+  }
 }
 
 class PrivateRelayUpgradePage extends StatefulWidget {
@@ -94,8 +109,13 @@ class PrivateRelayUpgradePage extends StatefulWidget {
 }
 
 class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
+  final InAppPurchase _inAppPurchase = InAppPurchase.instance;
+  late StreamSubscription<List<PurchaseDetails>> _subscription;
   SubscriptionPeriod _selectedPeriod = SubscriptionPeriod.monthly;
   SubscriptionPlan? _selectedPlan;
+  bool _isRestoring = false;
+  bool _isProcessing = false;
+  bool _purchasePending = false;
 
   static const List<SubscriptionPlan> _plans = [
     SubscriptionPlan(
@@ -103,7 +123,7 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
       name: 'Lovers & Friends',
       description: 'Perfect for couples or best friends',
       maxUsers: 2,
-      fileSizeLimitMB: 50,
+      fileSizeLimitMB: -1, // -1 means unlimited
       monthlyPrice: 1.99,
       yearlyPrice: 19.99, // ~$1.67/month with 17% discount
       cardColor: Color(0xFFFFE5F1), // Pink
@@ -115,7 +135,7 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
       name: 'Family & Team',
       description: 'Great for small groups and families',
       maxUsers: 6,
-      fileSizeLimitMB: 100,
+      fileSizeLimitMB: -1, // -1 means unlimited
       monthlyPrice: 5.99,
       yearlyPrice: 59.99, // ~$5.00/month with 17% discount
       cardColor: Color(0xFFE5F0FF), // Blue
@@ -128,7 +148,7 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
       name: 'Community',
       description: 'For larger groups and communities',
       maxUsers: 20,
-      fileSizeLimitMB: 200,
+      fileSizeLimitMB: -1, // -1 means unlimited
       monthlyPrice: 19.99,
       yearlyPrice: 199.99, // ~$16.67/month with 17% discount
       cardColor: Color(0xFFF0E5FF), // Purple
@@ -142,6 +162,184 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
     super.initState();
     // Select the popular plan by default
     _selectedPlan = _plans.firstWhere((p) => p.isPopular, orElse: () => _plans[1]);
+    
+    // Listen to purchase updates
+    final Stream<List<PurchaseDetails>> purchaseUpdated = _inAppPurchase.purchaseStream;
+    _subscription = purchaseUpdated.listen(
+      (List<PurchaseDetails> purchaseDetailsList) {
+        _listenToPurchaseUpdated(purchaseDetailsList);
+      },
+      onDone: () {
+        _subscription.cancel();
+      },
+      onError: (Object error) {
+        _handleError(error);
+      },
+    );
+    
+    // Initialize store info
+    _initStoreInfo();
+  }
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+
+  Future<void> _initStoreInfo() async {
+    // Store info will be queried when user taps pay button
+    // No need to pre-fetch here
+  }
+
+  Future<void> _listenToPurchaseUpdated(
+      List<PurchaseDetails> purchaseDetailsList) async {
+    for (final PurchaseDetails purchaseDetails in purchaseDetailsList) {
+      if (purchaseDetails.status == PurchaseStatus.pending) {
+        setState(() {
+          _purchasePending = true;
+        });
+      } else {
+        if (purchaseDetails.status == PurchaseStatus.error) {
+          _handleError(purchaseDetails.error!);
+          // Complete purchase even on error to free up the queue
+          if (purchaseDetails.pendingCompletePurchase) {
+            await _inAppPurchase.completePurchase(purchaseDetails);
+          }
+        } else if (purchaseDetails.status == PurchaseStatus.purchased ||
+            purchaseDetails.status == PurchaseStatus.restored) {
+          // Handle purchase success
+          await _handlePurchaseSuccess(purchaseDetails);
+        }
+        setState(() {
+          _purchasePending = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _handlePurchaseSuccess(PurchaseDetails purchaseDetails) async {
+    if (!mounted || _selectedPlan == null) return;
+
+    try {
+      setState(() => _isProcessing = true);
+      OXLoading.show();
+
+      // Get receipt/purchase token
+      String receipt = purchaseDetails.verificationData.serverVerificationData;
+      if (receipt.isEmpty) {
+        receipt = purchaseDetails.verificationData.source;
+        debugPrint('PrivateRelayUpgradePage: Using source as fallback for receipt');
+      }
+
+      // Call backend API to create subscription and get relay URL
+      final String? relayUrl = await _createSubscriptionAndGetRelayUrl(
+        productId: purchaseDetails.productID,
+        receipt: receipt,
+        level: _selectedPlan!.getLevel(),
+        levelPeriod: _selectedPlan!.getLevelPeriod(_selectedPeriod),
+        amount: _selectedPlan!.getAmountInCents(_selectedPeriod),
+        platform: Platform.isIOS ? 'ios' : 'android',
+      );
+
+      if (relayUrl == null || relayUrl.isEmpty) {
+        throw Exception('Failed to get relay URL from server');
+      }
+
+      // Complete the purchase
+      if (purchaseDetails.pendingCompletePurchase) {
+        await _inAppPurchase.completePurchase(purchaseDetails);
+      }
+
+      // Create and join Circle with the relay URL
+      final failure = await LoginManager.instance.joinCircle(
+        relayUrl,
+        type: CircleType.relay,
+      );
+
+      OXLoading.dismiss();
+
+      if (failure != null) {
+        if (mounted) {
+          CommonToast.instance.show(context, 'Failed to create circle: ${failure.message}');
+        }
+      } else {
+        // Success - show success message and close page
+        if (mounted) {
+          CommonToast.instance.show(
+            context,
+            Localized.text('ox_usercenter.payment_success'),
+          );
+          Navigator.of(context).pop(true);
+        }
+      }
+    } catch (e) {
+      OXLoading.dismiss();
+      // On error, still complete purchase to free up the queue
+      if (purchaseDetails.pendingCompletePurchase) {
+        await _inAppPurchase.completePurchase(purchaseDetails);
+      }
+      if (mounted) {
+        CommonToast.instance.show(context, 'Failed to process payment: $e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
+    }
+  }
+
+  /// Create subscription via backend API and get relay URL
+  Future<String?> _createSubscriptionAndGetRelayUrl({
+    required String productId,
+    required String receipt,
+    required int level,
+    required String levelPeriod,
+    required int amount,
+    required String platform,
+  }) async {
+    try {
+      final String baseApiUrl = CommonConstant.baseUrl;
+      final String type = platform == 'ios' ? 'app_store' : 'google_play';
+      final url = Uri.parse('$baseApiUrl/api/createSubscription');
+
+      final body = {
+        'product_id': productId,
+        'type': type,
+        'level': level,
+        'level_period': levelPeriod,
+        'amount': amount,
+        'receipt': receipt,
+      };
+
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        // API should return relay_url in the response
+        return jsonResponse['relay_url'] as String?;
+      } else {
+        throw Exception('Failed to create subscription: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Failed to create subscription: $e');
+    }
+  }
+
+  void _handleError(dynamic error) {
+    if (mounted) {
+      CommonToast.instance.show(context, 'Purchase error: ${error.toString()}');
+      setState(() {
+        _isProcessing = false;
+        _purchasePending = false;
+      });
+    }
   }
 
   @override
@@ -149,6 +347,13 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
     return CLScaffold(
       appBar: CLAppBar(
         title: Localized.text('ox_login.private_relay'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.restore),
+            tooltip: Localized.text('ox_usercenter.restore_purchases'),
+            onPressed: _isRestoring ? null : _restorePurchases,
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -380,7 +585,7 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
                     SizedBox(width: 16.px),
                     _buildFeature(
                       icon: Icons.attach_file_rounded,
-                      text: '${plan.fileSizeLimitMB}MB ${Localized.text('ox_login.file_limit')}',
+                      text: plan.getFileLimitDisplay(),
                     ),
                   ],
                 ),
@@ -441,11 +646,6 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
             // TODO: Handle contact team
           },
         ),
-        SizedBox(height: 12.px),
-        _buildLink(
-          text: Localized.text('ox_login.custom_relay'),
-          onTap: _showAddCircleDialog,
-        ),
       ],
     );
   }
@@ -492,6 +692,8 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
   Widget _buildPayButton() {
     if (_selectedPlan == null) return const SizedBox.shrink();
 
+    final isEnabled = !_isProcessing && !_purchasePending;
+
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: CLLayout.horizontalPadding,
@@ -507,25 +709,37 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
               width: double.infinity,
               height: 50.px,
               decoration: BoxDecoration(
-                color: Colors.black,
+                color: isEnabled ? Colors.black : Colors.grey,
                 borderRadius: BorderRadius.circular(12.px),
               ),
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: _handlePay,
+                  onTap: isEnabled ? _handlePay : null,
                   borderRadius: BorderRadius.circular(12.px),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.apple,
-                        color: Colors.white,
-                        size: 20.px,
-                      ),
+                      if (_isProcessing || _purchasePending)
+                        SizedBox(
+                          width: 20.px,
+                          height: 20.px,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      else
+                        Icon(
+                          Icons.apple,
+                          color: Colors.white,
+                          size: 20.px,
+                        ),
                       SizedBox(width: 8.px),
                       CLText.titleMedium(
-                        Localized.text('ox_login.pay'),
+                        _isProcessing || _purchasePending
+                            ? Localized.text('ox_usercenter.processing')
+                            : Localized.text('ox_login.pay'),
                         customColor: Colors.white,
                       ),
                     ],
@@ -535,8 +749,10 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
             )
           else
             CLButton.filled(
-              text: Localized.text('ox_login.pay'),
-              onTap: _handlePay,
+              text: _isProcessing || _purchasePending
+                  ? Localized.text('ox_usercenter.processing')
+                  : Localized.text('ox_login.pay'),
+              onTap: isEnabled ? _handlePay : null,
               expanded: true,
               height: 50.px,
             ),
@@ -551,115 +767,133 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
     );
   }
 
-  void _handlePay() {
-    if (_selectedPlan == null || widget.groupId == null) return;
+  Future<void> _handlePay() async {
+    if (_selectedPlan == null) return;
 
-    OXNavigator.pushPage(
-      context,
-      (context) => RelayPaymentPage(
-        groupId: widget.groupId!,
-        level: _selectedPlan!.getLevel(),
-        levelPeriod: _selectedPlan!.getLevelPeriod(_selectedPeriod),
-        amount: _selectedPlan!.getAmountInCents(_selectedPeriod),
-        productId: _selectedPlan!.getProductId(_selectedPeriod),
-        previousPageTitle: Localized.text('ox_login.private_relay'),
-      ),
-    );
+    // Query product details for the selected plan and period
+    final String productId = _selectedPlan!.getProductId(_selectedPeriod);
+    await _queryAndBuyProduct(productId);
   }
 
-  Future<void> _showAddCircleDialog() async {
-    final relayUrl = await CLDialog.showInputDialog(
-      context: context,
-      title: Localized.text('ox_login.add_circle_title'),
-      description: null,
-      descriptionWidget: _buildCircleDialogDescription(),
-      inputLabel: Localized.text('ox_login.circle_url_placeholder'),
-      confirmText: Localized.text('ox_login.join'),
-      onConfirm: (input) async {
-        final trimmedInput = input.trim();
-        if (trimmedInput.isEmpty) {
-          CommonToast.instance.show(context, Localized.text('ox_login.circle_url_empty'));
-          return false;
-        }
-        return true;
-      },
-      belowInputBuilder: (ctx, controller) => _buildCircleHintWidget(ctx, controller),
-    );
+  Future<void> _queryAndBuyProduct(String productId) async {
+    try {
+      setState(() {
+        _isProcessing = true;
+      });
 
-    if (relayUrl != null && relayUrl.isNotEmpty) {
-      // Handle the relay URL - you can navigate back or process it
-      Navigator.of(context).pop(relayUrl);
+      debugPrint('PrivateRelayUpgradePage: Querying product: $productId');
+      debugPrint('PrivateRelayUpgradePage: Platform: ${Platform.isIOS ? "iOS" : "Android"}');
+
+      final bool isAvailable = await _inAppPurchase.isAvailable();
+      if (!isAvailable) {
+        setState(() {
+          _isProcessing = false;
+        });
+        debugPrint('PrivateRelayUpgradePage: Store not available');
+        CommonToast.instance.show(context, 'Store not available');
+        return;
+      }
+
+      debugPrint('PrivateRelayUpgradePage: Store is available, querying product details...');
+      final ProductDetailsResponse productDetailResponse =
+          await _inAppPurchase.queryProductDetails({productId});
+
+      debugPrint('PrivateRelayUpgradePage: Query result - Error: ${productDetailResponse.error?.message ?? "None"}');
+      debugPrint('PrivateRelayUpgradePage: Query result - Products found: ${productDetailResponse.productDetails.length}');
+      if (productDetailResponse.productDetails.isNotEmpty) {
+        debugPrint('PrivateRelayUpgradePage: Product details: ${productDetailResponse.productDetails.first.id} - ${productDetailResponse.productDetails.first.title}');
+      }
+
+      if (productDetailResponse.error != null) {
+        setState(() {
+          _isProcessing = false;
+        });
+        debugPrint('PrivateRelayUpgradePage: Product query error: ${productDetailResponse.error!.message}');
+        CommonToast.instance.show(
+          context,
+          'Error: ${productDetailResponse.error!.message}',
+        );
+        return;
+      }
+
+      if (productDetailResponse.productDetails.isEmpty) {
+        setState(() {
+          _isProcessing = false;
+        });
+        debugPrint('PrivateRelayUpgradePage: Product not found - Product ID: $productId');
+        debugPrint('PrivateRelayUpgradePage: Make sure the product is created and published in ${Platform.isIOS ? "App Store Connect" : "Google Play Console"}');
+        CommonToast.instance.show(
+          context,
+          'Product not found: $productId\nPlease check if the product is configured in ${Platform.isIOS ? "App Store Connect" : "Google Play Console"}',
+        );
+        return;
+      }
+
+      final ProductDetails productDetails = productDetailResponse.productDetails.first;
+      await _buyProduct(productDetails);
+    } catch (e) {
+      setState(() {
+        _isProcessing = false;
+      });
+      CommonToast.instance.show(context, 'Error: $e');
     }
   }
 
-  Widget _buildCircleDialogDescription() {
-    return Text.rich(
-      TextSpan(
-        children: [
-          TextSpan(
-            text: Localized.text('ox_login.add_circle_description'),
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: ColorToken.onSurfaceVariant.of(context),
-            ),
-          ),
-          const TextSpan(text: ' '),
-          WidgetSpan(
-            alignment: PlaceholderAlignment.middle,
-            child: GestureDetector(
-              onTap: _showLearnMore,
-              child: Text(
-                Localized.text('ox_login.what_is_circle'),
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: ColorToken.xChat.of(context),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+  Future<void> _buyProduct(ProductDetails productDetails) async {
+    try {
+      debugPrint('PrivateRelayUpgradePage: Starting purchase for ${productDetails.id}');
+      setState(() => _isProcessing = true);
+
+      final PurchaseParam purchaseParam = PurchaseParam(
+        productDetails: productDetails,
+      );
+
+      // Use buyNonConsumable for subscriptions (the system recognizes subscription products)
+      final bool success = await _inAppPurchase.buyNonConsumable(
+        purchaseParam: purchaseParam,
+      );
+
+      debugPrint('PrivateRelayUpgradePage: Purchase initiated, success: $success');
+
+      if (!success) {
+        if (mounted) {
+          setState(() => _isProcessing = false);
+          CommonToast.instance.show(
+            context,
+            'Failed to initiate purchase. Please try again.',
+          );
+        }
+      }
+      // Purchase status will be handled by _listenToPurchaseUpdated
+    } catch (e, stackTrace) {
+      debugPrint('PrivateRelayUpgradePage: Purchase error: $e');
+      debugPrint('PrivateRelayUpgradePage: Stack trace: $stackTrace');
+      if (mounted) {
+        setState(() => _isProcessing = false);
+        CommonToast.instance.show(context, 'Purchase error: $e');
+      }
+    }
   }
 
-  Widget _buildCircleHintWidget(BuildContext context, TextEditingController controller) {
-    return Padding(
-      padding: EdgeInsets.only(top: 8.px),
-      child: CLText.bodySmall(
-        Localized.text('ox_login.circle_url_hint'),
-        colorToken: ColorToken.onSurfaceVariant,
-        maxLines: null,
-      ).highlighted(
-        rules: [
-          CLHighlightRule(
-            pattern: RegExp(r'0xchat'),
-            onTap: (match) {
-              controller.text = '0xchat';
-              controller.selection = TextSelection.fromPosition(
-                TextPosition(offset: controller.text.length),
-              );
-            },
-            cursor: SystemMouseCursors.click,
-          ),
-          CLHighlightRule(
-            pattern: RegExp(r'damus'),
-            onTap: (match) {
-              controller.text = 'damus';
-              controller.selection = TextSelection.fromPosition(
-                TextPosition(offset: controller.text.length),
-              );
-            },
-            cursor: SystemMouseCursors.click,
-          ),
-        ],
-      ),
-    );
+  Future<void> _restorePurchases() async {
+    try {
+      setState(() => _isRestoring = true);
+      await _inAppPurchase.restorePurchases();
+      // Restored purchases will be delivered via purchaseStream
+      // and handled by _listenToPurchaseUpdated
+      if (mounted) {
+        CommonToast.instance.show(context, Localized.text('ox_usercenter.restoring_purchases'));
+      }
+    } catch (e) {
+      if (mounted) {
+        CommonToast.instance.show(context, 'Failed to restore purchases: $e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isRestoring = false);
+      }
+    }
   }
 
-  void _showLearnMore() {
-    OXNavigator.pushPage(
-      context,
-      (context) => const CircleIntroductionPage(),
-      type: OXPushPageType.present,
-    );
-  }
 }
 

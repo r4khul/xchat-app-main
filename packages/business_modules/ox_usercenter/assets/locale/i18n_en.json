@@ -134,5 +134,10 @@
   "private_relay_subscription": "Private Relay Subscription",
   "payment_success": "Payment successful",
   "apple_pay_unavailable": "Apple Pay Unavailable",
-  "google_pay_unavailable": "Google Pay Unavailable"
+  "google_pay_unavailable": "Google Pay Unavailable",
+  "restore_purchases": "Restore Purchases",
+  "restoring_purchases": "Restoring purchases...",
+  "subscribe_with_app_store": "Subscribe with App Store",
+  "subscribe_with_google_play": "Subscribe with Google Play",
+  "processing": "Processing..."
 }

@@ -3,6 +3,7 @@ import 'package:ox_common/component.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/page/circle_introduction_page.dart';
 import 'package:ox_common/utils/adapt.dart';
+import 'package:ox_common/utils/circle_join_utils.dart';
 import 'package:ox_common/widgets/common_loading.dart';
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_localizable/ox_localizable.dart';
@@ -14,10 +15,10 @@ enum CircleType { invite, private, custom }
 class CircleSelectionPage extends StatefulWidget {
   const CircleSelectionPage({
     super.key,
-    required this.controller,
+    this.controller,
   });
 
-  final OnboardingController controller;
+  final OnboardingController? controller;
 
   @override
   State<CircleSelectionPage> createState() => _CircleSelectionPageState();
@@ -27,7 +28,7 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
   bool _isProcessing = false;
   CircleType? _selectedCircleType;
 
-  OnboardingController get _controller => widget.controller;
+  OnboardingController? get _controller => widget.controller;
 
   @override
   void initState() {
@@ -412,17 +413,33 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
     setState(() => _isProcessing = true);
     OXLoading.show();
 
-    // Process invite code
-    // TODO: Implement invite code processing
-    // For now, treat it as a relay URL
-    final result = await _controller.joinPrivateCircle(
-      relayUrl: inviteCode,
-      context: context,
-    );
-    _handleOnboardingResult(result);
-    
-    if (mounted) {
-      setState(() => _isProcessing = false);
+    try {
+      if (_controller != null) {
+        // Use onboarding controller for new users
+        final result = await _controller!.joinPrivateCircle(
+          relayUrl: inviteCode,
+          context: context,
+        );
+        _handleOnboardingResult(result);
+      } else {
+        // Use CircleJoinUtils for existing users
+        await CircleJoinUtils.processJoinCircle(
+          input: inviteCode,
+          context: context,
+        );
+        if (mounted) {
+          Navigator.of(context).pop(true);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        CommonToast.instance.show(context, e.toString());
+      }
+    } finally {
+      OXLoading.dismiss();
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
     }
   }
 
@@ -446,14 +463,33 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
     setState(() => _isProcessing = true);
     OXLoading.show();
 
-    final result = await _controller.joinPrivateCircle(
-      relayUrl: relayUrl,
-      context: context,
-    );
-    _handleOnboardingResult(result);
-    
-    if (mounted) {
-      setState(() => _isProcessing = false);
+    try {
+      if (_controller != null) {
+        // Use onboarding controller for new users
+        final result = await _controller!.joinPrivateCircle(
+          relayUrl: relayUrl,
+          context: context,
+        );
+        _handleOnboardingResult(result);
+      } else {
+        // Use CircleJoinUtils for existing users
+        await CircleJoinUtils.processJoinCircle(
+          input: relayUrl,
+          context: context,
+        );
+        if (mounted) {
+          Navigator.of(context).pop(true);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        CommonToast.instance.show(context, e.toString());
+      }
+    } finally {
+      OXLoading.dismiss();
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
     }
   }
 

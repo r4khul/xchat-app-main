@@ -13,6 +13,7 @@ dependencies:
 
   url_launcher: ^6.0.12
   qr_flutter: ^4.0.0
+  in_app_purchase: ^3.2.3
 
   ox_common:
     path: ../../base_framework/ox_common
