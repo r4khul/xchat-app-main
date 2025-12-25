@@ -171,5 +171,10 @@
   "start_connecting_description": "¡Todo listo! Tu identidad criptográfica está lista. Comparte tu enlace de invitación con tus amigos para comenzar a chatear de forma segura.",
   "share_invite_link": "Compartir enlace de invitación",
   "get_started": "Comenzar",
-  "invite_friends_hint": "Siempre puedes encontrar esto en \"Invitar amigos\""
+  "invite_friends_hint": "Siempre puedes encontrar esto en \"Invitar amigos\"",
+  "user_remark": "Nota",
+  "set_user_remark": "Establecer nota",
+  "no_remark": "Sin nota",
+  "update_remark_success": "Nota actualizada exitosamente",
+  "update_remark_failed": "Error al actualizar la nota"
 }

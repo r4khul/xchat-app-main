@@ -171,5 +171,10 @@
   "start_connecting_description": "Vše je připraveno! Vaše kryptografická identita je připravena. Sdílejte svůj pozvánkový odkaz s přáteli, abyste mohli začít bezpečně chatovat.",
   "share_invite_link": "Sdílet pozvánkový odkaz",
   "get_started": "Začít",
-  "invite_friends_hint": "Toto vždy najdete v \"Pozvat přátele\""
+  "invite_friends_hint": "Toto vždy najdete v \"Pozvat přátele\"",
+  "user_remark": "Poznámka",
+  "set_user_remark": "Nastavit poznámku",
+  "no_remark": "Žádná poznámka",
+  "update_remark_success": "Poznámka úspěšně aktualizována",
+  "update_remark_failed": "Aktualizace poznámky selhala"
 }

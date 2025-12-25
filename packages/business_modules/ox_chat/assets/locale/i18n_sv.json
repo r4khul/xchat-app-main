@@ -171,5 +171,10 @@
   "start_connecting_description": "Allt klart! Din kryptografiska identitet är redo. Dela din inbjudningslänk med vänner för att börja chatta säkert.",
   "share_invite_link": "Dela inbjudningslänk",
   "get_started": "Kom igång",
-  "invite_friends_hint": "Du kan alltid hitta detta i \"Bjud in vänner\""
+  "invite_friends_hint": "Du kan alltid hitta detta i \"Bjud in vänner\"",
+  "user_remark": "Anteckning",
+  "set_user_remark": "Ange anteckning",
+  "no_remark": "Ingen anteckning",
+  "update_remark_success": "Anteckning uppdaterad",
+  "update_remark_failed": "Uppdatering av anteckning misslyckades"
 }

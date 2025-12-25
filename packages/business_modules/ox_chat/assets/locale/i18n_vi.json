@@ -171,5 +171,10 @@
   "start_connecting_description": "Tất cả đã sẵn sàng! Danh tính mã hóa của bạn đã sẵn sàng. Chia sẻ liên kết mời với bạn bè để bắt đầu trò chuyện an toàn.",
   "share_invite_link": "Chia sẻ liên kết mời",
   "get_started": "Bắt đầu",
-  "invite_friends_hint": "Bạn luôn có thể tìm thấy điều này trong \"Mời bạn bè\""
+  "invite_friends_hint": "Bạn luôn có thể tìm thấy điều này trong \"Mời bạn bè\"",
+  "user_remark": "Ghi chú",
+  "set_user_remark": "Đặt ghi chú",
+  "no_remark": "Không có ghi chú",
+  "update_remark_success": "Cập nhật ghi chú thành công",
+  "update_remark_failed": "Cập nhật ghi chú thất bại"
 }

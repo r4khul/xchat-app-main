@@ -171,5 +171,10 @@
   "start_connecting_description": "Alles klaar! Je cryptografische identiteit is klaar. Deel je uitnodigingslink met vrienden om veilig te beginnen met chatten.",
   "share_invite_link": "Uitnodigingslink delen",
   "get_started": "Aan de slag",
-  "invite_friends_hint": "Je kunt dit altijd vinden in \"Vrienden uitnodigen\""
+  "invite_friends_hint": "Je kunt dit altijd vinden in \"Vrienden uitnodigen\"",
+  "user_remark": "Opmerking",
+  "set_user_remark": "Opmerking instellen",
+  "no_remark": "Geen opmerking",
+  "update_remark_success": "Opmerking succesvol bijgewerkt",
+  "update_remark_failed": "Opmerking bijwerken mislukt"
 }

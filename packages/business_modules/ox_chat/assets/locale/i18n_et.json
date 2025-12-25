@@ -171,5 +171,10 @@
   "start_connecting_description": "Kõik on valmis! Teie krüptograafiline identiteet on valmis. Jagage oma kutselinki sõpradega, et alustada turvalist vestlust.",
   "share_invite_link": "Jaga kutselinki",
   "get_started": "Alusta",
-  "invite_friends_hint": "Selle leiate alati jaotisest \"Kutsu sõpru\""
+  "invite_friends_hint": "Selle leiate alati jaotisest \"Kutsu sõpru\"",
+  "user_remark": "Märkus",
+  "set_user_remark": "Määra märkus",
+  "no_remark": "Märkust pole",
+  "update_remark_success": "Märkus uuendatud edukalt",
+  "update_remark_failed": "Märkuse uuendamine ebaõnnestus"
 }

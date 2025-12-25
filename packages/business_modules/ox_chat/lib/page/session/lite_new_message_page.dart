@@ -15,8 +15,8 @@ import 'package:lpinyin/lpinyin.dart';
 
 import 'select_group_members_page.dart';
 import 'find_people_page.dart';
-import '../../utils/chat_session_utils.dart';
 import 'package:ox_usercenter/page/settings/qr_code_display_page.dart';
+import '../contacts/contact_user_info_page.dart';
 
 class CLNewMessagePage extends StatefulWidget {
   const CLNewMessagePage({super.key});
@@ -468,10 +468,12 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
   }
 
   void _onUserTap(ValueNotifier<UserDBISAR> user$) async {
-    await ChatSessionUtils.createSecretChatWithConfirmation(
-      context: context,
-      user: user$.value,
-      isPushWithReplace: true,
+    // Navigate to user detail page instead of directly creating chat
+    await OXNavigator.pushPage(
+      context,
+      (context) => ContactUserInfoPage(
+        user: user$.value,
+      ),
     );
   }
 

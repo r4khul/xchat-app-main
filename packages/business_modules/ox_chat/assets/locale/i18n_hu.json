@@ -171,5 +171,10 @@
   "start_connecting_description": "Minden kész! A kriptográfiai identitása kész. Ossza meg meghívó linkjét barátaival, hogy biztonságosan kezdjen el csevegni.",
   "share_invite_link": "Meghívó link megosztása",
   "get_started": "Kezdés",
-  "invite_friends_hint": "Ezt mindig megtalálhatja a \"Barátok meghívása\" menüben"
+  "invite_friends_hint": "Ezt mindig megtalálhatja a \"Barátok meghívása\" menüben",
+  "user_remark": "Megjegyzés",
+  "set_user_remark": "Megjegyzés beállítása",
+  "no_remark": "Nincs megjegyzés",
+  "update_remark_success": "Megjegyzés sikeresen frissítve",
+  "update_remark_failed": "Megjegyzés frissítése sikertelen"
 }

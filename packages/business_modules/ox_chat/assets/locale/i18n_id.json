@@ -171,5 +171,10 @@
   "start_connecting_description": "Semuanya siap! Identitas kriptografis Anda siap. Bagikan tautan undangan Anda kepada teman untuk mulai mengobrol dengan aman.",
   "share_invite_link": "Bagikan tautan undangan",
   "get_started": "Mulai",
-  "invite_friends_hint": "Anda selalu dapat menemukan ini di \"Undang teman\""
+  "invite_friends_hint": "Anda selalu dapat menemukan ini di \"Undang teman\"",
+  "user_remark": "Catatan",
+  "set_user_remark": "Atur catatan",
+  "no_remark": "Tidak ada catatan",
+  "update_remark_success": "Catatan berhasil diperbarui",
+  "update_remark_failed": "Gagal memperbarui catatan"
 }

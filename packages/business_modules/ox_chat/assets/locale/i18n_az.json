@@ -171,5 +171,10 @@
   "start_connecting_description": "Hər şey hazırdır! Kriptoqrafik şəxsiyyətiniz hazırdır. Təhlükəsiz söhbətə başlamaq üçün dəvət linkinizi dostlarınızla paylaşın.",
   "share_invite_link": "Dəvət linkini paylaş",
   "get_started": "Başla",
-  "invite_friends_hint": "Bunu həmişə \"Dostları dəvət et\" bölməsində tapa bilərsiniz"
+  "invite_friends_hint": "Bunu həmişə \"Dostları dəvət et\" bölməsində tapa bilərsiniz",
+  "user_remark": "Qeyd",
+  "set_user_remark": "Qeyd təyin et",
+  "no_remark": "Qeyd yoxdur",
+  "update_remark_success": "Qeyd uğurla yeniləndi",
+  "update_remark_failed": "Qeyd yenilənmədi"
 }

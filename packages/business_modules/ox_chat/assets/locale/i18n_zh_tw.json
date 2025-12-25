@@ -181,5 +181,10 @@
   "start_connecting_description": "一切就緒！您的加密身份已準備就緒。分享您的邀請連結給朋友，開始安全聊天。",
   "share_invite_link": "分享邀請連結",
   "get_started": "開始使用",
-  "invite_friends_hint": "您可以在「邀請朋友」中隨時找到此功能"
+  "invite_friends_hint": "您可以在「邀請朋友」中隨時找到此功能",
+  "user_remark": "備註",
+  "set_user_remark": "設置備註",
+  "no_remark": "暫無備註",
+  "update_remark_success": "備註更新成功",
+  "update_remark_failed": "備註更新失敗"
 }

@@ -171,5 +171,10 @@
   "start_connecting_description": "Hazırsınız! Kriptografik kimliğiniz hazır. Güvenli sohbet etmeye başlamak için davet bağlantınızı arkadaşlarınızla paylaşın.",
   "share_invite_link": "Davet Bağlantısını Paylaş",
   "get_started": "Başlayın",
-  "invite_friends_hint": "Bunu \"Arkadaşları Davet Et\" bölümünde her zaman bulabilirsiniz"
+  "invite_friends_hint": "Bunu \"Arkadaşları Davet Et\" bölümünde her zaman bulabilirsiniz",
+  "user_remark": "Not",
+  "set_user_remark": "Not belirle",
+  "no_remark": "Not yok",
+  "update_remark_success": "Not başarıyla güncellendi",
+  "update_remark_failed": "Not güncellenemedi"
 }

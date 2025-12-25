@@ -171,5 +171,10 @@
   "start_connecting_description": "Tudo pronto! Sua identidade criptográfica está pronta. Compartilhe seu link de convite com amigos para começar a conversar com segurança.",
   "share_invite_link": "Compartilhar link de convite",
   "get_started": "Começar",
-  "invite_friends_hint": "Você sempre pode encontrar isso em \"Convidar amigos\""
+  "invite_friends_hint": "Você sempre pode encontrar isso em \"Convidar amigos\"",
+  "user_remark": "Observação",
+  "set_user_remark": "Definir observação",
+  "no_remark": "Sem observação",
+  "update_remark_success": "Observação atualizada com sucesso",
+  "update_remark_failed": "Falha ao atualizar observação"
 }

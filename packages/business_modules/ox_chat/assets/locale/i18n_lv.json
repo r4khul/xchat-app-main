@@ -171,5 +171,10 @@
   "start_connecting_description": "Viss ir gatavs! Jūsu kriptogrāfiskā identitāte ir gatava. Dalieties ar savu uzaicinājuma saiti ar draugiem, lai sāktu droši tērzēt.",
   "share_invite_link": "Dalīties ar uzaicinājuma saiti",
   "get_started": "Sākt",
-  "invite_friends_hint": "Jūs vienmēr varat to atrast sadaļā \"Uzaicināt draugus\""
+  "invite_friends_hint": "Jūs vienmēr varat to atrast sadaļā \"Uzaicināt draugus\"",
+  "user_remark": "Piezīme",
+  "set_user_remark": "Iestatīt piezīmi",
+  "no_remark": "Nav piezīmes",
+  "update_remark_success": "Piezīme veiksmīgi atjaunināta",
+  "update_remark_failed": "Piezīmes atjaunināšana neizdevās"
 }

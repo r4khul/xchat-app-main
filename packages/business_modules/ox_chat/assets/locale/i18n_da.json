@@ -171,5 +171,10 @@
   "start_connecting_description": "Alt er klar! Din kryptografiske identitet er klar. Del dit invitationslink med venner for at begynde at chatte sikkert.",
   "share_invite_link": "Del invitationslink",
   "get_started": "Kom i gang",
-  "invite_friends_hint": "Du kan altid finde dette i \"Inviter venner\""
+  "invite_friends_hint": "Du kan altid finde dette i \"Inviter venner\"",
+  "user_remark": "Bemærkning",
+  "set_user_remark": "Indstil bemærkning",
+  "no_remark": "Ingen bemærkning",
+  "update_remark_success": "Bemærkning opdateret med succes",
+  "update_remark_failed": "Opdatering af bemærkning mislykkedes"
 }

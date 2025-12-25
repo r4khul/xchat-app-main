@@ -171,5 +171,10 @@
   "start_connecting_description": "Tot a punt! La teva identitat criptogràfica està a punt. Comparteix el teu enllaç d'invitació amb els amics per començar a xatejar de forma segura.",
   "share_invite_link": "Compartir enllaç d'invitació",
   "get_started": "Començar",
-  "invite_friends_hint": "Sempre pots trobar això a \"Convida amics\""
+  "invite_friends_hint": "Sempre pots trobar això a \"Convida amics\"",
+  "user_remark": "Nota",
+  "set_user_remark": "Establir nota",
+  "no_remark": "Sense nota",
+  "update_remark_success": "Nota actualitzada correctament",
+  "update_remark_failed": "Error en actualitzar la nota"
 }

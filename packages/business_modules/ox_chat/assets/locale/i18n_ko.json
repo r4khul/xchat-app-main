@@ -171,5 +171,10 @@
   "start_connecting_description": "준비 완료! 암호화된 신원이 준비되었습니다. 안전하게 채팅을 시작하려면 초대 링크를 친구들과 공유하세요.",
   "share_invite_link": "초대 링크 공유",
   "get_started": "시작하기",
-  "invite_friends_hint": "이것은 \"친구 초대\"에서 항상 찾을 수 있습니다"
+  "invite_friends_hint": "이것은 \"친구 초대\"에서 항상 찾을 수 있습니다",
+  "user_remark": "메모",
+  "set_user_remark": "메모 설정",
+  "no_remark": "메모 없음",
+  "update_remark_success": "메모 업데이트 성공",
+  "update_remark_failed": "메모 업데이트 실패"
 }

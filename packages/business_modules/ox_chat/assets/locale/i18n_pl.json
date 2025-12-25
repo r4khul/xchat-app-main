@@ -171,5 +171,10 @@
   "start_connecting_description": "Wszystko gotowe! Twoja tożsamość kryptograficzna jest gotowa. Udostępnij link zaproszenia znajomym, aby rozpocząć bezpieczne czatowanie.",
   "share_invite_link": "Udostępnij link zaproszenia",
   "get_started": "Zacznij",
-  "invite_friends_hint": "Zawsze możesz to znaleźć w \"Zaproś znajomych\""
+  "invite_friends_hint": "Zawsze możesz to znaleźć w \"Zaproś znajomych\"",
+  "user_remark": "Uwaga",
+  "set_user_remark": "Ustaw uwagę",
+  "no_remark": "Brak uwagi",
+  "update_remark_success": "Uwaga zaktualizowana pomyślnie",
+  "update_remark_failed": "Nie udało się zaktualizować uwagi"
 }

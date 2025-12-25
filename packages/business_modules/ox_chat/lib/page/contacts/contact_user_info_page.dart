@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:chatcore/chat-core.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/utils/adapt.dart';
-import 'package:ox_common/utils/string_utils.dart';
 import 'package:ox_common/utils/took_kit.dart';
 import 'package:ox_common/utils/widget_tool.dart';
 import 'package:ox_common/utils/profile_refresh_utils.dart';
 import 'package:ox_common/widgets/avatar.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import 'package:ox_common/login/login_manager.dart';
+import 'package:ox_common/navigator/navigator.dart';
 import '../../utils/chat_session_utils.dart';
 import '../../utils/block_helper.dart';
+import 'user_remark_settings_page.dart';
 
 class ContactUserInfoPage extends StatefulWidget {
   final String? pubkey;
@@ -72,7 +73,7 @@ class _ContactUserInfoPageState extends State<ContactUserInfoPage> {
                   items: [
                     SectionListViewItem(
                       data: [
-                        _buildPubkeyItem(user),
+                        if (!isCurrentUser) _buildRemarkItem(user),
                         // _buildNIP05Item(),
                         _buildBioItem(user),
                       ],
@@ -99,6 +100,7 @@ class _ContactUserInfoPageState extends State<ContactUserInfoPage> {
 
   Widget _buildHeaderWidget(UserDBISAR user) {
     final userName = user.name ?? user.shortEncodedPubkey;
+    final userPubkey = user.encodedPubkey;
     return Column(
       children: [
         OXUserAvatar(
@@ -112,20 +114,22 @@ class _ContactUserInfoPageState extends State<ContactUserInfoPage> {
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
+        SizedBox(height: 4.px),
+        GestureDetector(
+          onTap: () => _copyToClipboard(userPubkey, Localized.text('ox_chat.public_key')),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 56.px),
+            child: CLText.bodySmall(
+              userPubkey,
+              textAlign: TextAlign.center,
+              maxLines: 4,
+              overflow: TextOverflow.ellipsis,
+              colorToken: ColorToken.onSurfaceVariant,
+            ),
+          ),
+        ),
         SizedBox(height: 8.px),
       ],
-    );
-  }
-
-  ListViewItem _buildPubkeyItem(UserDBISAR user) {
-    final userPubkey = user.encodedPubkey;
-    return LabelItemModel(
-      icon: ListViewIcon.data(Icons.key),
-      title: Localized.text('ox_chat.public_key'),
-      isCupertinoAutoTrailing: false,
-      maxLines: 1,
-      value$: ValueNotifier(userPubkey.truncate(24)),
-      onTap: () => _copyToClipboard(userPubkey, Localized.text('ox_chat.public_key')),
     );
   }
 
@@ -141,6 +145,43 @@ class _ContactUserInfoPageState extends State<ContactUserInfoPage> {
       overflow: TextOverflow.fade,
       onTap: null,
     );
+  }
+
+  ListViewItem _buildRemarkItem(UserDBISAR user) {
+    final userRemark = user.nickName ?? '';
+    return LabelItemModel(
+      icon: ListViewIcon.data(Icons.edit_note),
+      title: Localized.text('ox_chat.user_remark'),
+      value$: ValueNotifier(userRemark.isEmpty ? Localized.text('ox_chat.no_remark') : userRemark),
+      overflow: TextOverflow.ellipsis,
+      onTap: () => _navigateToRemarkSettings(user),
+    );
+  }
+
+  void _navigateToRemarkSettings(UserDBISAR user) async {
+    final result = await OXNavigator.pushPage(
+      context,
+      (context) => UserRemarkSettingsPage(
+        user: user,
+        previousPageTitle: Localized.text('ox_chat.user_detail'),
+      ),
+    );
+    // Refresh user data after returning from remark settings
+    if (mounted && result == true) {
+      // Reload user from DB to get updated remark
+      final updatedUser = await Account.sharedInstance.getUserInfo(user.pubKey, false);
+      if (updatedUser != null) {
+        // Update the ValueNotifier to trigger UI refresh
+        Account.sharedInstance.updateOrCreateUserNotifier(updatedUser.pubKey, updatedUser);
+        // Also update allContacts if user is in contacts
+        if (Contacts.sharedInstance.allContacts.containsKey(user.pubKey)) {
+          Contacts.sharedInstance.allContacts[user.pubKey] = updatedUser;
+        }
+        if (mounted) {
+          setState(() {});
+        }
+      }
+    }
   }
 
   Widget _buildSendMsgButton() {

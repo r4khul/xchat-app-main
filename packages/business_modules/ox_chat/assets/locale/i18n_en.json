@@ -181,5 +181,10 @@
   "start_connecting_description": "You're all set! Your cryptographic identity is ready. Share your invite link to your friends to start chatting securely.",
   "share_invite_link": "Share Invite Link",
   "get_started": "Get Started",
-  "invite_friends_hint": "You can always find this in \"Invite Friends\""
+  "invite_friends_hint": "You can always find this in \"Invite Friends\"",
+  "user_remark": "Remark",
+  "set_user_remark": "Set Remark",
+  "no_remark": "No remark",
+  "update_remark_success": "Remark updated successfully",
+  "update_remark_failed": "Failed to update remark"
 }

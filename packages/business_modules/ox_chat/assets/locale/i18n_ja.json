@@ -171,5 +171,10 @@
   "start_connecting_description": "準備完了です！暗号化されたIDの準備ができました。安全にチャットを開始するために、招待リンクを友達と共有してください。",
   "share_invite_link": "招待リンクを共有",
   "get_started": "始める",
-  "invite_friends_hint": "これは「友達を招待」でいつでも見つけることができます"
+  "invite_friends_hint": "これは「友達を招待」でいつでも見つけることができます",
+  "user_remark": "備考",
+  "set_user_remark": "備考を設定",
+  "no_remark": "備考なし",
+  "update_remark_success": "備考の更新に成功しました",
+  "update_remark_failed": "備考の更新に失敗しました"
 }

@@ -171,5 +171,10 @@
   "start_connecting_description": "Alles bereit! Ihre kryptografische Identität ist bereit. Teilen Sie Ihren Einladungslink mit Freunden, um sicher zu chatten.",
   "share_invite_link": "Einladungslink teilen",
   "get_started": "Loslegen",
-  "invite_friends_hint": "Sie finden dies immer unter \"Freunde einladen\""
+  "invite_friends_hint": "Sie finden dies immer unter \"Freunde einladen\"",
+  "user_remark": "Bemerkung",
+  "set_user_remark": "Bemerkung festlegen",
+  "no_remark": "Keine Bemerkung",
+  "update_remark_success": "Bemerkung erfolgreich aktualisiert",
+  "update_remark_failed": "Bemerkung konnte nicht aktualisiert werden"
 }
