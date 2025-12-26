@@ -127,8 +127,8 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
       monthlyPrice: 1.99,
       yearlyPrice: 19.99, // ~$1.67/month with 17% discount
       cardColor: Color(0xFFFFE5F1), // Pink
-      monthlyProductId: 'com.oxchat.lite.subscription.level1.monthly',
-      yearlyProductId: 'com.oxchat.lite.subscription.level1.yearly',
+      monthlyProductId: 'level1.monthly',
+      yearlyProductId: 'level1.yearly',
     ),
     SubscriptionPlan(
       id: 'family',
@@ -140,8 +140,8 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
       yearlyPrice: 59.99, // ~$5.00/month with 17% discount
       cardColor: Color(0xFFE5F0FF), // Blue
       isPopular: true,
-      monthlyProductId: 'com.oxchat.lite.subscription.level2.monthly',
-      yearlyProductId: 'com.oxchat.lite.subscription.level2.yearly',
+      monthlyProductId: 'level2.monthly',
+      yearlyProductId: 'level2.yearly',
     ),
     SubscriptionPlan(
       id: 'community',
@@ -152,8 +152,8 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
       monthlyPrice: 19.99,
       yearlyPrice: 199.99, // ~$16.67/month with 17% discount
       cardColor: Color(0xFFF0E5FF), // Purple
-      monthlyProductId: 'com.oxchat.lite.subscription.level3.monthly',
-      yearlyProductId: 'com.oxchat.lite.subscription.level3.yearly',
+      monthlyProductId: 'level3.monthly',
+      yearlyProductId: 'level3.yearly',
     ),
   ];
 
