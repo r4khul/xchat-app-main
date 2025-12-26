@@ -105,7 +105,8 @@ class PrivateRelayUpgradePage extends StatefulWidget {
   final String? groupId;
 
   @override
-  State<PrivateRelayUpgradePage> createState() => _PrivateRelayUpgradePageState();
+  State<PrivateRelayUpgradePage> createState() =>
+      _PrivateRelayUpgradePageState();
 }
 
 class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
@@ -161,10 +162,12 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
   void initState() {
     super.initState();
     // Select the popular plan by default
-    _selectedPlan = _plans.firstWhere((p) => p.isPopular, orElse: () => _plans[1]);
-    
+    _selectedPlan =
+        _plans.firstWhere((p) => p.isPopular, orElse: () => _plans[1]);
+
     // Listen to purchase updates
-    final Stream<List<PurchaseDetails>> purchaseUpdated = _inAppPurchase.purchaseStream;
+    final Stream<List<PurchaseDetails>> purchaseUpdated =
+        _inAppPurchase.purchaseStream;
     _subscription = purchaseUpdated.listen(
       (List<PurchaseDetails> purchaseDetailsList) {
         _listenToPurchaseUpdated(purchaseDetailsList);
@@ -176,7 +179,7 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
         _handleError(error);
       },
     );
-    
+
     // Initialize store info
     _initStoreInfo();
   }
@@ -229,7 +232,6 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
       String receipt = purchaseDetails.verificationData.serverVerificationData;
       if (receipt.isEmpty) {
         receipt = purchaseDetails.verificationData.source;
-        debugPrint('PrivateRelayUpgradePage: Using source as fallback for receipt');
       }
 
       // Call backend API to create subscription and get relay URL
@@ -261,7 +263,8 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
 
       if (failure != null) {
         if (mounted) {
-          CommonToast.instance.show(context, 'Failed to create circle: ${failure.message}');
+          CommonToast.instance
+              .show(context, 'Failed to create circle: ${failure.message}');
         }
       } else {
         // Success - show success message and close page
@@ -344,33 +347,39 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
 
   @override
   Widget build(BuildContext context) {
-    return CLScaffold(
-      appBar: CLAppBar(
-        title: Localized.text('ox_login.private_relay'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.restore),
-            tooltip: Localized.text('ox_usercenter.restore_purchases'),
-            onPressed: _isRestoring ? null : _restorePurchases,
+    return Stack(
+      children: [
+        CLScaffold(
+          appBar: CLAppBar(
+            title: Localized.text('ox_login.private_relay'),
+            actions: [
+              IconButton(
+                icon: Icon(Icons.restore),
+                tooltip: Localized.text('ox_usercenter.restore_purchases'),
+                onPressed: _isRestoring ? null : _restorePurchases,
+              ),
+            ],
           ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: _buildBody(),
+          body: _buildBody(),
+        ),
+        Positioned(
+          left: CLLayout.horizontalPadding,
+          right: CLLayout.horizontalPadding,
+          bottom: 12.px,
+          child: SafeArea(
+            child: _buildPayButton(),
           ),
-          _buildPayButton(),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildBody() {
     return SingleChildScrollView(
-      padding: EdgeInsets.symmetric(
-        horizontal: CLLayout.horizontalPadding,
-        vertical: 24.px,
+      padding: EdgeInsets.only(
+        left: CLLayout.horizontalPadding,
+        right: CLLayout.horizontalPadding,
+        top: 24.px,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -458,17 +467,15 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 12.px),
         decoration: BoxDecoration(
-          color: isSelected
-              ? ColorToken.surface.of(context)
-              : Colors.transparent,
+          color:
+              isSelected ? ColorToken.surface.of(context) : Colors.transparent,
           borderRadius: BorderRadius.circular(8.px),
         ),
         child: Center(
           child: CLText.titleSmall(
             label,
-            colorToken: isSelected
-                ? ColorToken.onSurface
-                : ColorToken.onSurfaceVariant,
+            colorToken:
+                isSelected ? ColorToken.onSurface : ColorToken.onSurfaceVariant,
             isBold: isSelected,
           ),
         ),
@@ -564,7 +571,9 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: ColorToken.onSurfaceVariant.of(context).withValues(alpha: 0.3),
+                                    color: ColorToken.onSurfaceVariant
+                                        .of(context)
+                                        .withValues(alpha: 0.3),
                                     width: 1.5,
                                   ),
                                 ),
@@ -580,7 +589,8 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
                   children: [
                     _buildFeature(
                       icon: Icons.people_rounded,
-                      text: '${plan.maxUsers} ${Localized.text('ox_login.max_users')}',
+                      text:
+                          '${plan.maxUsers} ${Localized.text('ox_login.max_users')}',
                     ),
                     SizedBox(width: 16.px),
                     _buildFeature(
@@ -694,76 +704,71 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
 
     final isEnabled = !_isProcessing && !_purchasePending;
 
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: CLLayout.horizontalPadding,
-        vertical: 16.px,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildFooterLinks(),
-          SizedBox(height: 24.px),
-          if (Platform.isIOS)
-            Container(
-              width: double.infinity,
-              height: 50.px,
-              decoration: BoxDecoration(
-                color: isEnabled ? Colors.black : Colors.grey,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildFooterLinks(),
+        SizedBox(height: 24.px),
+        if (Platform.isIOS)
+          Container(
+            width: double.infinity,
+            height: 50.px,
+            decoration: BoxDecoration(
+              color: isEnabled ? Colors.black : Colors.grey,
+              borderRadius: BorderRadius.circular(12.px),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: isEnabled ? _handlePay : null,
                 borderRadius: BorderRadius.circular(12.px),
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: isEnabled ? _handlePay : null,
-                  borderRadius: BorderRadius.circular(12.px),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (_isProcessing || _purchasePending)
-                        SizedBox(
-                          width: 20.px,
-                          height: 20.px,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      else
-                        Icon(
-                          Icons.apple,
-                          color: Colors.white,
-                          size: 20.px,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (_isProcessing || _purchasePending)
+                      SizedBox(
+                        width: 20.px,
+                        height: 20.px,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
-                      SizedBox(width: 8.px),
-                      CLText.titleMedium(
-                        _isProcessing || _purchasePending
-                            ? Localized.text('ox_usercenter.processing')
-                            : Localized.text('ox_login.pay'),
-                        customColor: Colors.white,
+                      )
+                    else
+                      Icon(
+                        Icons.apple,
+                        color: Colors.white,
+                        size: 20.px,
                       ),
-                    ],
-                  ),
+                    SizedBox(width: 8.px),
+                    CLText.titleMedium(
+                      _isProcessing || _purchasePending
+                          ? Localized.text('ox_usercenter.processing')
+                          : Localized.text('ox_login.pay'),
+                      customColor: Colors.white,
+                    ),
+                  ],
                 ),
               ),
-            )
-          else
-            CLButton.filled(
-              text: _isProcessing || _purchasePending
-                  ? Localized.text('ox_usercenter.processing')
-                  : Localized.text('ox_login.pay'),
-              onTap: isEnabled ? _handlePay : null,
-              expanded: true,
-              height: 50.px,
             ),
-          SizedBox(height: 8.px),
-          CLText.bodySmall(
-            Localized.text('ox_login.recurring_billing'),
-            colorToken: ColorToken.onSurfaceVariant,
-            textAlign: TextAlign.center,
+          )
+        else
+          CLButton.filled(
+            text: _isProcessing || _purchasePending
+                ? Localized.text('ox_usercenter.processing')
+                : Localized.text('ox_login.pay'),
+            onTap: isEnabled ? _handlePay : null,
+            expanded: true,
+            height: 50.px,
           ),
-        ],
-      ),
+        SizedBox(height: 8.px),
+        CLText.bodySmall(
+          Localized.text('ox_login.recurring_billing'),
+          colorToken: ColorToken.onSurfaceVariant,
+          textAlign: TextAlign.center,
+        ),
+      ],
     );
   }
 
@@ -781,34 +786,22 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
         _isProcessing = true;
       });
 
-      debugPrint('PrivateRelayUpgradePage: Querying product: $productId');
-      debugPrint('PrivateRelayUpgradePage: Platform: ${Platform.isIOS ? "iOS" : "Android"}');
-
       final bool isAvailable = await _inAppPurchase.isAvailable();
       if (!isAvailable) {
         setState(() {
           _isProcessing = false;
         });
-        debugPrint('PrivateRelayUpgradePage: Store not available');
         CommonToast.instance.show(context, 'Store not available');
         return;
       }
 
-      debugPrint('PrivateRelayUpgradePage: Store is available, querying product details...');
       final ProductDetailsResponse productDetailResponse =
           await _inAppPurchase.queryProductDetails({productId});
-
-      debugPrint('PrivateRelayUpgradePage: Query result - Error: ${productDetailResponse.error?.message ?? "None"}');
-      debugPrint('PrivateRelayUpgradePage: Query result - Products found: ${productDetailResponse.productDetails.length}');
-      if (productDetailResponse.productDetails.isNotEmpty) {
-        debugPrint('PrivateRelayUpgradePage: Product details: ${productDetailResponse.productDetails.first.id} - ${productDetailResponse.productDetails.first.title}');
-      }
 
       if (productDetailResponse.error != null) {
         setState(() {
           _isProcessing = false;
         });
-        debugPrint('PrivateRelayUpgradePage: Product query error: ${productDetailResponse.error!.message}');
         CommonToast.instance.show(
           context,
           'Error: ${productDetailResponse.error!.message}',
@@ -820,8 +813,6 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
         setState(() {
           _isProcessing = false;
         });
-        debugPrint('PrivateRelayUpgradePage: Product not found - Product ID: $productId');
-        debugPrint('PrivateRelayUpgradePage: Make sure the product is created and published in ${Platform.isIOS ? "App Store Connect" : "Google Play Console"}');
         CommonToast.instance.show(
           context,
           'Product not found: $productId\nPlease check if the product is configured in ${Platform.isIOS ? "App Store Connect" : "Google Play Console"}',
@@ -829,7 +820,8 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
         return;
       }
 
-      final ProductDetails productDetails = productDetailResponse.productDetails.first;
+      final ProductDetails productDetails =
+          productDetailResponse.productDetails.first;
       await _buyProduct(productDetails);
     } catch (e) {
       setState(() {
@@ -841,7 +833,6 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
 
   Future<void> _buyProduct(ProductDetails productDetails) async {
     try {
-      debugPrint('PrivateRelayUpgradePage: Starting purchase for ${productDetails.id}');
       setState(() => _isProcessing = true);
 
       final PurchaseParam purchaseParam = PurchaseParam(
@@ -853,8 +844,6 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
         purchaseParam: purchaseParam,
       );
 
-      debugPrint('PrivateRelayUpgradePage: Purchase initiated, success: $success');
-
       if (!success) {
         if (mounted) {
           setState(() => _isProcessing = false);
@@ -865,9 +854,7 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
         }
       }
       // Purchase status will be handled by _listenToPurchaseUpdated
-    } catch (e, stackTrace) {
-      debugPrint('PrivateRelayUpgradePage: Purchase error: $e');
-      debugPrint('PrivateRelayUpgradePage: Stack trace: $stackTrace');
+    } catch (e) {
       if (mounted) {
         setState(() => _isProcessing = false);
         CommonToast.instance.show(context, 'Purchase error: $e');
@@ -882,7 +869,8 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
       // Restored purchases will be delivered via purchaseStream
       // and handled by _listenToPurchaseUpdated
       if (mounted) {
-        CommonToast.instance.show(context, Localized.text('ox_usercenter.restoring_purchases'));
+        CommonToast.instance
+            .show(context, Localized.text('ox_usercenter.restoring_purchases'));
       }
     } catch (e) {
       if (mounted) {
@@ -894,6 +882,4 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
       }
     }
   }
-
 }
-
