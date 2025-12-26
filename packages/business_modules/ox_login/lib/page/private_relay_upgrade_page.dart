@@ -117,6 +117,9 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
   bool _isRestoring = false;
   bool _isProcessing = false;
   bool _purchasePending = false;
+  late PageController _featurePageController;
+  int _currentFeatureIndex = 0;
+  Timer? _featureCarouselTimer;
 
   static const List<SubscriptionPlan> _plans = [
     SubscriptionPlan(
@@ -164,6 +167,12 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
     // Select the popular plan by default
     _selectedPlan =
         _plans.firstWhere((p) => p.isPopular, orElse: () => _plans[1]);
+    
+    // Initialize feature carousel page controller
+    _featurePageController = PageController();
+    
+    // Start auto-play carousel
+    _startFeatureCarousel();
 
     // Listen to purchase updates
     final Stream<List<PurchaseDetails>> purchaseUpdated =
@@ -187,7 +196,29 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
   @override
   void dispose() {
     _subscription.cancel();
+    _featureCarouselTimer?.cancel();
+    _featurePageController.dispose();
     super.dispose();
+  }
+  
+  void _startFeatureCarousel() {
+    _featureCarouselTimer?.cancel();
+    _featureCarouselTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      final nextIndex = (_currentFeatureIndex + 1) % 4;
+      _featurePageController.animateToPage(
+        nextIndex,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+  
+  void _resetFeatureCarousel() {
+    _startFeatureCarousel();
   }
 
   Future<void> _initStoreInfo() async {
@@ -396,18 +427,140 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
 
   Widget _buildHeader() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // CLText.titleLarge(
-        //   Localized.text('ox_login.upgrade_your_circle'),
-        //   colorToken: ColorToken.onSurface,
-        // ),
-        // SizedBox(height: 12.px),
-        CLText.bodyMedium(
-          Localized.text('ox_login.upgrade_description'),
-          colorToken: ColorToken.onSurfaceVariant,
+        Container(
+          padding: EdgeInsets.only(left: 20.px, right: 20.px),
+          height: 70.px,
+          child: PageView.builder(
+            controller: _featurePageController,
+            onPageChanged: (index) {
+              setState(() {
+                _currentFeatureIndex = index;
+              });
+              // Reset timer when user manually swipes
+              _resetFeatureCarousel();
+            },
+            itemCount: 4,
+            itemBuilder: (context, index) {
+              return _buildFeatureCard(index);
+            },
+          ),
         ),
+        SizedBox(height: 12.px),
+        _buildFeatureIndicator(),
       ],
+    );
+  }
+
+  Widget _buildFeatureCard(int index) {
+    final features = [
+      {
+        'icon': Icons.bolt,
+        'title': Localized.text('ox_login.feature_high_speed_relay'),
+        'description': Localized.text('ox_login.feature_high_speed_relay_desc'),
+        'backgroundColor': const Color(0xFFFFFBEB),
+        'iconBackgroundColor': const Color(0xFFFFF8E1),
+        'iconColor': const Color(0xFFE88D3A),
+      },
+      {
+        'icon': Icons.lock,
+        'title': Localized.text('ox_login.feature_encrypted_storage'),
+        'description': Localized.text('ox_login.feature_encrypted_storage_desc'),
+        'backgroundColor': const Color(0xFFF8F9FC),
+        'iconBackgroundColor': const Color(0xFFF0F4FF),
+        'iconColor': const Color(0xFF4A90E2),
+      },
+      {
+        'icon': Icons.visibility_off,
+        'title': Localized.text('ox_login.feature_zero_logging'),
+        'description': Localized.text('ox_login.feature_zero_logging_desc'),
+        'backgroundColor': Colors.white,
+        'iconBackgroundColor': const Color(0xFFF0F2F5),
+        'iconColor': const Color(0xFF525B6B),
+      },
+      {
+        'icon': Icons.delete_outline,
+        'title': Localized.text('ox_login.feature_total_control'),
+        'description': Localized.text('ox_login.feature_total_control_desc'),
+        'backgroundColor': const Color(0xFFFCE8E8),
+        'iconBackgroundColor': const Color(0xFFFCE8E8),
+        'iconColor': const Color(0xFFE53935),
+      },
+    ];
+
+    final feature = features[index];
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 4.px),
+      padding: EdgeInsets.all(16.px),
+      decoration: BoxDecoration(
+        color: feature['backgroundColor'] as Color,
+        borderRadius: BorderRadius.circular(12.px),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 56.px,
+            height: 56.px,
+            decoration: BoxDecoration(
+              color: feature['iconBackgroundColor'] as Color,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              feature['icon'] as IconData,
+              color: feature['iconColor'] as Color,
+              size: 28.px,
+            ),
+          ),
+          SizedBox(width: 16.px),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CLText.titleSmall(
+                  feature['title'] as String,
+                  colorToken: ColorToken.onSurface,
+                  isBold: true,
+                ),
+                SizedBox(height: 4.px),
+                CLText.bodySmall(
+                  feature['description'] as String,
+                  colorToken: ColorToken.onSurfaceVariant,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureIndicator() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(4, (index) {
+        final isActive = index == _currentFeatureIndex;
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          margin: EdgeInsets.symmetric(horizontal: 3.px),
+          width: isActive ? 24.px : 8.px,
+          height: 8.px,
+          decoration: BoxDecoration(
+            color: isActive
+                ? ColorToken.xChat.of(context)
+                : ColorToken.onSurfaceVariant.of(context).withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(4.px),
+          ),
+        );
+      }),
     );
   }
 
