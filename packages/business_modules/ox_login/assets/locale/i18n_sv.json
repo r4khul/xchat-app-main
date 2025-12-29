@@ -11,26 +11,23 @@
   "private_key_regular_failed": "Verifiering av privat nyckel misslyckades",
   "str_nesc_invalid_hint": "NSEC du angav är ogiltig. Vänligen ange den igen.",
   "wait_link_service": "Väntar på anslutning till tjänsten, eller kontrollera om signeringsappen begär auktorisering!",
-  "carousel_title_1": "End-to-end-kryptering",
-  "carousel_text_1": "Endast du och mottagaren kan läsa meddelandena. Ingen annan.",
-  "carousel_title_2": "Decentraliserat nätverk",
-  "carousel_text_2": "Inga centrala servrar. Ingen kontroll. Bara privat kommunikation.",
-  "carousel_title_3": "Krypterad lokal lagring",
-  "carousel_text_3": "Chattar krypteras och lagras på din enhet.",
-  "carousel_title_4": "Anonym meddelandehantering",
-  "carousel_text_4": "Inget telefonnummer. Ingen e-post. Bara ren anonymitet.",
+  "carousel_title_1": "Välkommen till XChat",
+  "carousel_text_1": "Välkommen till vår säkra, decentraliserade kommunikationsplattform. Din resa mot verklig integritet börjar här.",
+  "carousel_title_2": "Öppet protokoll",
+  "carousel_text_2": "Byggt på Nostr-protokollet. Inga telefonnummer. Inga e-postadresser. Bara ren, decentraliserad kommunikation.",
+  "carousel_title_3": "Privata cirklar",
+  "carousel_text_3": "Växla sömlöst mellan olika cirklar. Varje konversation är end-to-end krypterad för fullständig integritet.",
+  "carousel_title_4": "Anpassade servrar",
+  "carousel_text_4": "Anpassa dina reläer och filservrar. Du har fullständig kontroll över var dina data lagras.",
   "account_key_placeholder": "Ange nsec eller bunker:// URI",
-  
   "get_started": "Kom igång",
   "have_account": "Jag har ett Nostr-konto",
-  
   "profile_setup_title": "Skapa din profil",
   "profile_setup_subtitle": "Ange ditt namn för att komma igång. Din säkra identitet skapas automatiskt.",
   "profile_setup_avatar_hint": "Din unika avatar",
   "profile_setup_name_hint": "Så här kommer andra att se dig. Du kan ändra detta när som helst.",
   "first_name_placeholder": "Förnamn",
   "last_name_placeholder": "Efternamn (Valfritt)",
-  
   "circle_selection_title": "Gå med i en Cirkel",
   "circle_selection_subtitle": "Cirklar använder reläer för att ansluta dig till andra. Alla meddelanden är end-to-end krypterade. Läs mer",
   "use_public_circle": "Gemenskapsrelä",
@@ -38,7 +35,6 @@
   "use_private_circle": "Privat Relä",
   "use_private_circle_desc": "Självhostat eller personligt relä för maximal kontroll.",
   "recommended": "Rekommenderas",
-  
   "add_circle_title": "Lägg till Cirkel",
   "add_circle_description": "Ange cirkeladressen för att gå med.",
   "circle_url_placeholder": "Ange cirkel-URL eller namn",
@@ -46,7 +42,6 @@
   "circle_url_empty": "Vänligen ange en cirkeladress",
   "join": "Gå med",
   "what_is_circle": "Vad är en Cirkel?",
-  
   "relay_intro_title": "Vad är en Cirkel?",
   "relay_intro_subtitle": "Ditt privata kommunikationsnav",
   "relay_intro_description": "En Cirkel är som ditt eget privata postrum som hanterar alla dina krypterade meddelanden. Det hjälper dig chatta med vänner medan allt hålls säkert och privat.",
@@ -75,7 +70,6 @@
   "how_to_use_step_1": "Ange din nsec privata nyckel för direkt inloggning",
   "how_to_use_step_2": "Eller använd bunker:// URI för inloggning via fjärrsignerare",
   "how_to_use_step_3": "Appen ansluter säkert och autentiserar dig",
-  
   "select_avatar": "Välj avatar",
   "camera": "Kamera"
 }

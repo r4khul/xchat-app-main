@@ -11,26 +11,23 @@
   "private_key_regular_failed": "निजी कुंजी सत्यापन विफल",
   "str_nesc_invalid_hint": "आपने जो NSEC दर्ज किया है वह अमान्य है। कृपया इसे फिर से दर्ज करें।",
   "wait_link_service": "सेवा से कनेक्शन की प्रतीक्षा कर रहा है, या जांचें कि क्या हस्ताक्षर ऐप प्राधिकरण मांग रहा है!",
-  "carousel_title_1": "एंड-टू-एंड एन्क्रिप्शन",
-  "carousel_text_1": "केवल आप और प्राप्तकर्ता ही संदेश पढ़ सकते हैं। कोई और नहीं।",
-  "carousel_title_2": "विकेंद्रीकृत नेटवर्क",
-  "carousel_text_2": "कोई केंद्रीय सर्वर नहीं। कोई नियंत्रण नहीं। बस निजी संचार।",
-  "carousel_title_3": "एन्क्रिप्टेड स्थानीय भंडारण",
-  "carousel_text_3": "चैट एन्क्रिप्टेड हैं और आपके डिवाइस पर संग्रहीत हैं।",
-  "carousel_title_4": "गुमनाम संदेश",
-  "carousel_text_4": "कोई फोन नंबर नहीं। कोई ईमेल नहीं। बस शुद्ध गुमनामी।",
+  "carousel_title_1": "XChat में आपका स्वागत है",
+  "carousel_text_1": "हमारे सुरक्षित, विकेंद्रीकृत संचार प्लेटफ़ॉर्म में आपका स्वागत है। सच्ची गोपनीयता की आपकी यात्रा यहाँ से शुरू होती है।",
+  "carousel_title_2": "खुला प्रोटोकॉल",
+  "carousel_text_2": "Nostr प्रोटोकॉल पर निर्मित। कोई फ़ोन नंबर नहीं। कोई ईमेल पता नहीं। बस शुद्ध, विकेंद्रीकृत संचार।",
+  "carousel_title_3": "निजी सर्कल",
+  "carousel_text_3": "विभिन्न सर्कलों के बीच सहजता से स्विच करें। पूर्ण गोपनीयता के लिए हर बातचीत end-to-end एन्क्रिप्टेड है।",
+  "carousel_title_4": "कस्टम सर्वर",
+  "carousel_text_4": "अपने रिले और फ़ाइल सर्वर को अनुकूलित करें। आपके पास अपने डेटा के संग्रहीत स्थान पर पूर्ण नियंत्रण है।",
   "account_key_placeholder": "nsec या bunker:// URI दर्ज करें",
-  
   "get_started": "शुरू करें",
   "have_account": "मेरे पास Nostr खाता है",
-  
   "profile_setup_title": "अपना प्रोफ़ाइल बनाएं",
   "profile_setup_subtitle": "शुरू करने के लिए अपना नाम दर्ज करें। आपकी सुरक्षित पहचान स्वचालित रूप से बनाई जा रही है।",
   "profile_setup_avatar_hint": "आपका अनोखा अवतार",
   "profile_setup_name_hint": "इस तरह दूसरे आपको देखेंगे। आप इसे कभी भी बदल सकते हैं।",
   "first_name_placeholder": "पहला नाम",
   "last_name_placeholder": "उपनाम (वैकल्पिक)",
-  
   "circle_selection_title": "एक Circle में शामिल हों",
   "circle_selection_subtitle": "Circles दूसरों से जुड़ने के लिए relay का उपयोग करते हैं। सभी संदेश end-to-end एन्क्रिप्टेड हैं। अधिक जानें",
   "use_public_circle": "Community Relay",
@@ -38,7 +35,6 @@
   "use_private_circle": "Private Relay",
   "use_private_circle_desc": "अधिकतम नियंत्रण के लिए स्व-होस्टेड या व्यक्तिगत relay।",
   "recommended": "अनुशंसित",
-  
   "add_circle_title": "Circle जोड़ें",
   "add_circle_description": "शामिल होने के लिए circle पता दर्ज करें।",
   "circle_url_placeholder": "Circle URL या नाम दर्ज करें",
@@ -46,7 +42,6 @@
   "circle_url_empty": "कृपया एक circle पता दर्ज करें",
   "join": "शामिल हों",
   "what_is_circle": "Circle क्या है?",
-  
   "relay_intro_title": "Circle क्या है?",
   "relay_intro_subtitle": "आपका निजी संचार केंद्र",
   "relay_intro_description": "Circle आपका अपना निजी डाक कक्ष है जो आपके सभी एन्क्रिप्टेड संदेशों को प्रबंधित करता है। यह आपको दोस्तों के साथ चैट करने में मदद करता है जबकि सब कुछ सुरक्षित और निजी रखता है।",
@@ -75,7 +70,6 @@
   "how_to_use_step_1": "सीधे लॉगिन के लिए अपनी nsec निजी कुंजी दर्ज करें",
   "how_to_use_step_2": "या रिमोट हस्ताक्षरकर्ता लॉगिन के लिए bunker:// URI का उपयोग करें",
   "how_to_use_step_3": "ऐप सुरक्षित रूप से कनेक्ट होगा और आपको प्रमाणित करेगा",
-  
   "select_avatar": "अवतार चुनें",
   "camera": "कैमरा"
 }

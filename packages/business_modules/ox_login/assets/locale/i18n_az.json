@@ -11,26 +11,23 @@
   "private_key_regular_failed": "Gizli açar doğrulaması uğursuz oldu",
   "str_nesc_invalid_hint": "Daxil etdiyiniz NSEC etibarsızdır. Zəhmət olmasa yenidən daxil edin.",
   "wait_link_service": "Xidmətə qoşulma gözlənilir və ya imzalama tətbiqinin icazə istəyib-istəmədiyini yoxlayın!",
-  "carousel_title_1": "Uc-dan-uca Şifrələmə",
-  "carousel_text_1": "Mesajları yalnız siz və alıcı oxuya bilər. Başqa heç kim.",
-  "carousel_title_2": "Mərkəzsizləşdirilmiş Şəbəkə",
-  "carousel_text_2": "Mərkəzi serverlər yoxdur. Nəzarət yoxdur. Sadəcə şəxsi ünsiyyət.",
-  "carousel_title_3": "Şifrələnmiş Yerli Saxlama",
-  "carousel_text_3": "Söhbətlər şifrələnir və cihazınızda saxlanılır.",
-  "carousel_title_4": "Anonim Mesajlaşma",
-  "carousel_text_4": "Telefon nömrəsi yoxdur. E-poçt yoxdur. Sadəcə xalis anonimlik.",
+  "carousel_title_1": "XChat-ə xoş gəlmisiniz",
+  "carousel_text_1": "Təhlükəsiz, mərkəzləşdirilməmiş rabitə platformamıza xoş gəlmisiniz. Əsl məxfilik səyahətiniz buradan başlayır.",
+  "carousel_title_2": "Açıq Protokol",
+  "carousel_text_2": "Nostr protokolu üzərində qurulub. Telefon nömrələri yoxdur. E-poçt ünvanları yoxdur. Yalnız təmiz, mərkəzləşdirilməmiş rabitə.",
+  "carousel_title_3": "Şəxsi Dairələr",
+  "carousel_text_3": "Müxtəlif dairələr arasında problemsiz keçid edin. Hər söhbət tam məxfilik üçün ucdan-uca şifrələnir.",
+  "carousel_title_4": "Fərdi Serverlər",
+  "carousel_text_4": "Röle və fayl serverlərinizi fərdiləşdirin. Məlumatlarınızın harada saxlanılması üzərində tam nəzarətiniz var.",
   "account_key_placeholder": "nsec və ya bunker:// URI daxil edin",
-  
   "get_started": "Başla",
   "have_account": "Nostr hesabım var",
-  
   "profile_setup_title": "Profilinizi yaradın",
   "profile_setup_subtitle": "Başlamaq üçün adınızı daxil edin. Təhlükəsiz kimliyiniz avtomatik yaradılır.",
   "profile_setup_avatar_hint": "Unikal avatarınız",
   "profile_setup_name_hint": "Başqaları sizi belə görəcək. Bunu istənilən vaxt dəyişə bilərsiniz.",
   "first_name_placeholder": "Ad",
   "last_name_placeholder": "Soyad (İxtiyari)",
-  
   "circle_selection_title": "Dairəyə qoşul",
   "circle_selection_subtitle": "Dairələr başqaları ilə əlaqə üçün relay istifadə edir. Bütün mesajlar end-to-end şifrələnir. Ətraflı öyrən",
   "use_public_circle": "İctimai Relay",
@@ -38,7 +35,6 @@
   "use_private_circle": "Şəxsi Relay",
   "use_private_circle_desc": "Maksimum nəzarət üçün öz-özünə yerləşdirilmiş və ya şəxsi relay.",
   "recommended": "Tövsiyə olunur",
-  
   "add_circle_title": "Dairə əlavə et",
   "add_circle_description": "Qoşulmaq üçün dairə ünvanını daxil edin.",
   "circle_url_placeholder": "Dairə URL-i və ya adını daxil edin",
@@ -46,7 +42,6 @@
   "circle_url_empty": "Zəhmət olmasa dairə ünvanı daxil edin",
   "join": "Qoşul",
   "what_is_circle": "Dairə nədir?",
-  
   "relay_intro_title": "Dairə nədir?",
   "relay_intro_subtitle": "Sizin şəxsi ünsiyyət mərkəziniz",
   "relay_intro_description": "Dairə bütün şifrələnmiş mesajlarınızı idarə edən öz şəxsi poçt otağınız kimidir. Hər şeyi təhlükəsiz və şəxsi saxlayarkən dostlarınızla söhbət etməyə kömək edir.",
@@ -75,7 +70,6 @@
   "how_to_use_step_1": "Birbaşa giriş üçün nsec gizli açarınızı daxil edin",
   "how_to_use_step_2": "Və ya uzaq imzalayıcı girişi üçün bunker:// URI istifadə edin",
   "how_to_use_step_3": "Tətbiq təhlükəsiz qoşulacaq və sizi doğrulayacaq",
-  
   "select_avatar": "Avatar seç",
   "camera": "Kamera"
 }

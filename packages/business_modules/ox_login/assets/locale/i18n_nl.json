@@ -11,26 +11,23 @@
   "private_key_regular_failed": "Verificatie van privésleutel mislukt",
   "str_nesc_invalid_hint": "De ingevoerde NSEC is ongeldig. Voer deze opnieuw in.",
   "wait_link_service": "Wachten op verbinding met service, of controleer of de ondertekeningsapp om autorisatie vraagt!",
-  "carousel_title_1": "End-to-end encryptie",
-  "carousel_text_1": "Alleen jij en de ontvanger kunnen de berichten lezen. Niemand anders.",
-  "carousel_title_2": "Gedecentraliseerd netwerk",
-  "carousel_text_2": "Geen centrale servers. Geen controle. Alleen privécommunicatie.",
-  "carousel_title_3": "Versleutelde lokale opslag",
-  "carousel_text_3": "Chats worden versleuteld en opgeslagen op je apparaat.",
-  "carousel_title_4": "Anonieme berichten",
-  "carousel_text_4": "Geen telefoonnummer. Geen e-mail. Alleen pure anonimiteit.",
+  "carousel_title_1": "Welkom bij XChat",
+  "carousel_text_1": "Welkom bij ons veilige, gedecentraliseerde communicatieplatform. Uw reis naar echte privacy begint hier.",
+  "carousel_title_2": "Open protocol",
+  "carousel_text_2": "Gebouwd op het Nostr-protocol. Geen telefoonnummers. Geen e-mailadressen. Alleen pure, gedecentraliseerde communicatie.",
+  "carousel_title_3": "Privé cirkels",
+  "carousel_text_3": "Schakel naadloos tussen verschillende cirkels. Elk gesprek is end-to-end versleuteld voor volledige privacy.",
+  "carousel_title_4": "Aangepaste servers",
+  "carousel_text_4": "Pas uw relays en bestandsservers aan. U heeft volledige controle over waar uw gegevens worden opgeslagen.",
   "account_key_placeholder": "Voer nsec of bunker:// URI in",
-  
   "get_started": "Aan de slag",
   "have_account": "Ik heb een Nostr-account",
-  
   "profile_setup_title": "Maak je profiel",
   "profile_setup_subtitle": "Voer je naam in om te beginnen. Je veilige identiteit wordt automatisch aangemaakt.",
   "profile_setup_avatar_hint": "Je unieke avatar",
   "profile_setup_name_hint": "Zo zien anderen je. Je kunt dit altijd wijzigen.",
   "first_name_placeholder": "Voornaam",
   "last_name_placeholder": "Achternaam (Optioneel)",
-  
   "circle_selection_title": "Word lid van een Circle",
   "circle_selection_subtitle": "Circles gebruiken relays om je met anderen te verbinden. Alle berichten zijn end-to-end versleuteld. Meer informatie",
   "use_public_circle": "Community Relay",
@@ -38,7 +35,6 @@
   "use_private_circle": "Privé Relay",
   "use_private_circle_desc": "Zelf-gehoste of persoonlijke relay voor maximale controle.",
   "recommended": "Aanbevolen",
-  
   "add_circle_title": "Circle toevoegen",
   "add_circle_description": "Voer het circle-adres in om lid te worden.",
   "circle_url_placeholder": "Voer circle URL of naam in",
@@ -46,7 +42,6 @@
   "circle_url_empty": "Voer een circle-adres in",
   "join": "Deelnemen",
   "what_is_circle": "Wat is een Circle?",
-  
   "relay_intro_title": "Wat is een Circle?",
   "relay_intro_subtitle": "Je privé communicatiecentrum",
   "relay_intro_description": "Een Circle is als je eigen privé postkamer die al je versleutelde berichten beheert. Het helpt je chatten met vrienden terwijl alles veilig en privé blijft.",
@@ -75,7 +70,6 @@
   "how_to_use_step_1": "Voer je nsec privésleutel in voor directe login",
   "how_to_use_step_2": "Of gebruik bunker:// URI voor login via externe ondertekenaar",
   "how_to_use_step_3": "De app maakt veilig verbinding en authenticeert je",
-  
   "select_avatar": "Avatar selecteren",
   "camera": "Camera"
 }

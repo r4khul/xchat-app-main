@@ -11,26 +11,23 @@
   "private_key_regular_failed": "Ověření soukromého klíče selhalo",
   "str_nesc_invalid_hint": "Zadaný NSEC je neplatný. Zadejte jej prosím znovu.",
   "wait_link_service": "Čekání na připojení ke službě, nebo zkontrolujte, zda podepisovací aplikace žádá o autorizaci!",
-  "carousel_title_1": "End-to-end šifrování",
-  "carousel_text_1": "Zprávy můžete číst pouze vy a příjemce. Nikdo jiný.",
-  "carousel_title_2": "Decentralizovaná síť",
-  "carousel_text_2": "Žádné centrální servery. Žádná kontrola. Jen soukromá komunikace.",
-  "carousel_title_3": "Šifrované lokální úložiště",
-  "carousel_text_3": "Chaty jsou šifrovány a uloženy na vašem zařízení.",
-  "carousel_title_4": "Anonymní zprávy",
-  "carousel_text_4": "Žádné telefonní číslo. Žádný e-mail. Jen čistá anonymita.",
+  "carousel_title_1": "Vítejte v XChat",
+  "carousel_text_1": "Vítejte na naší bezpečné, decentralizované komunikační platformě. Vaše cesta k opravdovému soukromí začíná zde.",
+  "carousel_title_2": "Otevřený protokol",
+  "carousel_text_2": "Postaveno na protokolu Nostr. Žádná telefonní čísla. Žádné e-mailové adresy. Pouze čistá, decentralizovaná komunikace.",
+  "carousel_title_3": "Soukromé kruhy",
+  "carousel_text_3": "Plynule přepínejte mezi různými kruhy. Každá konverzace je šifrována end-to-end pro úplné soukromí.",
+  "carousel_title_4": "Vlastní servery",
+  "carousel_text_4": "Přizpůsobte si své relé a souborové servery. Máte plnou kontrolu nad tím, kde jsou vaše data uložena.",
   "account_key_placeholder": "Zadejte nsec nebo bunker:// URI",
-  
   "get_started": "Začít",
   "have_account": "Mám účet Nostr",
-  
   "profile_setup_title": "Vytvořte svůj profil",
   "profile_setup_subtitle": "Pro začátek zadejte své jméno. Vaše bezpečná identita se vytváří automaticky.",
   "profile_setup_avatar_hint": "Váš jedinečný avatar",
   "profile_setup_name_hint": "Takto vás ostatní uvidí. Můžete to kdykoli změnit.",
   "first_name_placeholder": "Jméno",
   "last_name_placeholder": "Příjmení (Volitelné)",
-  
   "circle_selection_title": "Připojit se ke Kruhu",
   "circle_selection_subtitle": "Kruhy používají relay pro připojení k ostatním. Všechny zprávy jsou šifrovány end-to-end. Zjistit více",
   "use_public_circle": "Komunitní Relay",
@@ -38,7 +35,6 @@
   "use_private_circle": "Soukromý Relay",
   "use_private_circle_desc": "Vlastní nebo osobní relay pro maximální kontrolu.",
   "recommended": "Doporučeno",
-  
   "add_circle_title": "Přidat Kruh",
   "add_circle_description": "Zadejte adresu kruhu pro připojení.",
   "circle_url_placeholder": "Zadejte URL nebo název kruhu",
@@ -46,7 +42,6 @@
   "circle_url_empty": "Zadejte prosím adresu kruhu",
   "join": "Připojit se",
   "what_is_circle": "Co je Kruh?",
-  
   "relay_intro_title": "Co je Kruh?",
   "relay_intro_subtitle": "Vaše soukromé komunikační centrum",
   "relay_intro_description": "Kruh je jako vaše vlastní soukromá poštovní místnost, která spravuje všechny vaše šifrované zprávy. Pomáhá vám chatovat s přáteli a přitom udržovat vše bezpečné a soukromé.",
@@ -75,7 +70,6 @@
   "how_to_use_step_1": "Zadejte svůj soukromý klíč nsec pro přímé přihlášení",
   "how_to_use_step_2": "Nebo použijte bunker:// URI pro přihlášení přes vzdáleného podepisujícího",
   "how_to_use_step_3": "Aplikace se bezpečně připojí a ověří vás",
-  
   "select_avatar": "Vybrat avatar",
   "camera": "Kamera"
 }

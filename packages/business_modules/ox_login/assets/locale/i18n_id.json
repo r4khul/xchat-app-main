@@ -11,26 +11,23 @@
   "private_key_regular_failed": "Verifikasi kunci pribadi gagal",
   "str_nesc_invalid_hint": "NSEC yang Anda masukkan tidak valid. Silakan masukkan lagi.",
   "wait_link_service": "Menunggu koneksi ke layanan, atau periksa apakah aplikasi penandatangan meminta otorisasi!",
-  "carousel_title_1": "Enkripsi End-to-End",
-  "carousel_text_1": "Hanya Anda dan penerima yang dapat membaca pesan. Tidak ada orang lain.",
-  "carousel_title_2": "Jaringan Terdesentralisasi",
-  "carousel_text_2": "Tanpa server pusat. Tanpa kontrol. Hanya komunikasi pribadi.",
-  "carousel_title_3": "Penyimpanan Lokal Terenkripsi",
-  "carousel_text_3": "Chat dienkripsi dan disimpan di perangkat Anda.",
-  "carousel_title_4": "Pesan Anonim",
-  "carousel_text_4": "Tanpa nomor telepon. Tanpa email. Hanya anonimitas murni.",
+  "carousel_title_1": "Selamat datang di XChat",
+  "carousel_text_1": "Selamat datang di platform komunikasi yang aman dan terdesentralisasi kami. Perjalanan Anda menuju privasi sejati dimulai di sini.",
+  "carousel_title_2": "Protokol Terbuka",
+  "carousel_text_2": "Dibangun di atas protokol Nostr. Tanpa nomor telepon. Tanpa alamat email. Hanya komunikasi terdesentralisasi murni.",
+  "carousel_title_3": "Lingkaran Pribadi",
+  "carousel_text_3": "Beralih dengan mulus antara lingkaran yang berbeda. Setiap percakapan dienkripsi end-to-end untuk privasi lengkap.",
+  "carousel_title_4": "Server Kustom",
+  "carousel_text_4": "Sesuaikan relay dan server file Anda. Anda memiliki kendali penuh atas tempat data Anda disimpan.",
   "account_key_placeholder": "Masukkan nsec atau bunker:// URI",
-  
   "get_started": "Mulai",
   "have_account": "Saya punya akun Nostr",
-  
   "profile_setup_title": "Buat Profil Anda",
   "profile_setup_subtitle": "Masukkan nama Anda untuk memulai. Identitas aman Anda sedang dibuat secara otomatis.",
   "profile_setup_avatar_hint": "Avatar unik Anda",
   "profile_setup_name_hint": "Ini adalah cara orang lain melihat Anda. Anda dapat mengubahnya kapan saja.",
   "first_name_placeholder": "Nama Depan",
   "last_name_placeholder": "Nama Belakang (Opsional)",
-  
   "circle_selection_title": "Bergabung dengan Circle",
   "circle_selection_subtitle": "Circle menggunakan relay untuk menghubungkan Anda dengan orang lain. Semua pesan dienkripsi end-to-end. Pelajari lebih lanjut",
   "use_public_circle": "Relay Komunitas",
@@ -38,7 +35,6 @@
   "use_private_circle": "Relay Pribadi",
   "use_private_circle_desc": "Relay yang di-host sendiri atau pribadi untuk kontrol maksimal.",
   "recommended": "Direkomendasikan",
-  
   "add_circle_title": "Tambah Circle",
   "add_circle_description": "Masukkan alamat circle untuk bergabung.",
   "circle_url_placeholder": "Masukkan URL atau nama circle",
@@ -46,7 +42,6 @@
   "circle_url_empty": "Silakan masukkan alamat circle",
   "join": "Bergabung",
   "what_is_circle": "Apa itu Circle?",
-  
   "relay_intro_title": "Apa itu Circle?",
   "relay_intro_subtitle": "Pusat komunikasi pribadi Anda",
   "relay_intro_description": "Circle seperti ruang surat pribadi Anda sendiri yang mengelola semua pesan terenkripsi Anda. Membantu Anda mengobrol dengan teman sambil menjaga semuanya aman dan pribadi.",
@@ -75,7 +70,6 @@
   "how_to_use_step_1": "Masukkan kunci pribadi nsec Anda untuk login langsung",
   "how_to_use_step_2": "Atau gunakan bunker:// URI untuk login melalui penandatangan jarak jauh",
   "how_to_use_step_3": "Aplikasi akan terhubung dengan aman dan mengautentikasi Anda",
-  
   "select_avatar": "Pilih Avatar",
   "camera": "Kamera"
 }

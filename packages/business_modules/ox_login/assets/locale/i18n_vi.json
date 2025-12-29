@@ -11,26 +11,23 @@
   "private_key_regular_failed": "Xác minh khóa riêng thất bại",
   "str_nesc_invalid_hint": "NSEC bạn nhập không hợp lệ. Vui lòng nhập lại.",
   "wait_link_service": "Đang chờ kết nối dịch vụ, hoặc kiểm tra xem ứng dụng ký có yêu cầu ủy quyền không!",
-  "carousel_title_1": "Mã hóa đầu cuối",
-  "carousel_text_1": "Chỉ bạn và người nhận mới có thể đọc tin nhắn. Không ai khác.",
-  "carousel_title_2": "Mạng phi tập trung",
-  "carousel_text_2": "Không máy chủ trung tâm. Không kiểm soát. Chỉ giao tiếp riêng tư.",
-  "carousel_title_3": "Lưu trữ cục bộ được mã hóa",
-  "carousel_text_3": "Các cuộc trò chuyện được mã hóa và lưu trên thiết bị của bạn.",
-  "carousel_title_4": "Nhắn tin ẩn danh",
-  "carousel_text_4": "Không số điện thoại. Không email. Chỉ ẩn danh thuần túy.",
+  "carousel_title_1": "Chào mừng đến với XChat",
+  "carousel_text_1": "Chào mừng đến với nền tảng giao tiếp an toàn, phi tập trung của chúng tôi. Hành trình đến với quyền riêng tư thực sự của bạn bắt đầu từ đây.",
+  "carousel_title_2": "Giao thức mở",
+  "carousel_text_2": "Được xây dựng trên giao thức Nostr. Không cần số điện thoại. Không cần địa chỉ email. Chỉ là giao tiếp phi tập trung thuần túy.",
+  "carousel_title_3": "Vòng tròn riêng tư",
+  "carousel_text_3": "Chuyển đổi liền mạch giữa các vòng tròn khác nhau. Mọi cuộc trò chuyện đều được mã hóa end-to-end để đảm bảo quyền riêng tư hoàn toàn.",
+  "carousel_title_4": "Máy chủ tùy chỉnh",
+  "carousel_text_4": "Tùy chỉnh máy chủ chuyển tiếp và máy chủ tệp của bạn. Bạn có toàn quyền kiểm soát nơi lưu trữ dữ liệu của mình.",
   "account_key_placeholder": "Nhập nsec hoặc bunker:// URI",
-  
   "get_started": "Bắt đầu",
   "have_account": "Tôi có tài khoản Nostr",
-  
   "profile_setup_title": "Tạo hồ sơ của bạn",
   "profile_setup_subtitle": "Nhập tên của bạn để bắt đầu. Danh tính an toàn của bạn đang được tạo tự động.",
   "profile_setup_avatar_hint": "Ảnh đại diện độc nhất của bạn",
   "profile_setup_name_hint": "Đây là cách người khác sẽ thấy bạn. Bạn có thể thay đổi bất cứ lúc nào.",
   "first_name_placeholder": "Tên",
   "last_name_placeholder": "Họ (Tùy chọn)",
-  
   "circle_selection_title": "Tham gia Circle",
   "circle_selection_subtitle": "Circles sử dụng relay để kết nối bạn với người khác. Tất cả tin nhắn đều được mã hóa đầu cuối. Tìm hiểu thêm",
   "use_public_circle": "Community Relay",
@@ -38,7 +35,6 @@
   "use_private_circle": "Private Relay",
   "use_private_circle_desc": "Relay tự lưu trữ hoặc cá nhân để kiểm soát tối đa.",
   "recommended": "Đề xuất",
-  
   "add_circle_title": "Thêm Circle",
   "add_circle_description": "Nhập địa chỉ circle để tham gia.",
   "circle_url_placeholder": "Nhập URL hoặc tên circle",
@@ -46,7 +42,6 @@
   "circle_url_empty": "Vui lòng nhập địa chỉ circle",
   "join": "Tham gia",
   "what_is_circle": "Circle là gì?",
-  
   "relay_intro_title": "Circle là gì?",
   "relay_intro_subtitle": "Trung tâm liên lạc riêng tư của bạn",
   "relay_intro_description": "Circle giống như phòng thư riêng của bạn, xử lý tất cả tin nhắn được mã hóa. Nó giúp bạn trò chuyện với bạn bè trong khi giữ mọi thứ an toàn và riêng tư.",
@@ -75,7 +70,6 @@
   "how_to_use_step_1": "Nhập khóa riêng nsec để đăng nhập trực tiếp",
   "how_to_use_step_2": "Hoặc sử dụng bunker:// URI để đăng nhập qua người ký từ xa",
   "how_to_use_step_3": "Ứng dụng sẽ kết nối an toàn và xác thực bạn",
-  
   "select_avatar": "Chọn avatar",
   "camera": "Máy ảnh"
 }

@@ -11,26 +11,23 @@
   "private_key_regular_failed": "Überprüfung des privaten Schlüssels fehlgeschlagen",
   "str_nesc_invalid_hint": "Der eingegebene NSEC ist ungültig. Bitte geben Sie ihn erneut ein.",
   "wait_link_service": "Warten auf Verbindung zum Dienst, oder prüfen Sie, ob die Signierungs-App eine Autorisierung anfordert!",
-  "carousel_title_1": "Ende-zu-Ende-Verschlüsselung",
-  "carousel_text_1": "Nur Sie und der Empfänger können die Nachrichten lesen. Niemand sonst.",
-  "carousel_title_2": "Dezentrales Netzwerk",
-  "carousel_text_2": "Keine zentralen Server. Keine Kontrolle. Nur private Kommunikation.",
-  "carousel_title_3": "Verschlüsselte lokale Speicherung",
-  "carousel_text_3": "Chats werden verschlüsselt und auf Ihrem Gerät gespeichert.",
-  "carousel_title_4": "Anonyme Nachrichten",
-  "carousel_text_4": "Keine Telefonnummer. Keine E-Mail. Nur reine Anonymität.",
+  "carousel_title_1": "Willkommen bei XChat",
+  "carousel_text_1": "Willkommen auf unserer sicheren, dezentralisierten Kommunikationsplattform. Ihre Reise zu echter Privatsphäre beginnt hier.",
+  "carousel_title_2": "Offenes Protokoll",
+  "carousel_text_2": "Aufgebaut auf dem Nostr-Protokoll. Keine Telefonnummern. Keine E-Mail-Adressen. Nur reine, dezentralisierte Kommunikation.",
+  "carousel_title_3": "Private Kreise",
+  "carousel_text_3": "Wechseln Sie nahtlos zwischen verschiedenen Kreisen. Jede Unterhaltung ist Ende-zu-Ende verschlüsselt für vollständige Privatsphäre.",
+  "carousel_title_4": "Benutzerdefinierte Server",
+  "carousel_text_4": "Passen Sie Ihre Relais und Dateiserver an. Sie haben vollständige Kontrolle darüber, wo Ihre Daten gespeichert werden.",
   "account_key_placeholder": "nsec oder bunker:// URI eingeben",
-  
   "get_started": "Loslegen",
   "have_account": "Ich habe ein Nostr-Konto",
-  
   "profile_setup_title": "Profil erstellen",
   "profile_setup_subtitle": "Geben Sie Ihren Namen ein, um zu beginnen. Ihre sichere Identität wird automatisch erstellt.",
   "profile_setup_avatar_hint": "Ihr einzigartiger Avatar",
   "profile_setup_name_hint": "So werden andere Sie sehen. Sie können dies jederzeit ändern.",
   "first_name_placeholder": "Vorname",
   "last_name_placeholder": "Nachname (Optional)",
-  
   "circle_selection_title": "Einem Kreis beitreten",
   "circle_selection_subtitle": "Kreise verwenden Relays, um Sie mit anderen zu verbinden. Alle Nachrichten sind Ende-zu-Ende-verschlüsselt. Mehr erfahren",
   "use_public_circle": "Community-Relay",
@@ -38,7 +35,6 @@
   "use_private_circle": "Privates Relay",
   "use_private_circle_desc": "Selbst gehostetes oder persönliches Relay für maximale Kontrolle.",
   "recommended": "Empfohlen",
-  
   "add_circle_title": "Kreis hinzufügen",
   "add_circle_description": "Geben Sie die Kreisadresse ein, um beizutreten.",
   "circle_url_placeholder": "Kreis-URL oder Name eingeben",
@@ -46,7 +42,6 @@
   "circle_url_empty": "Bitte geben Sie eine Kreisadresse ein",
   "join": "Beitreten",
   "what_is_circle": "Was ist ein Kreis?",
-  
   "relay_intro_title": "Was ist ein Kreis?",
   "relay_intro_subtitle": "Ihr privates Kommunikationszentrum",
   "relay_intro_description": "Ein Kreis ist wie Ihr eigenes privates Postzimmer, das alle Ihre verschlüsselten Nachrichten verwaltet. Es hilft Ihnen, mit Freunden zu chatten und dabei alles sicher und privat zu halten.",
@@ -75,7 +70,6 @@
   "how_to_use_step_1": "Geben Sie Ihren nsec-Privatschlüssel für die direkte Anmeldung ein",
   "how_to_use_step_2": "Oder verwenden Sie bunker:// URI für die Remote-Signer-Anmeldung",
   "how_to_use_step_3": "Die App verbindet sich sicher und authentifiziert Sie",
-  
   "select_avatar": "Avatar auswählen",
   "camera": "Kamera"
 }

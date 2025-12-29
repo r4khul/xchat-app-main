@@ -39,6 +39,7 @@ class _AdvancedSettingsPageState extends State<AdvancedSettingsPage> {
       body: CLSectionListView(
         items: [
           SectionListViewItem(
+            footer: Localized.text('ox_usercenter.show_message_info_option_description'),
             data: [
               SwitcherItemModel(
                 icon: ListViewIcon.data(CupertinoIcons.info),
@@ -48,6 +49,11 @@ class _AdvancedSettingsPageState extends State<AdvancedSettingsPage> {
                   await AppConfigHelper.updateShowMessageInfoOption(value);
                 },
               ),
+            ],
+          ),
+          SectionListViewItem(
+            footer: Localized.text('ox_usercenter.use_tor_network_description'),
+            data: [
               SwitcherItemModel(
                 icon: ListViewIcon.data(CupertinoIcons.lock_shield),
                 title: Localized.text('ox_usercenter.use_tor_network'),

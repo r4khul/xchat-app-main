@@ -1,13 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:chatcore/chat-core.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/login/login_models.dart';
+import 'package:ox_common/login/circle_service.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/utils/adapt.dart';
-import 'package:ox_common/utils/string_utils.dart';
-import 'package:ox_common/widgets/avatar.dart';
+import 'package:ox_common/widgets/common_loading.dart' as Loading;
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 
@@ -16,7 +15,7 @@ import 'profile_settings_page.dart';
 
 enum _MenuAction { edit, delete }
 
-class CircleDetailPage extends StatelessWidget {
+class CircleDetailPage extends StatefulWidget {
   const CircleDetailPage({
     super.key,
     required this.circle,
@@ -33,11 +32,24 @@ class CircleDetailPage extends StatelessWidget {
   String get title => Localized.text('ox_usercenter.circle_settings');
 
   @override
+  State<CircleDetailPage> createState() => _CircleDetailPageState();
+}
+
+class _CircleDetailPageState extends State<CircleDetailPage> {
+  late String _circleName;
+
+  @override
+  void initState() {
+    super.initState();
+    _circleName = widget.circle.name;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return CLScaffold(
       appBar: CLAppBar(
-        previousPageTitle: previousPageTitle,
-        title: title,
+        previousPageTitle: widget.previousPageTitle,
+        title: widget.title,
         actions: [_buildMenuButton(context)],
         backgroundColor: ColorToken.primaryContainer.of(context),
       ),
@@ -46,8 +58,9 @@ class CircleDetailPage extends StatelessWidget {
         items: [
           SectionListViewItem(
             headerWidget: _buildHeader(context),
-            data: _buildMainItems(context),
+            data: [],
           ),
+          ..._buildMainItems(context),
         ],
       ),
       isSectionListPage: true,
@@ -80,7 +93,7 @@ class CircleDetailPage extends StatelessWidget {
     switch (action) {
       case _MenuAction.edit:
         OXNavigator.pushPage(context, (_) =>
-            ProfileSettingsPage(previousPageTitle: title));
+            ProfileSettingsPage(previousPageTitle: widget.title));
         break;
       case _MenuAction.delete:
         _confirmDelete(context);
@@ -105,7 +118,7 @@ class CircleDetailPage extends StatelessWidget {
 
     if (confirmed == true) {
       try {
-        await LoginManager.instance.deleteCircle(circle.id);
+        await LoginManager.instance.deleteCircle(widget.circle.id);
       } catch (e) {
         CommonToast.instance.show(context, e.toString());
       }
@@ -114,8 +127,6 @@ class CircleDetailPage extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
-    final description = this.description.orDefault(
-        Localized.text('ox_usercenter.circle_description_placeholder'));
     return Container(
       color: PlatformStyle.isUseMaterial
           ? ColorToken.primaryContainer.of(context)
@@ -129,13 +140,31 @@ class CircleDetailPage extends StatelessWidget {
             radius: 40.px,
             backgroundColor: ColorToken.onPrimary.of(context),
             child: CLText.titleLarge(
-              circle.name.isNotEmpty ? circle.name[0].toUpperCase() : '?',
+              _circleName.isNotEmpty ? _circleName[0].toUpperCase() : '?',
             ),
           ),
       
           SizedBox(height: 12.px),
 
-          CLText.titleLarge(circle.name, textAlign: TextAlign.center,),
+          GestureDetector(
+            onTap: () => _editCircleName(context),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CLText.titleLarge(
+                  _circleName,
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(width: 8.px),
+                Icon(
+                  CupertinoIcons.create_solid,
+                  size: 18.px,
+                  color: ColorToken.onSurfaceVariant.of(context),
+                ),
+              ],
+            ),
+          ),
       
           SizedBox(height: 12.px),
       
@@ -160,38 +189,80 @@ class CircleDetailPage extends StatelessWidget {
     );
   }
 
-  List<ListViewItem> _buildMainItems(BuildContext context) {
+  Future<void> _editCircleName(BuildContext context) async {
+    await CLDialog.showInputDialog(
+      context: context,
+      title: Localized.text('ox_usercenter.edit_circle_name'),
+      inputLabel: Localized.text('ox_usercenter.circle_name'),
+      initialValue: _circleName,
+      onConfirm: (newName) async {
+        if (newName.trim().isEmpty) {
+          CommonToast.instance.show(context, Localized.text('ox_common.input_cannot_be_empty'));
+          return false;
+        }
+        
+        if (newName.trim() == _circleName) {
+          return true; // No change needed
+        }
+
+        try {
+          Loading.OXLoading.show();
+          
+          final updatedCircle = await CircleService.updateCircleName(
+            widget.circle.id,
+            newName.trim(),
+          );
+
+          if (updatedCircle == null) {
+            Loading.OXLoading.dismiss();
+            CommonToast.instance.show(context, Localized.text('ox_common.operation_failed'));
+            return false;
+          }
+
+          Loading.OXLoading.dismiss();
+          
+          setState(() {
+            _circleName = newName.trim();
+          });
+
+          return true;
+        } catch (e) {
+          Loading.OXLoading.dismiss();
+          CommonToast.instance.show(context, e.toString());
+          return false;
+        }
+      },
+    );
+  }
+
+  List<SectionListViewItem> _buildMainItems(BuildContext context) {
     return [
-      // My Avatar in Circle
-      // CustomItemModel(
-      //   leading: const Icon(CupertinoIcons.person_crop_circle),
-      //   titleWidget: CLText(Localized.text('ox_usercenter.my_avatar_in_circle')),
-      //   trailing: OXUserAvatar(
-      //     user: Account.sharedInstance.me,
-      //     size: 32.px,
-      //   ),
-      //   onTap: () {
-      //     OXNavigator.pushPage(context, (_) =>
-      //         ProfileSettingsPage(previousPageTitle: title));
-      //   },
-      //   isCupertinoAutoTrailing: true,
-      // ),
       // Relay Server
-      LabelItemModel(
-        icon: ListViewIcon.data(CupertinoIcons.antenna_radiowaves_left_right),
-        title: Localized.text('ox_usercenter.relay_server'),
-        value$: ValueNotifier(circle.relayUrl),
-        onTap: null,
+      SectionListViewItem(
+        footer: Localized.text('ox_usercenter.relay_server_description'),
+        data: [
+          LabelItemModel(
+            icon: ListViewIcon.data(CupertinoIcons.antenna_radiowaves_left_right),
+            title: Localized.text('ox_usercenter.relay_server'),
+            value$: ValueNotifier(widget.circle.relayUrl),
+            onTap: null,
+          ),
+        ],
       ),
       // File Server Setting (Server Settings)
-      CustomItemModel(
-        leading: const Icon(CupertinoIcons.settings),
-        titleWidget: CLText(Localized.text('ox_usercenter.file_server_setting')),
-        onTap: () {
-          OXNavigator.pushPage(context, (_) => FileServerPage(
-            previousPageTitle: title,
-          ));
-        },
+      SectionListViewItem(
+        footer: Localized.text('ox_usercenter.file_server_setting_description'),
+        data: [
+          CustomItemModel(
+            leading: const Icon(CupertinoIcons.settings),
+            titleWidget: CLText(Localized.text('ox_usercenter.file_server_setting')),
+            onTap: () {
+              OXNavigator.pushPage(context, (_) => FileServerPage(
+                previousPageTitle: widget.title,
+              ));
+            },
+          ),
+        ],
       ),
     ];
   }

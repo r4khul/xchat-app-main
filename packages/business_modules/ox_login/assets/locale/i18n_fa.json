@@ -11,26 +11,23 @@
   "private_key_regular_failed": "تأیید کلید خصوصی ناموفق بود",
   "str_nesc_invalid_hint": "NSEC وارد شده نامعتبر است. لطفاً دوباره وارد کنید.",
   "wait_link_service": "در انتظار اتصال به سرویس، یا بررسی کنید آیا برنامه امضا مجوز درخواست می‌کند!",
-  "carousel_title_1": "رمزنگاری سرتاسری",
-  "carousel_text_1": "فقط شما و گیرنده می‌توانید پیام‌ها را بخوانید. هیچ‌کس دیگری.",
-  "carousel_title_2": "شبکه غیرمتمرکز",
-  "carousel_text_2": "بدون سرورهای مرکزی. بدون کنترل. فقط ارتباط خصوصی.",
-  "carousel_title_3": "ذخیره‌سازی محلی رمزنگاری شده",
-  "carousel_text_3": "چت‌ها رمزنگاری و در دستگاه شما ذخیره می‌شوند.",
-  "carousel_title_4": "پیام‌رسانی ناشناس",
-  "carousel_text_4": "بدون شماره تلفن. بدون ایمیل. فقط ناشناسی خالص.",
+  "carousel_title_1": "به XChat خوش آمدید",
+  "carousel_text_1": "به پلتفرم ارتباطی امن و غیرمتمرکز ما خوش آمدید. سفر شما به حریم خصوصی واقعی از اینجا آغاز می‌شود.",
+  "carousel_title_2": "پروتکل باز",
+  "carousel_text_2": "ساخته شده بر اساس پروتکل Nostr. بدون شماره تلفن. بدون آدرس ایمیل. فقط ارتباط غیرمتمرکز خالص.",
+  "carousel_title_3": "دایره‌های خصوصی",
+  "carousel_text_3": "به راحتی بین دایره‌های مختلف جابجا شوید. هر مکالمه برای حریم خصوصی کامل به صورت end-to-end رمزگذاری شده است.",
+  "carousel_title_4": "سرورهای سفارشی",
+  "carousel_text_4": "رله‌ها و سرورهای فایل خود را سفارشی کنید. کنترل کامل بر محل ذخیره داده‌های خود دارید.",
   "account_key_placeholder": "nsec یا bunker:// URI وارد کنید",
-  
   "get_started": "شروع کنید",
   "have_account": "حساب Nostr دارم",
-  
   "profile_setup_title": "پروفایل خود را بسازید",
   "profile_setup_subtitle": "نام خود را وارد کنید تا شروع کنید. هویت امن شما به طور خودکار ایجاد می‌شود.",
   "profile_setup_avatar_hint": "آواتار منحصر به فرد شما",
   "profile_setup_name_hint": "دیگران شما را اینگونه می‌بینند. می‌توانید هر زمان تغییرش دهید.",
   "first_name_placeholder": "نام",
   "last_name_placeholder": "نام خانوادگی (اختیاری)",
-  
   "circle_selection_title": "به یک Circle بپیوندید",
   "circle_selection_subtitle": "Circle ها از relay برای اتصال شما به دیگران استفاده می‌کنند. همه پیام‌ها end-to-end رمزگذاری شده‌اند. بیشتر بدانید",
   "use_public_circle": "Relay جامعه",
@@ -38,7 +35,6 @@
   "use_private_circle": "Relay خصوصی",
   "use_private_circle_desc": "Relay خود میزبان یا شخصی برای حداکثر کنترل.",
   "recommended": "توصیه شده",
-  
   "add_circle_title": "افزودن Circle",
   "add_circle_description": "آدرس circle را برای پیوستن وارد کنید.",
   "circle_url_placeholder": "URL یا نام circle را وارد کنید",
@@ -46,7 +42,6 @@
   "circle_url_empty": "لطفاً آدرس circle وارد کنید",
   "join": "پیوستن",
   "what_is_circle": "Circle چیست؟",
-  
   "relay_intro_title": "دایره چیست؟",
   "relay_intro_subtitle": "مرکز ارتباط خصوصی شما",
   "relay_intro_description": "دایره مانند اتاق پست خصوصی خود شماست که تمام پیام‌های رمزگذاری شده شما را مدیریت می‌کند. به شما کمک می‌کند با دوستان چت کنید در حالی که همه چیز را امن و خصوصی نگه می‌دارد.",
@@ -75,7 +70,6 @@
   "how_to_use_step_1": "کلید خصوصی nsec خود را برای ورود مستقیم وارد کنید",
   "how_to_use_step_2": "یا از bunker:// URI برای ورود از طریق امضاکننده راه دور استفاده کنید",
   "how_to_use_step_3": "برنامه به طور امن متصل می‌شود و شما را احراز هویت می‌کند",
-  
   "select_avatar": "انتخاب آواتار",
   "camera": "دوربین"
 }

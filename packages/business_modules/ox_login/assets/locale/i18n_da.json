@@ -11,26 +11,23 @@
   "private_key_regular_failed": "Verificering af privat nøgle mislykkedes",
   "str_nesc_invalid_hint": "Den indtastede NSEC er ugyldig. Indtast den venligst igen.",
   "wait_link_service": "Venter på forbindelse til tjenesten, eller tjek om underskriverappen beder om autorisation!",
-  "carousel_title_1": "End-to-end-kryptering",
-  "carousel_text_1": "Kun du og modtageren kan læse beskederne. Ingen andre.",
-  "carousel_title_2": "Decentraliseret netværk",
-  "carousel_text_2": "Ingen centrale servere. Ingen kontrol. Bare privat kommunikation.",
-  "carousel_title_3": "Krypteret lokal lagring",
-  "carousel_text_3": "Chats er krypteret og gemt på din enhed.",
-  "carousel_title_4": "Anonym beskedudveksling",
-  "carousel_text_4": "Intet telefonnummer. Ingen e-mail. Bare ren anonymitet.",
+  "carousel_title_1": "Velkommen til XChat",
+  "carousel_text_1": "Velkommen til vores sikre, decentraliserede kommunikationsplatform. Din rejse mod ægte privatliv begynder her.",
+  "carousel_title_2": "Åbent protokol",
+  "carousel_text_2": "Bygget på Nostr-protokollen. Ingen telefonnumre. Ingen e-mailadresser. Kun ren, decentraliseret kommunikation.",
+  "carousel_title_3": "Private cirkler",
+  "carousel_text_3": "Skift sømløst mellem forskellige cirkler. Hver samtale er end-to-end krypteret for fuldstændig privatliv.",
+  "carousel_title_4": "Brugerdefinerede servere",
+  "carousel_text_4": "Tilpas dine relæer og filservere. Du har fuld kontrol over, hvor dine data gemmes.",
   "account_key_placeholder": "Indtast nsec eller bunker:// URI",
-  
   "get_started": "Kom i gang",
   "have_account": "Jeg har en Nostr-konto",
-  
   "profile_setup_title": "Opret din profil",
   "profile_setup_subtitle": "Indtast dit navn for at komme i gang. Din sikre identitet oprettes automatisk.",
   "profile_setup_avatar_hint": "Din unikke avatar",
   "profile_setup_name_hint": "Sådan vil andre se dig. Du kan ændre dette når som helst.",
   "first_name_placeholder": "Fornavn",
   "last_name_placeholder": "Efternavn (Valgfrit)",
-  
   "circle_selection_title": "Deltag i en Cirkel",
   "circle_selection_subtitle": "Cirkler bruger relays til at forbinde dig med andre. Alle beskeder er end-to-end krypteret. Læs mere",
   "use_public_circle": "Fællesskabs-Relay",
@@ -38,7 +35,6 @@
   "use_private_circle": "Privat Relay",
   "use_private_circle_desc": "Selvhostet eller personlig relay for maksimal kontrol.",
   "recommended": "Anbefalet",
-  
   "add_circle_title": "Tilføj Cirkel",
   "add_circle_description": "Indtast cirkeladressen for at deltage.",
   "circle_url_placeholder": "Indtast cirkel-URL eller navn",
@@ -46,7 +42,6 @@
   "circle_url_empty": "Indtast venligst en cirkeladresse",
   "join": "Deltag",
   "what_is_circle": "Hvad er en Cirkel?",
-  
   "relay_intro_title": "Hvad er en Cirkel?",
   "relay_intro_subtitle": "Dit private kommunikationscenter",
   "relay_intro_description": "En Cirkel er som dit eget private postrum, der håndterer alle dine krypterede beskeder. Det hjælper dig med at chatte med venner, mens alt holdes sikkert og privat.",
@@ -75,7 +70,6 @@
   "how_to_use_step_1": "Indtast din nsec private nøgle til direkte login",
   "how_to_use_step_2": "Eller brug bunker:// URI til login via fjernunderskriver",
   "how_to_use_step_3": "Appen opretter sikker forbindelse og autentificerer dig",
-  
   "select_avatar": "Vælg avatar",
   "camera": "Kamera"
 }

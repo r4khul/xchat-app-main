@@ -17,7 +17,7 @@ class CLLayout {
   // source: cupertino/list_tile.dart - _kNotchedPaddingWithoutLeading
   static EdgeInsetsDirectional get kNotchedPaddingWithoutLeading =>
       EdgeInsetsDirectional.fromSTEB(
-        28.0,
+        18.0,
         10.0,
         14.0,
         10.0,

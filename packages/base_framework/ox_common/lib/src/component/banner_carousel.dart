@@ -49,7 +49,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
   }
 
   void _startAutoPlay() {
-    if (widget.interval == null || widget.interval == Duration.zero) return; // 关闭自动轮播
+    if (widget.interval == null || widget.interval == Duration.zero) return; 
     _timer?.cancel();
     _timer = Timer.periodic(widget.interval!, (_) {
       if (!mounted) return;
@@ -160,21 +160,25 @@ class _ParallaxPage extends StatelessWidget {
                   child: item.image,
                 ),
               ),
+              SizedBox(height: 24.py),
               Transform.translate(
                 offset: Offset(delta * width * 0.4 * offsetScale, 0),
-                child: CLText.headlineSmall(
+                child: CLText.titleLarge(
                   item.title,
                   colorToken: ColorToken.white,
+                  isBold: true,
+                  textAlign: TextAlign.center,
                   maxLines: 1,
                 ),
               ),
+              SizedBox(height: 12.py),
               Transform.translate(
                 offset: Offset(delta * width * 0.4 * offsetScale, 0),
-                child: CLText.titleMedium(
+                child: CLText.bodyLarge(
                   item.text,
                   colorToken: ColorToken.white,
                   textAlign: TextAlign.center,
-                  maxLines: 2,
+                  maxLines: 3,
                 ),
               ),
             ],

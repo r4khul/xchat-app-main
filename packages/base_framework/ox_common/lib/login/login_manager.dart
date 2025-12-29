@@ -18,6 +18,7 @@ import 'database_manager.dart';
 import 'login_models.dart';
 import 'account_models.dart';
 import 'circle_config_models.dart';
+import 'circle_service.dart';
 import 'account_path_manager.dart';
 import '../secure/db_key_manager.dart';
 
@@ -1198,6 +1199,21 @@ extension AccountUpdateMethod on LoginManager {
   Future<bool> updatedCircles(List<Circle> circles) async {
     final account = currentState.account;
     if (account == null) return false;
+
+    // Save circles to CircleISAR collection using CircleService
+    final accountDb = account.db;
+    for (final circle in circles) {
+      final circleWithPubkey = circle.pubkey == null || circle.pubkey!.isEmpty
+          ? Circle(
+              id: circle.id,
+              name: circle.name,
+              relayUrl: circle.relayUrl,
+              type: circle.type,
+              pubkey: account.pubkey,
+            )
+          : circle;
+      await CircleService.createCircle(accountDb, circleWithPubkey);
+    }
 
     final newAccount = account.copyWith(circles: circles);
     await _saveAccount(newAccount);

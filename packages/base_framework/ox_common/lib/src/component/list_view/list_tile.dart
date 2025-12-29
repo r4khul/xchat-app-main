@@ -6,7 +6,7 @@ import 'package:ox_common/utils/widget_tool.dart';
 import '../../../component.dart';
 
 class CLListTile extends StatelessWidget {
-  CLListTile({
+  const CLListTile({
     super.key,
     required this.model,
     this.isEditing = false,
@@ -40,36 +40,41 @@ class CLListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final model = this.model;
-    if (model is LabelItemModel)
+    if (model is LabelItemModel) {
       return _ListViewLabelItemWidget(
         model: model,
         isEditing: isEditing,
         onDelete: onDelete,
       );
-    if (model is SwitcherItemModel)
+    }
+    if (model is SwitcherItemModel) {
       return _ListViewSwitcherItemWidget(
         model: model,
         isEditing: isEditing,
         onDelete: onDelete,
       );
-    if (model is SelectedItemModel)
+    }
+    if (model is SelectedItemModel) {
       return _ListViewSelectedItemWidget(
         model: model,
         isEditing: isEditing,
         onDelete: onDelete,
       );
-    if (model is MultiSelectItemModel)
+    }
+    if (model is MultiSelectItemModel) {
       return _ListViewMultiSelectItemWidget(
         model: model,
         isEditing: isEditing,
         onDelete: onDelete,
       );
-    if (model is CustomItemModel)
+    }
+    if (model is CustomItemModel) {
       return _ListViewCustomItemWidget(
         model: model,
         isEditing: isEditing,
         onDelete: onDelete,
       );
+    }
     throw Exception('Unknown item model type');
   }
 

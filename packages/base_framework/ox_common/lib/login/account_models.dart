@@ -6,6 +6,8 @@ import 'package:convert/convert.dart';
 import 'package:flutter/foundation.dart';
 import 'package:nostr_core_dart/nostr.dart' hide Filter;
 import 'login_models.dart';
+import 'circle_isar.dart';
+import 'circle_service.dart';
 
 part 'account_models.g.dart';
 
@@ -110,6 +112,7 @@ class AccountSchemas {
   // Private static list to avoid recreating the list every time
   static final List<IsarGeneratedSchema> _schemas = [
     AccountDataISARSchema,
+    CircleISARSchema,
   ];
 
   /// Get account level schemas for independent Isar instance
@@ -221,6 +224,9 @@ class AccountHelper {
   static const String keyHasUpload = 'has_upload';
 
   /// Convert AccountModel to list of AccountDataISAR entries
+  /// 
+  /// Note: circles field is deprecated and no longer saved here.
+  /// Use CircleRepository to manage circles separately in CircleISAR collection.
   static List<AccountDataISAR> toAccountDataList(AccountModel account) {
     final db = account.db;
     final result = <AccountDataISAR>[
@@ -228,8 +234,8 @@ class AccountHelper {
       AccountDataISAR.createInt(keyLoginType, account.loginType.value)..id = db.accountDataISARs.autoIncrement(),
       AccountDataISAR.createString(keyEncryptedPrivKey, account.encryptedPrivKey)..id = db.accountDataISARs.autoIncrement(),
       AccountDataISAR.createString(keyDefaultPassword, account.defaultPassword)..id = db.accountDataISARs.autoIncrement(),
-      AccountDataISAR.createString(keyCircles, 
-        jsonEncode(account.circles.map((c) => c.toJson()).toList()))..id = db.accountDataISARs.autoIncrement(),
+      // DEPRECATED: circles field is no longer saved here
+      // Old circles data in AccountDataISAR will be migrated to CircleISAR
       AccountDataISAR.createInt(keyCreatedAt, account.createdAt)..id = db.accountDataISARs.autoIncrement(),
       AccountDataISAR.createInt(keyLastLoginAt, account.lastLoginAt)..id = db.accountDataISARs.autoIncrement(),
       AccountDataISAR.createString(keyNostrConnectUri, account.nostrConnectUri)..id = db.accountDataISARs.autoIncrement(),
@@ -277,28 +283,48 @@ class AccountHelper {
         }
       }
 
-      // Parse circles
-      List<Circle> circles = [];
-      if (dataMap[keyCircles] != null) {
-        final circlesJson = jsonDecode(dataMap[keyCircles] as String) as List;
-        circles = circlesJson
-            .map((json) => Circle.fromJson(json as Map<String, dynamic>))
-            .toList();
-      }
-
       final pubkey = dataMap[keyPubkey] as String?;
       final loginTypeRaw = dataMap[keyLoginType] as int?;
       final encryptedPrivKey = dataMap[keyEncryptedPrivKey] as String?;
       final defaultPassword = dataMap[keyDefaultPassword] as String?;
       final nostrConnectUri = dataMap[keyNostrConnectUri] as String?;
       final nostrConnectClientPrivkey = dataMap[keyNostrConnectClientPrivkey] as String?;
-      final hasUpload = dataMap[keyHasUpload] as bool? ?? false;
       if (pubkey == null ||
           loginTypeRaw == null ||
           encryptedPrivKey == null ||
           defaultPassword == null ||
           nostrConnectUri == null) {
         return null;
+      }
+
+      // Load circles from CircleISAR collection (new storage)
+      // If not found, try to load from deprecated keyCircles (for migration)
+      List<Circle> circles = [];
+      try {
+        circles = await CircleService.getAllCircles(accountDb, pubkey);
+      } catch (e) {
+        debugPrint('Failed to load circles from CircleISAR: $e');
+      }
+
+      // Fallback to deprecated keyCircles if CircleISAR is empty (for migration)
+      if (circles.isEmpty && dataMap[keyCircles] != null) {
+        try {
+          final circlesJson = jsonDecode(dataMap[keyCircles] as String) as List;
+          circles = circlesJson
+              .map((json) {
+                final circle = Circle.fromJson(json as Map<String, dynamic>);
+                circle.pubkey = pubkey; // Set pubkey for migration
+                return circle;
+              })
+              .toList();
+          
+          // Trigger migration asynchronously (don't wait for it)
+          _migrateCirclesFromAccountData(accountDb, pubkey, circles).catchError((e) {
+            debugPrint('Failed to migrate circles: $e');
+          });
+        } catch (e) {
+          debugPrint('Failed to parse circles from deprecated keyCircles: $e');
+        }
       }
 
       return AccountModel(
@@ -318,6 +344,41 @@ class AccountHelper {
     } catch (e) {
       debugPrint('Failed to load AccountModel: $e');
       return null;
+    }
+  }
+
+  /// Migrate circles from deprecated AccountDataISAR.circles to CircleISAR collection
+  /// 
+  /// This is called automatically when loading AccountModel if circles are found
+  /// in the old storage format.
+  static Future<void> _migrateCirclesFromAccountData(
+    Isar accountDb,
+    String pubkey,
+    List<Circle> circles,
+  ) async {
+    try {
+      // Check if migration already happened (if CircleISAR has any circles for this pubkey)
+      final existingCircles = await CircleService.getAllCircles(accountDb, pubkey);
+      if (existingCircles.isNotEmpty) {
+        debugPrint('Circles already migrated for pubkey $pubkey');
+        return;
+      }
+
+      // Migrate each circle to CircleISAR
+      for (final circle in circles) {
+        final circleWithPubkey = Circle(
+          id: circle.id,
+          name: circle.name,
+          relayUrl: circle.relayUrl,
+          type: circle.type,
+          pubkey: pubkey,
+        );
+        await CircleService.createCircle(accountDb, circleWithPubkey);
+      }
+
+      debugPrint('Successfully migrated ${circles.length} circles for pubkey $pubkey');
+    } catch (e) {
+      debugPrint('Failed to migrate circles from AccountDataISAR: $e');
     }
   }
 }

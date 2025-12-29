@@ -122,6 +122,7 @@ class _InputBottomSheetState extends State<InputBottomSheet> {
   bool _isLoading = false;
   String? _errorText;
 
+  double get headerBarHeight => 66.px;
   double get horizontal => 16.px;
   double get separatorHeight => 20.px;
 
@@ -166,41 +167,42 @@ class _InputBottomSheetState extends State<InputBottomSheet> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header with title, hint icon, and close button
-              Row(
-                children: [
-                  Expanded(
-                    child: Row(
-                      children: [
-                        Flexible(
-                          child: CLText.headlineSmall(
-                            widget.title,
-                          ).setPadding(EdgeInsets.only(left: horizontal)),
-                        ),
-                        if (widget.showHintIcon)
-                          CLButton.icon(
-                            icon: Icons.help_outline,
-                            onTap: widget.onHintIconTap,
-                          )
-                      ],
-                    ),
-                  ),
-                  GestureDetector(
-                    behavior: HitTestBehavior.translucent,
-                    onTap: _handleCancel,
-                    child: Container(
-                      width: 48.px,
-                      height: 48.px,
-                      child: Icon(
-                        Icons.close,
-                        size: 24.px,
-                        color: ColorToken.onSurface.of(context),
+              SizedBox(
+                height: headerBarHeight,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Flexible(
+                            child: CLText.headlineSmall(
+                              widget.title,
+                            ).setPadding(EdgeInsets.only(left: horizontal)),
+                          ),
+                          if (widget.showHintIcon)
+                            CLButton.icon(
+                              icon: Icons.help_outline,
+                              onTap: widget.onHintIconTap,
+                            )
+                        ],
                       ),
                     ),
-                  ).setPaddingOnly(right: 4.px),
-                ],
+                    GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      onTap: _handleCancel,
+                      child: SizedBox(
+                        width: 48.px,
+                        height: 48.px,
+                        child: Icon(
+                          Icons.close,
+                          size: 24.px,
+                          color: ColorToken.onSurface.of(context),
+                        ),
+                      ),
+                    ).setPaddingOnly(right: 4.px),
+                  ],
+                ),
               ),
-
-              SizedBox(height: 8.px),
 
               // Description
               if (widget.descriptionWidget != null)

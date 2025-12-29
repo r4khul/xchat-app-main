@@ -2,6 +2,7 @@ import 'package:isar/isar.dart';
 
 import 'account_models.dart';
 import 'circle_config_models.dart';
+import 'circle_isar.dart';
 
 /// Login failure type enumeration
 enum LoginFailureType {
@@ -65,17 +66,41 @@ class Circle {
     required this.name,
     required this.relayUrl,
     this.type = CircleType.relay,
+    this.pubkey,
   });
 
   final String id;
-  final String name;
+  String name;
   final String relayUrl;
   final CircleType type;
+  String? pubkey; // Account pubkey this circle belongs to
 
   /// Circle level configuration, loaded lazily after circle DB initialized.
   CircleConfigModel _config = CircleConfigModel();
 
   late Isar db;
+
+  /// Create Circle from CircleISAR
+  factory Circle.fromISAR(CircleISAR isar) {
+    return Circle(
+      id: isar.circleId,
+      name: isar.name,
+      relayUrl: isar.relayUrl,
+      type: isar.type,
+      pubkey: isar.pubkey,
+    );
+  }
+
+  /// Convert Circle to CircleISAR
+  CircleISAR toISAR() {
+    return CircleISAR(
+      pubkey: pubkey ?? '',
+      circleId: id,
+      name: name,
+      relayUrl: relayUrl,
+      type: type,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -94,13 +119,13 @@ class Circle {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Circle && runtimeType == other.runtimeType && id == other.id;
+      other is Circle && runtimeType == other.runtimeType && id == other.id && pubkey == other.pubkey;
 
   @override
-  int get hashCode => id.hashCode;
+  int get hashCode => Object.hash(id, pubkey);
 
   @override
-  String toString() => 'Circle(id: $id, name: $name, relayUrl: $relayUrl, type: ${type.value})';
+  String toString() => 'Circle(id: $id, name: $name, relayUrl: $relayUrl, type: ${type.value}, pubkey: ${pubkey ?? 'null'})';
 
   /// Internal use only. Called by LoginManager to initialize configuration.
   void initConfig(CircleConfigModel cfg) {
