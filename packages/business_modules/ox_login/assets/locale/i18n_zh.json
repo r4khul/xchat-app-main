@@ -5,6 +5,7 @@
   "no_signer_installed": "未安装任何签名器应用。请安装 Amber、Aegis 或 Nowser 后继续。",
   "terms_of_service": "服务条款",
   "privacy_policy": "隐私政策",
+  "agree_to_terms": "继续使用即表示您同意我们的{privacy_policy}和{terms_of_service}",
   "public_key": "公钥",
   "private_key": "私钥",
   "enter_account_key_login_hint": "使用 Nostr 密钥或远程签名器登录：",

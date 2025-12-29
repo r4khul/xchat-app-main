@@ -5,6 +5,7 @@
   "no_signer_installed": "No signer apps are installed. Please install Amber, Aegis, or Nowser to continue.",
   "terms_of_service": "Terms of Use",
   "privacy_policy": "Privacy Policy",
+  "agree_to_terms": "By continuing, you agree to our {privacy_policy} and {terms_of_service}",
   "public_key": "Public Key",
   "private_key": "Private Key",
   "enter_account_key_login_hint": "Use Nostr key or remote signer to login:",

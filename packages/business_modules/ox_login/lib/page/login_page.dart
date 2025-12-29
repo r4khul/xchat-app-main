@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:ox_common/component.dart';
 // ox_common
@@ -10,6 +11,7 @@ import 'package:ox_common/widgets/common_image.dart';
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_localizable/ox_localizable.dart';
+import 'package:ox_module_service/ox_module_service.dart';
 // ox_login
 import 'package:ox_login/page/account_key_login_page.dart';
 import 'package:ox_login/page/profile_setup_page.dart';
@@ -94,6 +96,8 @@ class _LoginPageState extends State<LoginPage> {
             _buildQuickStartButton().setPaddingOnly(bottom: 18.px),
             // Secondary button: For existing Nostr users
             _buildExistingAccountButton().setPaddingOnly(bottom: 18.px),
+            // Privacy policy and terms links
+            _buildPrivacyAndTermsLinks().setPaddingOnly(bottom: 18.px),
             // Signer login for Android
             if(Platform.isAndroid) buildAmberLoginWidget(),
           ],
@@ -121,6 +125,109 @@ class _LoginPageState extends State<LoginPage> {
     color: ColorToken.white.of(context),
     text: Localized.text('ox_login.have_account'),
   );
+
+  /// Privacy policy and terms of service links
+  Widget _buildPrivacyAndTermsLinks() {
+    final linkColor = ColorToken.white.of(context).withOpacity(0.7);
+    final privacyPolicyText = Localized.text('ox_login.privacy_policy');
+    final termsOfServiceText = Localized.text('ox_login.terms_of_service');
+    final agreeText = Localized.text('ox_login.agree_to_terms');
+    
+    // Parse the agree text and replace placeholders with actual links
+    final privacyPlaceholder = '{privacy_policy}';
+    final termsPlaceholder = '{terms_of_service}';
+    
+    final List<TextSpan> spans = [];
+    int startIndex = 0;
+    
+    // Find privacy policy placeholder
+    final privacyIndex = agreeText.indexOf(privacyPlaceholder);
+    if (privacyIndex != -1) {
+      // Add text before privacy policy
+      if (privacyIndex > startIndex) {
+        spans.add(TextSpan(
+          text: agreeText.substring(startIndex, privacyIndex),
+          style: TextStyle(color: linkColor, fontSize: 12.px),
+        ));
+      }
+      // Add clickable privacy policy link
+      spans.add(TextSpan(
+        text: privacyPolicyText,
+        style: TextStyle(
+          color: linkColor,
+          fontSize: 12.px,
+          decoration: TextDecoration.underline,
+        ),
+        recognizer: TapGestureRecognizer()..onTap = _openPrivacyPolicy,
+      ));
+      startIndex = privacyIndex + privacyPlaceholder.length;
+    }
+    
+    // Find terms of service placeholder
+    final termsIndex = agreeText.indexOf(termsPlaceholder, startIndex);
+    if (termsIndex != -1) {
+      // Add text between privacy and terms
+      if (termsIndex > startIndex) {
+        spans.add(TextSpan(
+          text: agreeText.substring(startIndex, termsIndex),
+          style: TextStyle(color: linkColor, fontSize: 12.px),
+        ));
+      }
+      // Add clickable terms of service link
+      spans.add(TextSpan(
+        text: termsOfServiceText,
+        style: TextStyle(
+          color: linkColor,
+          fontSize: 12.px,
+          decoration: TextDecoration.underline,
+        ),
+        recognizer: TapGestureRecognizer()..onTap = _openTermsOfService,
+      ));
+      startIndex = termsIndex + termsPlaceholder.length;
+    }
+    
+    // Add remaining text
+    if (startIndex < agreeText.length) {
+      spans.add(TextSpan(
+        text: agreeText.substring(startIndex),
+        style: TextStyle(color: linkColor, fontSize: 12.px),
+      ));
+    }
+    
+    // If no placeholders found, show plain text
+    if (spans.isEmpty) {
+      spans.add(TextSpan(
+        text: agreeText,
+        style: TextStyle(color: linkColor, fontSize: 12.px),
+      ));
+    }
+    
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 32.px),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Checkbox (always checked)
+          Padding(
+            padding: EdgeInsets.only(top: 2.px),
+            child: CLCheckbox(
+              value: true,
+              onChanged: null, // Disabled, always checked
+              size: 16.px,
+            ),
+          ),
+          SizedBox(width: 8.px),
+          // Agreement text
+          Expanded(
+            child: RichText(
+              textAlign: TextAlign.left,
+              text: TextSpan(children: spans),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget buildAmberLoginWidget() {
     String text = Localized.text('ox_login.login_with_signer');
@@ -170,6 +277,36 @@ class _LoginPageState extends State<LoginPage> {
 
   void _login() {
     OXNavigator.pushPage(context, (context) => AccountKeyLoginPage());
+  }
+
+  void _openPrivacyPolicy() {
+    try {
+      OXModuleService.invoke('ox_common', 'gotoWebView', [
+        context,
+        'https://0xchat.com/protocols/xchat-privacy-policy.html',
+        null,
+        null,
+        null,
+        null
+      ]);
+    } catch (e) {
+      CommonToast.instance.show(context, 'Failed to open privacy policy: $e');
+    }
+  }
+
+  void _openTermsOfService() {
+    try {
+      OXModuleService.invoke('ox_common', 'gotoWebView', [
+        context,
+        'https://0xchat.com/protocols/xchat-terms-of-use.html',
+        null,
+        null,
+        null,
+        null
+      ]);
+    } catch (e) {
+      CommonToast.instance.show(context, 'Failed to open terms of service: $e');
+    }
   }
 
   void _showSignerSelectionDialog() async {
