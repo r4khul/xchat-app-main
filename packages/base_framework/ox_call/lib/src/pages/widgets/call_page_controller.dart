@@ -21,6 +21,7 @@ class CallPageController {
 
   // Private state
   CallSession _session;
+  Stopwatch? _stopwatch;
   Timer? _durationTimer;
   Timer? _autoHideTimer;
   void Function()? _removeStateListener;
@@ -33,7 +34,7 @@ class CallPageController {
   // Observable state
   final ValueNotifier<CallState> callState$ = ValueNotifier<CallState>(CallState.initiating);
   final ValueNotifier<bool> isConnected$ = ValueNotifier<bool>(false);
-  final ValueNotifier<int> duration$ = ValueNotifier<int>(0);
+  final ValueNotifier<Duration> duration$ = ValueNotifier<Duration>(Duration.zero);
   final ValueNotifier<bool> isMuted$ = ValueNotifier<bool>(false);
   final ValueNotifier<bool> isCameraOn$ = ValueNotifier<bool>(true);
   final ValueNotifier<bool> isSpeakerOn$ = ValueNotifier<bool>(true);
@@ -109,22 +110,38 @@ class CallPageController {
     }
   }
 
-  // Duration timer
   void _startDurationTimer() {
+    final stopwatch = Stopwatch()..start();
+    _stopwatch = stopwatch;
+    duration$.value = stopwatch.elapsed;
+
     _durationTimer?.cancel();
+    // Update ValueNotifier every second for UI refresh
     _durationTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      duration$.value++;
+      if (_stopwatch != null) {
+        duration$.value = _stopwatch!.elapsed;
+      }
     });
   }
 
   void _stopDurationTimer() {
     _durationTimer?.cancel();
     _durationTimer = null;
+    // Update final duration
+    if (_stopwatch != null) {
+      _stopwatch!.stop();
+      duration$.value = _stopwatch!.elapsed;
+      _stopwatch = null;
+    }
   }
 
-  String formatDuration(int seconds) {
-    final minutes = seconds ~/ 60;
-    final secs = seconds % 60;
+  /// Formats duration as MM:SS.
+  String formatDuration(Duration duration) {
+    // Round to nearest second to handle timer jitter
+    // This prevents "jumping" seconds when timer delays occur
+    final totalSeconds = (duration.inMilliseconds / 1000).round();
+    final minutes = totalSeconds ~/ 60;
+    final secs = totalSeconds % 60;
     return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
   }
 

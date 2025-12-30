@@ -53,10 +53,10 @@ class CallTopBar extends StatelessWidget {
   }
 
   Widget _buildDuration() {
-    return ValueListenableBuilder<int>(
+    return ValueListenableBuilder<Duration>(
       valueListenable: controller.duration$,
       builder: (context, duration, _) {
-        if (duration < 1) {
+        if (duration.inSeconds < 1) {
           return const SizedBox.shrink();
         }
         return CLText.titleMedium(
