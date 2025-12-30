@@ -529,11 +529,15 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
                   feature['title'] as String,
                   colorToken: ColorToken.onSurface,
                   isBold: true,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                SizedBox(height: 4.px),
+                SizedBox(height: 2.px), // Reduce spacing from 4.px to 2.px
                 CLText.bodySmall(
                   feature['description'] as String,
                   colorToken: ColorToken.onSurfaceVariant,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -664,8 +668,8 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
               border: Border.all(
                 color: isSelected
                     ? ColorToken.xChat.of(context)
-                    : Colors.transparent,
-                width: 2,
+                    : ColorToken.onSurfaceVariant.of(context).withValues(alpha: 0.2),
+                width: isSelected ? 2 : 1,
               ),
             ),
             child: Column(

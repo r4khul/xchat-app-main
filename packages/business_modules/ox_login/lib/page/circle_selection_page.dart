@@ -37,25 +37,38 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
 
   @override
   Widget build(BuildContext context) {
-    return CLScaffold(
-      appBar: CLAppBar(),
-      body: _buildBody(),
-      bottomWidget: _buildConnectButton(),
+    return Stack(
+      children: [
+        CLScaffold(
+          appBar: CLAppBar(),
+          body: _buildBody(),
+        ),
+        Positioned(
+          left: CLLayout.horizontalPadding,
+          right: CLLayout.horizontalPadding,
+          bottom: 12.px,
+          child: SafeArea(
+            child: _buildConnectButton(),
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildBody() {
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        vertical: 24.px,
-        horizontal: CLLayout.horizontalPadding,
+    return SingleChildScrollView(
+      padding: EdgeInsets.only(
+        left: CLLayout.horizontalPadding,
+        right: CLLayout.horizontalPadding,
+        top: 24.px,
+        bottom: 100.px, // Add bottom padding to avoid button overlap
       ),
       child: Column(
         children: [
           _buildHeader(),
           SizedBox(height: 32.px),
           _buildCircleOptions(),
-          const Spacer(),
+          SizedBox(height: 24.px),
         ],
       ),
     );
@@ -96,7 +109,7 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
 
   Widget _buildInviteOption() {
     return _buildOptionCard(
-      icon: Icons.qr_code_scanner_rounded,
+      icon: Icons.link_rounded,
       iconColor: ColorToken.xChat.of(context),
       title: Localized.text('ox_login.i_have_an_invite'),
       subtitle: Localized.text('ox_login.enter_invitation_code'),
@@ -132,10 +145,11 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
 
   Widget _buildPrivateCloudOption() {
     return Stack(
+      clipBehavior: Clip.none,
       children: [
         _buildOptionCard(
-          icon: Icons.workspace_premium,
-          iconColor: ColorToken.xChat.of(context),
+          icon: Icons.diamond_rounded,
+          iconColor: Colors.purple,
           title: Localized.text('ox_login.private_cloud'),
           subtitle: Localized.text('ox_login.private_cloud_desc'),
           showArrow: false,
@@ -145,7 +159,7 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
             _buildTag(
               icon: Icons.bolt_rounded,
               label: Localized.text('ox_login.zero_config'),
-              color: Colors.amber,
+              color: Colors.blue,
             ),
             _buildTag(
               icon: Icons.lock_rounded,
@@ -156,21 +170,20 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
           onTap: () => setState(() => _selectedCircleType = CircleType.private),
         ),
         Positioned(
-          top: 0,
-          right: 0,
+          top: -8.px,
+          right: 8.px,
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 8.px, vertical: 4.px),
+            padding: EdgeInsets.symmetric(
+              horizontal: 8.px,
+              vertical: 4.px,
+            ),
             decoration: BoxDecoration(
-              color: Colors.green,
-              borderRadius: BorderRadius.only(
-                topRight: Radius.circular(16.px),
-                bottomLeft: Radius.circular(8.px),
-              ),
+              color: ColorToken.xChat.of(context),
+              borderRadius: BorderRadius.circular(6.px),
             ),
             child: CLText.labelSmall(
               Localized.text('ox_login.recommended'),
               customColor: Colors.white,
-              isBold: true,
             ),
           ),
         ),
@@ -181,7 +194,7 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
   Widget _buildCustomRelayOption() {
     return _buildOptionCard(
       icon: Icons.dns_rounded,
-      iconColor: Colors.purple,
+      iconColor: ColorToken.xChat.of(context),
       title: Localized.text('ox_login.custom_relay'),
       subtitle: Localized.text('ox_login.custom_relay_desc'),
       showArrow: true,
@@ -383,7 +396,6 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
   Widget _buildConnectButton() {
     return Padding(
       padding: EdgeInsets.symmetric(
-        horizontal: CLLayout.horizontalPadding,
         vertical: 16.px,
       ),
       child: CLButton.filled(
