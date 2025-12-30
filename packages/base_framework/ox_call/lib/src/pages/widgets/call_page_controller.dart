@@ -15,6 +15,7 @@ import 'package:ox_call/src/models/call_session.dart';
 class CallPageController {
   CallPageController(CallSession initialSession) : _session = initialSession {
     callState$.value = _session.state;
+    isConnected$.value = _session.state == CallState.connected;
     _initialize();
   }
 
@@ -31,6 +32,7 @@ class CallPageController {
 
   // Observable state
   final ValueNotifier<CallState> callState$ = ValueNotifier<CallState>(CallState.initiating);
+  final ValueNotifier<bool> isConnected$ = ValueNotifier<bool>(false);
   final ValueNotifier<int> duration$ = ValueNotifier<int>(0);
   final ValueNotifier<bool> isMuted$ = ValueNotifier<bool>(false);
   final ValueNotifier<bool> isCameraOn$ = ValueNotifier<bool>(true);
@@ -78,6 +80,10 @@ class CallPageController {
 
     _session = session;
     callState$.value = session.state;
+    
+    if (session.state == CallState.connected && !isConnected$.value) {
+      isConnected$.value = true;
+    }
 
     if (session.state == CallState.connected) {
       _startDurationTimer();
@@ -220,6 +226,7 @@ class CallPageController {
     remoteRenderer.dispose();
 
     callState$.dispose();
+    isConnected$.dispose();
     duration$.dispose();
     isMuted$.dispose();
     isCameraOn$.dispose();
