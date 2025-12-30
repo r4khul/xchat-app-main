@@ -44,10 +44,6 @@ class CallPageController {
   // Derived state getters
   bool get isVideoCall => _session.callType == CallType.video;
   bool get isIncoming => _session.direction == CallDirection.incoming;
-  bool get isRinging => callState$.value == CallState.ringing;
-  bool get isConnected => callState$.value == CallState.connected;
-  bool get isEnded => callState$.value == CallState.ended;
-  bool get isConnecting => callState$.value == CallState.connecting;
   bool get isActionInProgress => actionInProgress$.value;
   String get sessionId => _session.sessionId;
 
@@ -136,14 +132,14 @@ class CallPageController {
   void _startAutoHideTimer() {
     _autoHideTimer?.cancel();
     _autoHideTimer = Timer(const Duration(seconds: 5), () {
-      if (isConnected && isVideoCall) {
+      if (isVideoCall && isConnected$.value) {
         isControlsVisible$.value = false;
       }
     });
   }
 
   void _resetAutoHideTimer() {
-    if (isVideoCall && isConnected) {
+    if (isVideoCall && isConnected$.value) {
       _startAutoHideTimer();
     }
   }

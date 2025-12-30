@@ -97,14 +97,13 @@ class _VoiceCallControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isOutgoingRinging =
-        !controller.isIncoming && controller.isRinging;
-
     return ValueListenableBuilder(
       valueListenable: controller.callState$,
       builder: (context, state, _) => ValueListenableBuilder(
         valueListenable: controller.actionInProgress$,
         builder: (context, inProgress, _) {
+          final isOutgoingRinging =
+              !controller.isIncoming && state == CallState.ringing;
           final disabled = inProgress || state == CallState.ended;
           return _buildButtonRow(disabled, isOutgoingRinging);
         },
@@ -143,14 +142,13 @@ class _VideoCallControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isOutgoingRinging =
-        !controller.isIncoming && controller.isRinging;
-
     return ValueListenableBuilder(
       valueListenable: controller.callState$,
       builder: (context, state, _) => ValueListenableBuilder(
         valueListenable: controller.actionInProgress$,
         builder: (context, inProgress, _) {
+          final isOutgoingRinging =
+              !controller.isIncoming && state == CallState.ringing;
           final disabled = inProgress || state == CallState.ended;
           return _buildContainer(disabled, isOutgoingRinging);
         },
