@@ -31,8 +31,17 @@ class _CallPageState extends State<CallPage> {
   @override
   void initState() {
     super.initState();
-    _controller = CallPageController(widget.session);
+    _controller = CallPageController(widget.session, context);
     _controller.hasPopped$.addListener(_onHasPopped);
+
+    // For incoming calls: check permission after first frame is rendered
+    if (widget.session.isIncoming) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _controller.checkPermissionAndGetLocalStreamForIncoming();
+        }
+      });
+    }
   }
 
   void _onHasPopped() {
@@ -61,7 +70,6 @@ class _CallPageState extends State<CallPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1C1C1E),
       body: ValueListenableBuilder<bool>(
         valueListenable: _controller.isControlsVisible$,
         builder: (context, isControlsVisible, _) {
@@ -97,20 +105,10 @@ class _CallPageState extends State<CallPage> {
                 bottom: isControlsVisible ? 0 : -200,
                 left: 0,
                 right: 0,
-                child: SafeArea(
-                  top: false,
-                  child: AnimatedOpacity(
-                    duration: const Duration(milliseconds: 200),
-                    opacity: isControlsVisible ? 1.0 : 0.0,
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        bottom: MediaQuery.of(context).padding.bottom > 0
-                            ? 0
-                            : 20,
-                      ),
-                      child: CallControlBar(controller: _controller),
-                    ),
-                  ),
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 200),
+                  opacity: isControlsVisible ? 1.0 : 0.0,
+                  child: CallControlBar(controller: _controller),
                 ),
               ),
             ],

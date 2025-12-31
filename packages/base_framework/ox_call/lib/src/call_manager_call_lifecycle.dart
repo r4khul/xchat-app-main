@@ -38,19 +38,39 @@ extension CallManagerCallLifecycle on CallManager {
     _notifyStateChange(session);
 
     try {
-      if (!await _requestPermissions(callType)) {
-        await _endCall(sessionId, CallEndReason.permissionDenied);
-        return;
-      }
+      await _backgroundKeepAlive.configureForCall();
+      await _backgroundKeepAlive.activate();
+    } catch (e) {
+      CallLogger.error('Failed to start call: $e');
+      await _handleError(sessionId, CallErrorType.unknown, 'Failed to start call: $e', e);
+    }
+  }
 
-      final localStream = await _getUserMedia(callType);
-      _localStreams[sessionId] = localStream;
+  /// Send offer after local stream is ready.
+  /// This should be called by CallPageController when local stream is acquired.
+  Future<void> sendOfferWhenLocalStreamReady(String sessionId) async {
+    final session = _getSession(sessionId);
+    if (session == null) {
+      CallLogger.error('Session not found for sessionId: $sessionId');
+      return;
+    }
 
+    if (session.isIncoming) {
+      CallLogger.warning('sendOfferWhenLocalStreamReady called for non-outgoing call');
+      return;
+    }
+
+    if (_localStream == null) {
+      CallLogger.error('Local stream not found when sending offer');
+      return;
+    }
+
+    try {
       final peerConnection = await _createPeerConnection(sessionId);
       _peerConnections[sessionId] = peerConnection;
 
-      for (final track in localStream.getTracks()) {
-        await peerConnection.addTrack(track, localStream);
+      for (final track in _localStream!.getTracks()) {
+        await peerConnection.addTrack(track, _localStream!);
       }
 
       final offer = await peerConnection.createOffer();
@@ -60,13 +80,13 @@ extension CallManagerCallLifecycle on CallManager {
       final offerJson = jsonEncode({
         'sdp': offerSdp,
         'type': offer.type,
-        'media': callType == CallType.video ? 'video' : 'audio',
-        'privateGroupId': privateGroupId,
+        'media': session.isVideo ? 'video' : 'audio',
+        'privateGroupId': session.privateGroupId,
       });
 
       CallLogger.debug(
-        'Send offer, friendPubkey: ${target.pubKey}, '
-        'privateGroupId: $privateGroupId, '
+        'Send offer, friendPubkey: ${session.remotePubkey}, '
+        'privateGroupId: ${session.privateGroupId}, '
       );
       await Contacts.sharedInstance.sendOffer(
         session.sessionId,
@@ -77,12 +97,9 @@ extension CallManagerCallLifecycle on CallManager {
 
       _updateSession(sessionId, state: CallState.ringing);
       _startOfferTimer(sessionId);
-
-      await _backgroundKeepAlive.configureForCall();
-      await _backgroundKeepAlive.activate();
     } catch (e) {
-      CallLogger.error('Failed to start call: $e');
-      await _handleError(sessionId, CallErrorType.unknown, 'Failed to start call: $e', e);
+      CallLogger.error('Failed to send offer: $e');
+      await _handleError(sessionId, CallErrorType.unknown, 'Failed to send offer: $e', e);
     }
   }
 
@@ -109,23 +126,22 @@ extension CallManagerCallLifecycle on CallManager {
     _cancelOfferTimer(session.sessionId);
 
     try {
-      if (!await _requestPermissions(session.callType)) {
-        await rejectCall(sessionId, 'permissionDenied');
+      // Note: Permission check and local stream acquisition are now handled by CallPageController
+      // The local stream should already be set when user clicks accept
+      
+      if (_localStream == null) {
+        CallLogger.error('Local stream not found when accepting call');
+        await rejectCall(sessionId, 'error');
         return;
       }
-
-      CallLogger.debug('Getting user media for call type: ${session.callType}');
-      final localStream = await _getUserMedia(session.callType);
-      _localStreams[session.sessionId] = localStream;
-      CallLogger.debug('Got local stream with ${localStream.getTracks().length} tracks');
 
       final peerConnection = await _createPeerConnection(session.sessionId);
       _peerConnections[session.sessionId] = peerConnection;
 
-      for (final track in localStream.getTracks()) {
-        await peerConnection.addTrack(track, localStream);
+      for (final track in _localStream!.getTracks()) {
+        await peerConnection.addTrack(track, _localStream!);
       }
-      CallLogger.debug('Added ${localStream.getTracks().length} tracks to PeerConnection');
+      CallLogger.debug('Added ${_localStream!.getTracks().length} tracks to PeerConnection');
 
       await peerConnection.setRemoteDescription(
         RTCSessionDescription(session.remoteSdp!, 'offer'),
@@ -254,10 +270,9 @@ extension CallManagerCallLifecycle on CallManager {
       _peerConnections.remove(sessionId);
     }
 
-    final localStream = _localStreams[sessionId];
-    if (localStream != null) {
-      localStream.getTracks().forEach((track) => track.stop());
-      _localStreams.remove(sessionId);
+    if (_localStream != null) {
+      _localStream!.getTracks().forEach((track) => track.stop());
+      _localStream = null;
     }
 
     final remoteStream = _remoteStreams[sessionId];

@@ -26,6 +26,8 @@ import 'package:ox_common/utils/ox_chat_binding.dart';
 import 'package:ox_common/utils/ox_chat_observer.dart';
 import 'package:ox_common/utils/platform_utils.dart';
 import 'package:ox_common/utils/web_url_helper.dart';
+import 'package:ox_common/utils/permission_utils.dart';
+import 'package:ox_common/business_interface/ox_chat/call_message_type.dart';
 import 'package:ox_common/widgets/avatar.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 
@@ -275,6 +277,19 @@ class CommonChatWidgetState extends State<CommonChatWidget> with OXChatObserver 
 
   Future<void> _startCall(UserDBISAR user, CallType callType) async {
     try {
+      // Check permission before starting call
+      final mediaType = callType == CallType.video
+          ? CallMessageType.video.text
+          : CallMessageType.audio.text;
+      final hasPermission = await PermissionUtils.getCallPermission(
+        context,
+        mediaType: mediaType,
+      );
+      if (!hasPermission) {
+        // Permission dialog already shown by getCallPermission
+        return;
+      }
+
       String groupId = session.groupId ?? '';
       if (groupId.isEmpty) {
         groupId = session.chatId;

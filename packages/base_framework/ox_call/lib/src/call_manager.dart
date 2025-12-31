@@ -4,7 +4,6 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:chatcore/chat-core.dart';
 import 'package:nostr_core_dart/nostr.dart' show SignalingState, generate64RandomHexChars;
 import 'package:ox_common/login/login_manager.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:ox_call/src/models/call_state.dart';
 import 'package:ox_call/src/models/call_error.dart';
 import 'package:ox_call/src/models/call_session.dart';
@@ -27,6 +26,7 @@ part 'call_manager_error.dart';
 typedef CallStateCallback = void Function(CallSession session);
 typedef CallErrorCallback = void Function(CallSession session, CallError error);
 typedef RemoteStreamCallback = void Function(String sessionId, MediaStream stream);
+typedef LocalStreamCallback = void Function(MediaStream stream);
 
 /// Core call manager for WebRTC call logic.
 ///
@@ -40,7 +40,7 @@ class CallManager {
   // State storage
   final Map<String, CallSession> _activeSessions = {};
   final Map<String, RTCPeerConnection?> _peerConnections = {};
-  final Map<String, MediaStream?> _localStreams = {};
+  MediaStream? _localStream;
   final Map<String, MediaStream?> _remoteStreams = {};
   final Map<String, Timer?> _offerTimers = {};
 
@@ -61,6 +61,7 @@ class CallManager {
   final List<CallStateCallback> _stateCallbacks = [];
   final List<CallErrorCallback> _errorCallbacks = [];
   final List<RemoteStreamCallback> _streamCallbacks = [];
+  final List<LocalStreamCallback> _localStreamCallbacks = [];
 
   bool _initialized = false;
   final BackgroundKeepAlive _backgroundKeepAlive = BackgroundKeepAlive();
@@ -81,6 +82,12 @@ class CallManager {
   void Function() addStreamListener(RemoteStreamCallback callback) {
     _streamCallbacks.add(callback);
     return () => _streamCallbacks.remove(callback);
+  }
+
+  /// Add a local stream listener. Returns a function to remove the listener.
+  void Function() addLocalStreamListener(LocalStreamCallback callback) {
+    _localStreamCallbacks.add(callback);
+    return () => _localStreamCallbacks.remove(callback);
   }
 
   /// Initialize the call manager.
@@ -108,8 +115,8 @@ class CallManager {
     return _getSession(sessionId);
   }
 
-  MediaStream? getLocalStream(String sessionId) {
-    return _localStreams[sessionId];
+  MediaStream? getLocalStream() {
+    return _localStream;
   }
 
   MediaStream? getRemoteStream(String sessionId) {

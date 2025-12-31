@@ -54,4 +54,7 @@ class CallSession {
   ValueNotifier<UserDBISAR?> get localUser$ {
     return Account.sharedInstance.getUserNotifier(localPubkey);
   }
+
+  bool get isIncoming => direction == CallDirection.incoming;
+  bool get isVideo => callType == CallType.video;
 }

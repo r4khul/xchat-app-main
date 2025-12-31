@@ -5,6 +5,9 @@ import 'package:chatcore/chat-core.dart';
 import 'package:ox_call/src/call_manager.dart';
 import 'package:ox_call/src/models/call_state.dart';
 import 'package:ox_call/src/models/call_session.dart';
+import 'package:ox_common/utils/permission_utils.dart';
+import 'package:ox_common/business_interface/ox_chat/call_message_type.dart';
+import 'package:ox_call/src/utils/call_logger.dart';
 
 /// Controller for managing call page state and business logic.
 ///
@@ -13,7 +16,9 @@ import 'package:ox_call/src/models/call_session.dart';
 ///
 /// Directly listens to CallManager (not through CallService).
 class CallPageController {
-  CallPageController(CallSession initialSession) : _session = initialSession {
+  CallPageController(CallSession initialSession, BuildContext context)
+      : _session = initialSession,
+        _context = context {
     callState$.value = _session.state;
     isConnected$.value = _session.state == CallState.connected;
     _initialize();
@@ -21,11 +26,18 @@ class CallPageController {
 
   // Private state
   CallSession _session;
+  final BuildContext _context;
   Stopwatch? _stopwatch;
   Timer? _durationTimer;
   Timer? _autoHideTimer;
   void Function()? _removeStateListener;
   void Function()? _removeStreamListener;
+  void Function()? _removeLocalStreamListener;
+  bool _permissionChecked = false;
+
+  final Completer<void> _waitInitializeCmp = Completer<void>();
+  bool _isInitializing = false;
+  Future<void> get waitInitialize => _waitInitializeCmp.future;
 
   // Video renderers
   final RTCVideoRenderer localRenderer = RTCVideoRenderer();
@@ -43,8 +55,8 @@ class CallPageController {
   final ValueNotifier<bool> actionInProgress$ = ValueNotifier<bool>(false);
 
   // Derived state getters
-  bool get isVideoCall => _session.callType == CallType.video;
-  bool get isIncoming => _session.direction == CallDirection.incoming;
+  bool get isVideoCall => _session.isVideo;
+  bool get isIncoming => _session.isIncoming;
   bool get isActionInProgress => actionInProgress$.value;
   String get sessionId => _session.sessionId;
 
@@ -53,6 +65,9 @@ class CallPageController {
 
   // Initialization
   Future<void> _initialize() async {
+    if (_waitInitializeCmp.isCompleted || _isInitializing) return;
+    _isInitializing = true;
+
     await localRenderer.initialize();
     await remoteRenderer.initialize();
 
@@ -63,12 +78,64 @@ class CallPageController {
     if (isVideoCall) {
       _startAutoHideTimer();
     }
+
+    // For outgoing calls: get local stream in initState (permission already checked before startCall)
+    if (!isIncoming) {
+      await _getLocalStream();
+    }
+
+    if (!_waitInitializeCmp.isCompleted) {
+      _waitInitializeCmp.complete();
+    }
+    _isInitializing = false;
   }
 
   void _setupListeners() {
     // Directly listen to CallManager
     _removeStateListener = CallManager().addStateListener(_onCallStateChanged);
     _removeStreamListener = CallManager().addStreamListener(_onRemoteStreamReady);
+    _removeLocalStreamListener = CallManager().addLocalStreamListener(_onLocalStreamReady);
+  }
+
+  /// Check permission and get local stream for incoming calls.
+  /// Should be called after first frame is rendered (use WidgetsBinding.instance.addPostFrameCallback).
+  Future<void> checkPermissionAndGetLocalStreamForIncoming() async {
+    if (!isIncoming || _permissionChecked) return;
+    _permissionChecked = true;
+    
+    final mediaType = isVideoCall ? CallMessageType.video.text : CallMessageType.audio.text;
+    final hasPermission = await PermissionUtils.getCallPermission(_context, mediaType: mediaType);
+
+    if (!hasPermission) {
+      // For incoming calls, any button click should reject the call
+      await reject();
+      return;
+    }
+
+    // Get local stream
+    await _getLocalStream();
+  }
+
+  Future<void> _getLocalStream() async {
+    try {
+      final localStream = await CallManager().getUserMedia(_session.callType);
+      CallManager().setLocalStream(localStream);
+      // The local stream will be set to renderer via _onLocalStreamReady callback
+    } catch (e) {
+      CallLogger.error('Failed to get local stream: $e');
+      if (isIncoming) {
+        await reject();
+      }
+    }
+  }
+
+  void _onLocalStreamReady(MediaStream stream) {
+    localRenderer.srcObject = stream;
+
+    // For outgoing calls: send offer after local stream is ready
+    if (!isIncoming) {
+      CallManager().sendOfferWhenLocalStreamReady(_session.sessionId);
+    }
   }
 
   void _onCallStateChanged(CallSession session) {
@@ -99,7 +166,7 @@ class CallPageController {
   }
 
   void _updateStreams() {
-    final localStream = CallManager().getLocalStream(_session.sessionId);
+    final localStream = CallManager().getLocalStream();
     final remoteStream = CallManager().getRemoteStream(_session.sessionId);
 
     if (localStream != null) {
@@ -234,6 +301,7 @@ class CallPageController {
 
     _removeStateListener?.call();
     _removeStreamListener?.call();
+    _removeLocalStreamListener?.call();
 
     localRenderer.dispose();
     remoteRenderer.dispose();

@@ -1,3 +1,4 @@
+import 'package:ox_call/ox_call.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_call/src/call_manager.dart';
 import 'package:ox_call/src/models/call_state.dart';
@@ -34,8 +35,7 @@ class CallService {
 
   void _onCallStateChanged(CallSession session) {
     // Handle incoming call - show call page
-    if (session.state == CallState.ringing &&
-        session.direction == CallDirection.incoming) {
+    if (session.state == CallState.ringing && session.isIncoming) {
       _showCallPage(session);
       return;
     }
@@ -44,7 +44,7 @@ class CallService {
     if ((session.state == CallState.ringing ||
             session.state == CallState.connecting ||
             session.state == CallState.initiating) &&
-        session.direction == CallDirection.outgoing &&
+        !session.isIncoming &&
         !_isCallPageShowing) {
       _showCallPage(session);
       return;

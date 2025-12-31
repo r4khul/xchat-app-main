@@ -20,17 +20,10 @@ class CallContentArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: controller.callState$,
-      builder: (context, state, _) {
-        // Video call: show video content when connected
-        if (controller.isVideoCall && state == CallState.connected) {
-          return _VideoCallContent(controller: controller);
-        }
-        // Voice call or video call before connected: show user info
-        return _VoiceCallContent(controller: controller);
-      },
-    );
+    if (controller.isVideoCall) {
+      return _VideoCallContent(controller: controller);
+    }
+    return _VoiceCallContent(controller: controller);
   }
 }
 
@@ -141,6 +134,8 @@ class _VideoCallContent extends StatefulWidget {
 }
 
 class _VideoCallContentState extends State<_VideoCallContent> {
+  CallPageController get controller => widget.controller;
+
   // Local video position (draggable)
   Offset _localVideoPosition = Offset.zero;
   final double _localVideoWidth = 100;
@@ -151,15 +146,15 @@ class _VideoCallContentState extends State<_VideoCallContent> {
     super.initState();
     // Initialize position to top-right corner
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        final screenSize = MediaQuery.of(context).size;
-        setState(() {
-          _localVideoPosition = Offset(
-            screenSize.width - _localVideoWidth.px - 16.px,
-            MediaQuery.of(context).padding.top + 60.px,
-          );
-        });
-      }
+      if (!mounted) return;
+
+      final screenSize = MediaQuery.of(context).size;
+      setState(() {
+        _localVideoPosition = Offset(
+          screenSize.width - _localVideoWidth.px - 16.px,
+          MediaQuery.of(context).padding.top + 60.px,
+        );
+      });
     });
   }
 
@@ -167,23 +162,42 @@ class _VideoCallContentState extends State<_VideoCallContent> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: widget.controller.toggleControlsVisibility,
-      child: Stack(
-        children: [
-          // Remote video (full screen)
-          Positioned.fill(
-            child: RTCVideoView(
-              widget.controller.remoteRenderer,
-              objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-            ),
-          ),
+      child: ValueListenableBuilder<bool>(
+        valueListenable: widget.controller.isConnected$,
+        builder: (context, isConnected, _) {
+          return Stack(
+            children: [
+              Positioned.fill(
+                child: _buildBackgroundWidget(isConnected)
+              ),
 
-          // Local video (draggable PiP)
-          _buildLocalVideoPiP(),
+              if (isConnected) _buildLocalVideoPiP(),
 
-          // User info overlay (when remote video not ready)
-          _buildUserInfoOverlay(),
-        ],
+              _buildUserInfoOverlay(isConnected),
+            ],
+          );
+        },
       ),
+    );
+  }
+
+  Widget _buildBackgroundWidget(bool isConnected) {
+    return FutureBuilder(
+      future: controller.waitInitialize,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return Container(
+            color: Colors.black,
+          );
+        }
+        return RTCVideoView(
+          isConnected
+              ? widget.controller.remoteRenderer
+              : widget.controller.localRenderer,
+          mirror: !isConnected, // Mirror local video
+          objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+        );
+      },
     );
   }
 
@@ -244,47 +258,72 @@ class _VideoCallContentState extends State<_VideoCallContent> {
     );
   }
 
-  Widget _buildUserInfoOverlay() {
-    // Show user info overlay when waiting for remote video
-    return ValueListenableBuilder<UserDBISAR?>(
-      valueListenable: widget.controller.remoteUser$,
-      builder: (context, remoteUser, _) {
-        // Check if remote stream is ready by checking renderer
-        final hasRemoteVideo =
-            widget.controller.remoteRenderer.srcObject != null;
-        if (hasRemoteVideo) return const SizedBox.shrink();
+  Widget _buildUserInfoOverlay(bool isConnected) {
+    return ValueListenableBuilder(
+      valueListenable: widget.controller.callState$,
+      builder: (context, state, _) => ValueListenableBuilder<UserDBISAR?>(
+        valueListenable: widget.controller.remoteUser$,
+        builder: (context, remoteUser, _) {
+          // When connected, only show overlay if remote video is not ready
+          if (isConnected) {
+            final hasRemoteVideo =
+                widget.controller.remoteRenderer.srcObject != null;
+            if (hasRemoteVideo) return const SizedBox.shrink();
+          }
 
-        final userName =
-            remoteUser?.name ?? remoteUser?.shortEncodedPubkey ?? 'Unknown';
+          final userName =
+              remoteUser?.name ?? remoteUser?.shortEncodedPubkey ?? 'Unknown';
+          final statusText = _getStatusText(state);
 
-        return Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          child: Container(
-            padding: EdgeInsets.only(top: 120.px),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                OXUserAvatar(
-                  user: remoteUser,
-                  size: 80.px,
-                ),
-                SizedBox(height: 12.px),
-                CLText.titleLarge(
-                  userName,
-                  customColor: Colors.white,
-                ),
-                SizedBox(height: 8.px),
-                CLText.bodyMedium(
-                  'Connecting...',
-                  customColor: Colors.white.withValues(alpha: 0.6),
-                ),
-              ],
+          return Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              padding: EdgeInsets.only(top: 120.px),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  OXUserAvatar(
+                    user: remoteUser,
+                    size: 80.px,
+                  ),
+                  SizedBox(height: 12.px),
+                  CLText.titleLarge(
+                    userName,
+                    customColor: Colors.white,
+                  ),
+                  if (statusText.isNotEmpty) ...[
+                    SizedBox(height: 8.px),
+                    CLText.bodyMedium(
+                      statusText,
+                      customColor: Colors.white.withValues(alpha: 0.6),
+                    ),
+                  ],
+                ],
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
+  }
+
+  String _getStatusText(CallState state) {
+    switch (state) {
+      case CallState.initiating:
+      case CallState.ringing:
+        return 'Awaiting response...';
+      case CallState.connecting:
+        return 'Connecting...';
+      case CallState.connected:
+        return 'Connecting...'; // Waiting for remote video
+      case CallState.reconnecting:
+        return 'Reconnecting...';
+      case CallState.ended:
+        return 'Call ended';
+      default:
+        return '';
+    }
   }
 }
