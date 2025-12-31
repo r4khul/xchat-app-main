@@ -10,10 +10,12 @@ import 'package:ox_common/component.dart';
 import 'package:ox_common/const/common_constant.dart';
 import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/login/login_models.dart';
+import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/widgets/common_loading.dart';
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_localizable/ox_localizable.dart';
+import 'circle_activated_page.dart';
 
 enum SubscriptionPeriod { monthly, yearly }
 
@@ -121,7 +123,7 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
   int _currentFeatureIndex = 0;
   Timer? _featureCarouselTimer;
 
-  static const List<SubscriptionPlan> _plans = [
+  static const List<SubscriptionPlan> plans = [
     SubscriptionPlan(
       id: 'lovers',
       name: 'Lovers & Friends',
@@ -166,7 +168,7 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
     super.initState();
     // Select the popular plan by default
     _selectedPlan =
-        _plans.firstWhere((p) => p.isPopular, orElse: () => _plans[1]);
+        plans.firstWhere((p) => p.isPopular, orElse: () => plans[1]);
     
     // Initialize feature carousel page controller
     _featurePageController = PageController();
@@ -298,13 +300,18 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
               .show(context, 'Failed to create circle: ${failure.message}');
         }
       } else {
-        // Success - show success message and close page
+        // Success - navigate to circle activated page
         if (mounted) {
-          CommonToast.instance.show(
+          Navigator.of(context).pop(); // Close upgrade page
+          OXNavigator.pushPage(
             context,
-            Localized.text('ox_usercenter.payment_success'),
+            (context) => CircleActivatedPage(
+              maxUsers: _selectedPlan!.maxUsers,
+              planName: _selectedPlan!.name,
+            ),
+            type: OXPushPageType.present,
+            fullscreenDialog: true,
           );
-          Navigator.of(context).pop(true);
         }
       }
     } catch (e) {
@@ -384,6 +391,13 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
           appBar: CLAppBar(
             title: Localized.text('ox_login.private_relay'),
             actions: [
+              // Test button for simulating subscription success
+              if (kDebugMode)
+                IconButton(
+                  icon: Icon(Icons.check_circle),
+                  tooltip: 'Test: Simulate Success',
+                  onPressed: _isProcessing ? null : _simulatePurchaseSuccess,
+                ),
               IconButton(
                 icon: Icon(Icons.restore),
                 tooltip: Localized.text('ox_usercenter.restore_purchases'),
@@ -642,7 +656,7 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
 
   Widget _buildPlansList() {
     return Column(
-      children: _plans.map((plan) {
+      children: plans.map((plan) {
         return Padding(
           padding: EdgeInsets.only(bottom: 16.px),
           child: _buildPlanCard(plan),
@@ -1036,6 +1050,38 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
     } finally {
       if (mounted) {
         setState(() => _isRestoring = false);
+      }
+    }
+  }
+
+  /// Simulate purchase success for testing
+  Future<void> _simulatePurchaseSuccess() async {
+    if (_selectedPlan == null) {
+      CommonToast.instance.show(context, 'Please select a plan first');
+      return;
+    }
+
+    try {
+      setState(() => _isProcessing = true);
+        if (mounted) {
+          Navigator.of(context).pop(); // Close upgrade page
+          OXNavigator.pushPage(
+            context,
+            (context) => CircleActivatedPage(
+              maxUsers: _selectedPlan!.maxUsers,
+              planName: _selectedPlan!.name,
+            ),
+            type: OXPushPageType.present,
+            fullscreenDialog: true,
+          );
+        }
+    } catch (e) {
+      if (mounted) {
+        CommonToast.instance.show(context, 'Failed to simulate purchase: $e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
       }
     }
   }

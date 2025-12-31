@@ -119,5 +119,16 @@
   "contact_our_team": "Contact our team",
   "custom_relay": "I want to use a custom relay",
   "pay": "Pay",
-  "recurring_billing": "Recurring billing, cancel anytime"
+  "recurring_billing": "Recurring billing, cancel anytime",
+  
+  "circle_activated": "Circle Activated!",
+  "circle_activated_desc": "Your secure private relay is live. Customize your circle to get started.",
+  "name_your_circle": "Name your circle",
+  "my_private_circle": "My Private Circle",
+  "invite_members": "Invite members",
+  "unlimited_secure_storage": "Unlimited Secure Storage",
+  "members": "MEMBERS",
+  "share_invite_link": "Share Invite Link",
+  "invite_more_people": "Invite up to {count} more people to share this circle.",
+  "enter_my_private_circle": "Enter My Private Circle"
 }

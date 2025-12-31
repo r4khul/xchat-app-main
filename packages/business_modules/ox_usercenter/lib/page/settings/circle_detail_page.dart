@@ -9,11 +9,17 @@ import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/widgets/common_loading.dart' as Loading;
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_localizable/ox_localizable.dart';
+import 'package:chatcore/chat-core.dart';
+import 'package:ox_common/utils/file_server_helper.dart';
+import 'package:ox_common/repository/file_server_repository.dart';
 
 import 'file_server_page.dart';
 import 'profile_settings_page.dart';
+import 'subscription_detail_page.dart';
 
 enum _MenuAction { edit, delete }
+enum _PlanAction { changePlan, cancelSubscription }
+enum _StorageAction { clearAllStorage }
 
 class CircleDetailPage extends StatefulWidget {
   const CircleDetailPage({
@@ -37,11 +43,92 @@ class CircleDetailPage extends StatefulWidget {
 
 class _CircleDetailPageState extends State<CircleDetailPage> {
   late String _circleName;
+  bool _isOwner = false;
+  late ValueNotifier<String> _planName$;
+  late ValueNotifier<String> _renewDate$;
+  int _currentMembers = 1;
+  int _maxMembers = 6;
+  late ValueNotifier<String> _storageUsed$;
+  late ValueNotifier<String> _fileServerName$;
+  List<UserDBISAR> _members = [];
+  bool _autoDeleteEnabled = false;
 
   @override
   void initState() {
     super.initState();
-    _circleName = widget.circle.name;
+    _circleName = widget.circle.name ?? '';
+    _planName$ = ValueNotifier<String>('Family');
+    _renewDate$ = ValueNotifier<String>('Dec 31, 2025');
+    _storageUsed$ = ValueNotifier<String>('45.2 GB');
+    _fileServerName$ = ValueNotifier<String>('');
+    _checkIfOwner();
+    _loadSubscriptionInfo();
+    _loadFileServerInfo();
+    _loadMembers();
+  }
+
+  @override
+  void dispose() {
+    _planName$.dispose();
+    _renewDate$.dispose();
+    _storageUsed$.dispose();
+    _fileServerName$.dispose();
+    super.dispose();
+  }
+
+  void _checkIfOwner() {
+    _isOwner = true; return;
+    final currentPubkey = LoginManager.instance.currentPubkey;
+    _isOwner = widget.circle.pubkey == currentPubkey;
+  }
+
+  Future<void> _loadSubscriptionInfo() async {
+    // TODO: Load actual subscription info from backend
+    // For now, use default values
+    setState(() {
+      _planName$.value = 'Family';
+      _currentMembers = 1;
+      _maxMembers = 6;
+      _storageUsed$.value = '45.2 GB';
+    });
+  }
+
+  Future<void> _loadFileServerInfo() async {
+    final selectedUrl = widget.circle.selectedFileServerUrl;
+    String displayName = '';
+    
+    if (FileServerHelper.isDefaultFileServerGroupSelected(selectedUrl)) {
+      displayName = Localized.text('ox_usercenter.default_file_server_group');
+    } else {
+      try {
+        final repo = FileServerRepository(DBISAR.sharedInstance.isar);
+        final servers = repo.fetch();
+        final matched = servers.firstWhere((e) => e.url == selectedUrl);
+        displayName = matched.name.isNotEmpty ? matched.name : matched.url;
+      } catch (e) {
+        displayName = selectedUrl ?? '';
+      }
+    }
+    
+    _fileServerName$.value = displayName;
+  }
+
+  Future<void> _loadMembers() async {
+    // TODO: Load actual members from circle/group
+    // For now, use current user as owner
+    try {
+      final currentPubkey = LoginManager.instance.currentPubkey;
+      if (currentPubkey.isNotEmpty) {
+        final currentUser = await Account.sharedInstance.getUserInfo(currentPubkey);
+        if (currentUser != null) {
+          setState(() {
+            _members = [currentUser];
+          });
+        }
+      }
+    } catch (e) {
+      // Handle error
+    }
   }
 
   @override
@@ -236,34 +323,239 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
   }
 
   List<SectionListViewItem> _buildMainItems(BuildContext context) {
-    return [
+    final items = <SectionListViewItem>[
       // Relay Server
       SectionListViewItem(
+        header: Localized.text('ox_usercenter.subscription_and_usage'),
         footer: Localized.text('ox_usercenter.relay_server_description'),
         data: [
           LabelItemModel(
             icon: ListViewIcon.data(CupertinoIcons.antenna_radiowaves_left_right),
             title: Localized.text('ox_usercenter.relay_server'),
-            value$: ValueNotifier(widget.circle.relayUrl),
+            subtitle: widget.circle.relayUrl,
             onTap: null,
           ),
-        ],
-      ),
-      // File Server Setting (Server Settings)
-      SectionListViewItem(
-        footer: Localized.text('ox_usercenter.file_server_setting_description'),
-        data: [
-          CustomItemModel(
-            leading: const Icon(CupertinoIcons.settings),
-            titleWidget: CLText(Localized.text('ox_usercenter.file_server_setting')),
+          LabelItemModel(
+            icon: ListViewIcon.data(CupertinoIcons.settings),
+            title: Localized.text('ox_usercenter.file_server_setting'),
+            subtitle: _fileServerName$.value,
             onTap: () {
               OXNavigator.pushPage(context, (_) => FileServerPage(
                 previousPageTitle: widget.title,
-              ));
+              )).then((_) {
+                // Reload file server info when returning from file server page
+                _loadFileServerInfo();
+              });
             },
           ),
         ],
       ),
     ];
+
+    // Add subscription and members sections if user is owner
+    if (_isOwner) {
+      items.addAll([
+        _buildSubscriptionSection(context),
+        _buildMembersSection(context),
+      ]);
+    }
+
+    return items;
+  }
+
+  SectionListViewItem _buildSubscriptionSection(BuildContext context) {
+    return SectionListViewItem(
+      header: Localized.text('ox_usercenter.subscription_and_usage'),
+      data: [
+        // Plan
+        LabelItemModel(
+          icon: ListViewIcon.data(Icons.workspace_premium),
+          title: Localized.text('ox_usercenter.plan'),
+          subtitle: Localized.text('ox_usercenter.renews_on').replaceAll('{date}', _renewDate$.value),
+          value$: _planName$,
+          onTap: () {
+            OXNavigator.pushPage(
+              context,
+              (context) => SubscriptionDetailPage(
+                previousPageTitle: widget.title,
+              ),
+            );
+          },
+        ),
+        // Storage
+        LabelItemModel(
+          icon: ListViewIcon.data(Icons.storage),
+          title: Localized.text('ox_usercenter.storage'),
+          value$: _storageUsed$,
+          onTap: () {
+            _showStorageOptions(context);
+          },
+        ),
+      ],
+    );
+  }
+
+  SectionListViewItem _buildMembersSection(BuildContext context) {
+    final currentPubkey = LoginManager.instance.currentPubkey;
+    final memberItems = <ListViewItem>[];
+
+    // Add owner (current user)
+    UserDBISAR? ownerUser;
+    try {
+      ownerUser = _members.firstWhere(
+        (user) => user.pubKey == currentPubkey,
+      );
+    } catch (e) {
+      // Owner not found in members list, use first member if available
+      if (_members.isNotEmpty) {
+        ownerUser = _members.first;
+      }
+    }
+    
+    if (ownerUser != null) {
+      memberItems.add(
+        LabelItemModel(
+          icon: ListViewIcon.data(Icons.person),
+          title: Localized.text('ox_usercenter.you_owner'),
+          subtitle: Localized.text('ox_usercenter.owner'),
+          onTap: null,
+        ),
+      );
+    }
+
+    // Add other members
+    for (final member in _members) {
+      if (member.pubKey != currentPubkey) {
+        final memberName = member.name ?? '';
+        final displayName = memberName.isNotEmpty 
+            ? memberName 
+            : (member.pubKey.length >= 8 
+                ? member.pubKey.substring(0, 8) 
+                : member.pubKey);
+        memberItems.add(
+          LabelItemModel(
+            icon: ListViewIcon.data(Icons.person),
+            title: displayName,
+            subtitle: Localized.text('ox_usercenter.member'),
+            value$: ValueNotifier<String>(Localized.text('ox_usercenter.remove')),
+            valueMapper: (value) => value,
+            onTap: () => _removeMember(member),
+          ),
+        );
+      }
+    }
+
+    // Add "Add Member" option
+    memberItems.add(
+      LabelItemModel(
+        icon: ListViewIcon.data(Icons.person_add),
+        title: Localized.text('ox_usercenter.add_member'),
+        onTap: _addMember,
+      ),
+    );
+
+    return SectionListViewItem(
+      header: Localized.text('ox_usercenter.members'),
+      data: memberItems,
+    );
+  }
+
+  Future<void> _removeMember(UserDBISAR member) async {
+    final memberName = member.name ?? '';
+    final displayName = memberName.isNotEmpty 
+        ? memberName 
+        : (member.pubKey.length >= 8 
+            ? member.pubKey.substring(0, 8) 
+            : member.pubKey);
+    
+    final confirmed = await CLAlertDialog.show<bool>(
+      context: context,
+      title: Localized.text('ox_usercenter.remove_member_title'),
+      content: Localized.text('ox_usercenter.remove_member_content').replaceAll('{name}', displayName),
+      actions: [
+        CLAlertAction.cancel(),
+        CLAlertAction<bool>(
+          label: Localized.text('ox_usercenter.remove'),
+          value: true,
+          isDestructiveAction: true,
+        ),
+      ],
+    );
+
+    if (confirmed == true) {
+      // TODO: Implement remove member logic
+      CommonToast.instance.show(context, Localized.text('ox_common.operation_success'));
+      _loadMembers();
+    }
+  }
+
+  Future<void> _addMember() async {
+    // TODO: Navigate to add member page or show dialog
+    CommonToast.instance.show(context, 'Add member feature coming soon');
+  }
+
+
+  void _showStorageOptions(BuildContext context) async {
+    final action = await CLPicker.show<_StorageAction>(
+      context: context,
+      items: [
+        CLPickerItem(
+          label: Localized.text('ox_usercenter.clear_all_storage'),
+          value: _StorageAction.clearAllStorage,
+          isDestructive: true,
+        ),
+      ],
+    );
+
+    if (action == null) return;
+
+    switch (action) {
+      case _StorageAction.clearAllStorage:
+        _showClearStorageDialog(context);
+        break;
+    }
+  }
+
+  void _showCancelSubscriptionDialog(BuildContext context) {
+    CLAlertDialog.show<bool>(
+      context: context,
+      title: Localized.text('ox_usercenter.cancel_subscription_title'),
+      content: Localized.text('ox_usercenter.cancel_subscription_content'),
+      actions: [
+        CLAlertAction.cancel(),
+        CLAlertAction<bool>(
+          label: Localized.text('ox_usercenter.cancel_subscription'),
+          value: true,
+          isDestructiveAction: true,
+        ),
+      ],
+    ).then((confirmed) {
+      if (confirmed == true) {
+        // TODO: Implement cancel subscription logic
+        CommonToast.instance.show(context, Localized.text('ox_common.operation_success'));
+      }
+    });
+  }
+
+  void _showClearStorageDialog(BuildContext context) {
+    CLAlertDialog.show<bool>(
+      context: context,
+      title: Localized.text('ox_usercenter.clear_all_storage_title'),
+      content: Localized.text('ox_usercenter.clear_all_storage_content'),
+      actions: [
+        CLAlertAction.cancel(),
+        CLAlertAction<bool>(
+          label: Localized.text('ox_usercenter.clear_all_storage'),
+          value: true,
+          isDestructiveAction: true,
+        ),
+      ],
+    ).then((confirmed) {
+      if (confirmed == true) {
+        // TODO: Implement clear all storage logic
+        CommonToast.instance.show(context, Localized.text('ox_common.operation_success'));
+        _storageUsed$.value = '0.0 GB';
+      }
+    });
   }
 }

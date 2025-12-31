@@ -1,0 +1,425 @@
+import 'package:flutter/material.dart';
+import 'package:ox_common/component.dart';
+import 'package:ox_common/login/login_manager.dart';
+import 'package:ox_common/login/circle_service.dart';
+import 'package:ox_common/navigator/navigator.dart';
+import 'package:ox_common/utils/adapt.dart';
+import 'package:ox_common/widgets/common_loading.dart';
+import 'package:ox_common/widgets/common_toast.dart';
+import 'package:ox_localizable/ox_localizable.dart';
+import 'package:share_plus/share_plus.dart';
+
+class CircleActivatedPage extends StatefulWidget {
+  const CircleActivatedPage({
+    super.key,
+    this.maxUsers = 6,
+    this.planName = 'Family Plan',
+  });
+
+  final int maxUsers;
+  final String planName;
+
+  @override
+  State<CircleActivatedPage> createState() => _CircleActivatedPageState();
+}
+
+class _CircleActivatedPageState extends State<CircleActivatedPage> {
+  late TextEditingController _nameController;
+  late String _circleName;
+  int _currentMemberCount = 1; // Start with 1 (the current user)
+
+  @override
+  void initState() {
+    super.initState();
+    final circle = LoginManager.instance.currentCircle;
+    _circleName = circle?.name ?? Localized.text('ox_login.my_private_circle');
+    _nameController = TextEditingController(text: _circleName);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        CLScaffold(
+          appBar: CLAppBar(),
+          body: SingleChildScrollView(
+            padding: EdgeInsets.only(
+              left: CLLayout.horizontalPadding,
+              right: CLLayout.horizontalPadding,
+              top: 24.px,
+              bottom: 100.px,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSuccessHeader(),
+                SizedBox(height: 32.px),
+                _buildStep1(),
+                SizedBox(height: 24.px),
+                _buildStep2(),
+              ],
+            ),
+          ),
+        ),
+        Positioned(
+          left: CLLayout.horizontalPadding,
+          right: CLLayout.horizontalPadding,
+          bottom: 12.px,
+          child: SafeArea(
+            child: _buildEnterButton(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSuccessHeader() {
+    return Column(
+      children: [
+        // Success icon
+        Container(
+          width: 64.px,
+          height: 64.px,
+          decoration: BoxDecoration(
+            color: const Color(0xFFE8F5E9), // Light green background
+            borderRadius: BorderRadius.circular(16.px),
+          ),
+          child: Icon(
+            Icons.check_circle,
+            color: const Color(0xFF4CAF50), // Dark green checkmark
+            size: 40.px,
+          ),
+        ),
+        SizedBox(height: 16.px),
+        // Title
+        CLText.titleLarge(
+          Localized.text('ox_login.circle_activated'),
+          colorToken: ColorToken.onSurface,
+          textAlign: TextAlign.center,
+          isBold: true,
+        ),
+        SizedBox(height: 8.px),
+        // Description
+        CLText.bodyMedium(
+          Localized.text('ox_login.circle_activated_desc'),
+          colorToken: ColorToken.onSurfaceVariant,
+          textAlign: TextAlign.center,
+          maxLines: null,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStep1() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 24.px,
+              height: 24.px,
+              decoration: BoxDecoration(
+                color: ColorToken.onSurface.of(context),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: CLText.labelSmall(
+                  '1',
+                  customColor: Colors.white,
+                ),
+              ),
+            ),
+            SizedBox(width: 8.px),
+            CLText.titleMedium(
+              Localized.text('ox_login.name_your_circle'),
+              colorToken: ColorToken.onSurface,
+            ),
+          ],
+        ),
+        SizedBox(height: 12.px),
+        GestureDetector(
+          onTap: _editCircleName,
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: 16.px,
+              vertical: 14.px,
+            ),
+            decoration: BoxDecoration(
+              color: ColorToken.surfaceContainer.of(context),
+              borderRadius: BorderRadius.circular(12.px),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: CLText.titleMedium(
+                    _circleName,
+                    colorToken: ColorToken.onSurface,
+                    isBold: true,
+                  ),
+                ),
+                SizedBox(width: 8.px),
+                Icon(
+                  Icons.edit_outlined,
+                  size: 18.px,
+                  color: ColorToken.onSurfaceVariant.of(context),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStep2() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 24.px,
+              height: 24.px,
+              decoration: BoxDecoration(
+                color: ColorToken.onSurface.of(context),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: CLText.labelSmall(
+                  '2',
+                  customColor: Colors.white,
+                ),
+              ),
+            ),
+            SizedBox(width: 8.px),
+            CLText.titleMedium(
+              Localized.text('ox_login.invite_members'),
+              colorToken: ColorToken.onSurface,
+            ),
+          ],
+        ),
+        SizedBox(height: 12.px),
+        Container(
+          padding: EdgeInsets.all(16.px),
+          decoration: BoxDecoration(
+            color: ColorToken.surfaceContainer.of(context),
+            borderRadius: BorderRadius.circular(12.px),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.workspace_premium,
+                    size: 20.px,
+                    color: const Color(0xFFFFC107), // Yellow crown icon
+                  ),
+                  SizedBox(width: 8.px),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CLText.titleMedium(
+                          widget.planName,
+                          colorToken: ColorToken.onSurface,
+                          isBold: true,
+                        ),
+                        SizedBox(height: 2.px),
+                        CLText.bodySmall(
+                          Localized.text('ox_login.unlimited_secure_storage'),
+                          colorToken: ColorToken.onSurfaceVariant,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      CLText.titleMedium(
+                        '$_currentMemberCount/${widget.maxUsers}',
+                        colorToken: ColorToken.onSurface,
+                        isBold: true,
+                      ),
+                      CLText.labelSmall(
+                        Localized.text('ox_login.members'),
+                        colorToken: ColorToken.onSurfaceVariant,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              SizedBox(height: 12.px),
+              // Progress bar
+              Container(
+                height: 4.px,
+                decoration: BoxDecoration(
+                  color: ColorToken.onSurfaceVariant.of(context).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(2.px),
+                ),
+                child: FractionallySizedBox(
+                  alignment: Alignment.centerLeft,
+                  widthFactor: _currentMemberCount / widget.maxUsers,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: ColorToken.xChat.of(context),
+                      borderRadius: BorderRadius.circular(2.px),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 16.px),
+              // Share invite link button
+              GestureDetector(
+                onTap: _shareInviteLink,
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.px,
+                    vertical: 12.px,
+                  ),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: ColorToken.onSurfaceVariant.of(context).withValues(alpha: 0.3),
+                      style: BorderStyle.solid,
+                      width: 1.5,
+                    ),
+                    borderRadius: BorderRadius.circular(12.px),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.share_outlined,
+                        size: 18.px,
+                        color: ColorToken.onSurface.of(context),
+                      ),
+                      SizedBox(width: 8.px),
+                      CLText.titleSmall(
+                        Localized.text('ox_login.share_invite_link'),
+                        colorToken: ColorToken.onSurface,
+                        isBold: true,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 8.px),
+              CLText.bodySmall(
+                Localized.text('ox_login.invite_more_people').replaceAll('{count}', '${widget.maxUsers - _currentMemberCount}'),
+                colorToken: ColorToken.onSurfaceVariant,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEnterButton() {
+    return CLButton.filled(
+      onTap: _onEnterCircle,
+      expanded: true,
+      height: 48.px,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CLText.titleMedium(
+            Localized.text('ox_login.enter_my_private_circle'),
+            customColor: Colors.white,
+          ),
+          SizedBox(width: 8.px),
+          Icon(
+            Icons.arrow_forward,
+            color: Colors.white,
+            size: 20.px,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _editCircleName() async {
+    await CLDialog.showInputDialog(
+      context: context,
+      title: Localized.text('ox_login.name_your_circle'),
+      inputLabel: Localized.text('ox_usercenter.circle_name'),
+      initialValue: _circleName,
+      onConfirm: (newName) async {
+        if (newName.trim().isEmpty) {
+          CommonToast.instance.show(context, Localized.text('ox_common.input_cannot_be_empty'));
+          return false;
+        }
+        
+        if (newName.trim() == _circleName) {
+          return true; // No change needed
+        }
+
+        try {
+          OXLoading.show();
+          
+          final circle = LoginManager.instance.currentCircle;
+          if (circle == null) {
+            OXLoading.dismiss();
+            CommonToast.instance.show(context, Localized.text('ox_common.operation_failed'));
+            return false;
+          }
+
+          final updatedCircle = await CircleService.updateCircleName(
+            circle.id,
+            newName.trim(),
+          );
+
+          if (updatedCircle == null) {
+            OXLoading.dismiss();
+            CommonToast.instance.show(context, Localized.text('ox_common.operation_failed'));
+            return false;
+          }
+
+          OXLoading.dismiss();
+          
+          setState(() {
+            _circleName = newName.trim();
+            _nameController.text = newName.trim();
+          });
+
+          return true;
+        } catch (e) {
+          OXLoading.dismiss();
+          CommonToast.instance.show(context, e.toString());
+          return false;
+        }
+      },
+    );
+  }
+
+  Future<void> _shareInviteLink() async {
+    final circle = LoginManager.instance.currentCircle;
+    if (circle == null) {
+      CommonToast.instance.show(context, Localized.text('ox_common.operation_failed'));
+      return;
+    }
+
+    // Generate invite link (this is a placeholder - you may need to implement actual invite link generation)
+    final inviteLink = 'https://0xchat.com/lite/invite?circle=${circle.id}';
+    
+    try {
+      await Share.share(inviteLink);
+    } catch (e) {
+      CommonToast.instance.show(context, 'Failed to share: $e');
+    }
+  }
+
+  void _onEnterCircle() {
+    // Navigate to home/main screen
+    OXNavigator.popToRoot(context);
+  }
+}
+

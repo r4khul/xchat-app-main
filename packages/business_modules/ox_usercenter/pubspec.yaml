@@ -28,6 +28,8 @@ dependencies:
     path: ../../base_framework/ox_cache_manager
   ox_chat:
     path: ../ox_chat
+  ox_login:
+    path: ../ox_login
 
 dev_dependencies:
   build_runner: ^2.4.9
