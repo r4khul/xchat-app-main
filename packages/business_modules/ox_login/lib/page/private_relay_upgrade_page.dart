@@ -969,6 +969,33 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
       final ProductDetailsResponse productDetailResponse =
           await _inAppPurchase.queryProductDetails({productId});
 
+      // Print complete productDetailResponse for debugging
+      if (true) {
+        print('========== ProductDetailsResponse ==========');
+        print('Product ID queried: $productId');
+        print('Error: ${productDetailResponse.error}');
+        if (productDetailResponse.error != null) {
+          print('Error code: ${productDetailResponse.error!.code}');
+          print('Error message: ${productDetailResponse.error!.message}');
+          print('Error details: ${productDetailResponse.error!.details}');
+        }
+        print('Not found IDs: ${productDetailResponse.notFoundIDs}');
+        print('Product details count: ${productDetailResponse.productDetails.length}');
+        print('--- Product Details ---');
+        for (var product in productDetailResponse.productDetails) {
+          print('  Product ID: ${product.id}');
+          print('  Title: ${product.title}');
+          print('  Description: ${product.description}');
+          print('  Price: ${product.price}');
+          print('  Raw price: ${product.rawPrice}');
+          print('  Currency code: ${product.currencyCode}');
+          print('  Currency symbol: ${product.currencySymbol}');
+          // Additional product information
+          print('  Platform: ${Platform.isAndroid ? "Android" : "iOS"}');
+        }
+        print('===========================================');
+      }
+
       if (productDetailResponse.error != null) {
         setState(() {
           _isProcessing = false;
