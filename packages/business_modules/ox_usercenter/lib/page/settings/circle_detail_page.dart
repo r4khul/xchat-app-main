@@ -338,7 +338,7 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
           LabelItemModel(
             icon: ListViewIcon.data(CupertinoIcons.settings),
             title: Localized.text('ox_usercenter.file_server_setting'),
-            subtitle: _fileServerName$.value,
+            // subtitle: _fileServerName$.value,
             onTap: () {
               OXNavigator.pushPage(context, (_) => FileServerPage(
                 previousPageTitle: widget.title,
