@@ -119,10 +119,12 @@ class _HangUpButton extends StatelessWidget {
   const _HangUpButton({
     required this.controller,
     required this.disabled,
+    required this.label,
     required this.isOutgoingRinging,
   });
 
   final CallPageController controller;
+  final String? label;
   final bool disabled;
   final bool isOutgoingRinging;
 
@@ -131,13 +133,13 @@ class _HangUpButton extends StatelessWidget {
     if (disabled) {
       return CallControlButton.inactive(
         icon: Icons.call_end,
-        label: isOutgoingRinging ? 'Cancel' : 'Hang Up',
+        label: label,
         onTap: () {},
       );
     }
     return CallControlButton.danger(
       icon: Icons.call_end,
-      label: isOutgoingRinging ? 'Cancel' : 'Hang Up',
+      label: label,
       onTap: controller.hangUp,
     );
   }
@@ -213,26 +215,9 @@ class _SwitchCameraButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CallControlButton.icon(
+    return CallControlButton.inactive(
       icon: Icons.cameraswitch,
-      label: '',
       onTap: disabled ? () {} : controller.switchCamera,
-    );
-  }
-}
-
-/// Portrait mode button (placeholder).
-class _PortraitModeButton extends StatelessWidget {
-  const _PortraitModeButton();
-
-  @override
-  Widget build(BuildContext context) {
-    return CallControlButton.icon(
-      icon: Icons.person_outline,
-      label: '',
-      onTap: () {
-        // TODO: Implement portrait mode
-      },
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ox_call/ox_call.dart';
 import 'package:ox_call/src/models/call_session.dart';
 import 'package:ox_call/src/services/call_service.dart';
 import 'widgets/call_page_controller.dart';
@@ -86,15 +87,12 @@ class _CallPageState extends State<CallPage> {
                 top: isControlsVisible ? 0 : -100,
                 left: 0,
                 right: 0,
-                child: SafeArea(
-                  bottom: false,
-                  child: AnimatedOpacity(
-                    duration: const Duration(milliseconds: 200),
-                    opacity: isControlsVisible ? 1.0 : 0.0,
-                    child: CallTopBar(
-                      controller: _controller,
-                      onMinimize: _onMinimize,
-                    ),
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 200),
+                  opacity: isControlsVisible ? 1.0 : 0.0,
+                  child: CallTopBar(
+                    controller: _controller,
+                    onMinimize: _onMinimize,
                   ),
                 ),
               ),

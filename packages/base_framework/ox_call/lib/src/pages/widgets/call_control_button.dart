@@ -15,8 +15,8 @@ class CallControlButton extends StatelessWidget {
     this.iconSize,
   });
 
-  final IconData icon;
-  final VoidCallback onTap;
+  final IconData? icon;
+  final VoidCallback? onTap;
   final Color backgroundColor;
   final Color iconColor;
   final String? label;
@@ -105,7 +105,7 @@ class CallControlButton extends StatelessWidget {
     required IconData icon,
     required VoidCallback onTap,
     String? label,
-    double size = 48,
+    double size = 64,
   }) {
     return CallControlButton(
       key: key,
@@ -115,6 +115,18 @@ class CallControlButton extends StatelessWidget {
       iconColor: Colors.white,
       label: label,
       size: size,
+    );
+  }
+
+  factory CallControlButton.placeholder({
+    double size = 64,
+  }) {
+    return CallControlButton(
+      backgroundColor: Colors.transparent,
+      iconColor: Colors.white,
+      size: size,
+      icon: null,
+      onTap: null,
     );
   }
 

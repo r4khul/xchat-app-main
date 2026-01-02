@@ -60,7 +60,9 @@ class _IncomingCallControls extends StatelessWidget {
         builder: (context, inProgress, __) {
           final disabled = inProgress || state == CallState.ended;
           final isConnecting = state == CallState.connecting;
-          return _buildButtonRow(disabled, isConnecting);
+          return SafeArea(
+            child: _buildButtonRow(disabled, isConnecting),
+          );
         },
       ),
     );
@@ -105,7 +107,9 @@ class _VoiceCallControls extends StatelessWidget {
           final isOutgoingRinging =
               !controller.isIncoming && state == CallState.ringing;
           final disabled = inProgress || state == CallState.ended;
-          return _buildButtonRow(disabled, isOutgoingRinging);
+          return SafeArea(
+            child: _buildButtonRow(disabled, isOutgoingRinging),
+          );
         },
       ),
     );
@@ -122,6 +126,7 @@ class _VoiceCallControls extends StatelessWidget {
           _HangUpButton(
             controller: controller,
             disabled: disabled,
+            label: isOutgoingRinging ? 'Cancel' : 'Hang Up',
             isOutgoingRinging: isOutgoingRinging,
           ),
           SizedBox(width: 40.px),
@@ -132,9 +137,6 @@ class _VoiceCallControls extends StatelessWidget {
   }
 }
 
-/// Controls for video call (two rows).
-/// Row 1: Mic / Speaker / Camera
-/// Row 2: Portrait Mode / Hang Up / Switch Camera
 class _VideoCallControls extends StatelessWidget {
   const _VideoCallControls({required this.controller});
 
@@ -158,15 +160,17 @@ class _VideoCallControls extends StatelessWidget {
 
   Widget _buildContainer(bool disabled, bool isOutgoingRinging) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 40.px, vertical: 16.px),
+      padding: EdgeInsets.symmetric(vertical: 16.px),
       decoration: _buildGradientDecoration(),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildFirstRow(disabled),
-          SizedBox(height: 24.px),
-          _buildSecondRow(disabled, isOutgoingRinging),
-        ],
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildFirstRow(disabled),
+            SizedBox(height: 24.px),
+            _buildSecondRow(disabled, isOutgoingRinging),
+          ],
+        ),
       ),
     );
   }
@@ -186,12 +190,10 @@ class _VideoCallControls extends StatelessWidget {
 
   Widget _buildFirstRow(bool disabled) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         _MuteButton(controller: controller, disabled: disabled),
-        SizedBox(width: 40.px),
         _SpeakerButton(controller: controller, disabled: disabled),
-        SizedBox(width: 40.px),
         _CameraButton(controller: controller, disabled: disabled),
       ],
     );
@@ -199,16 +201,15 @@ class _VideoCallControls extends StatelessWidget {
 
   Widget _buildSecondRow(bool disabled, bool isOutgoingRinging) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        const _PortraitModeButton(),
-        SizedBox(width: 56.px),
+        CallControlButton.placeholder(),
         _HangUpButton(
           controller: controller,
           disabled: disabled,
+          label: null,
           isOutgoingRinging: isOutgoingRinging,
         ),
-        SizedBox(width: 56.px),
         _SwitchCameraButton(controller: controller, disabled: disabled),
       ],
     );

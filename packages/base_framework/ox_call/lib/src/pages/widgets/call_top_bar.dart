@@ -16,19 +16,22 @@ class CallTopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.px, vertical: 12.px),
-      child: Row(
-        children: [
-          // Minimize / PiP button
-          _buildMinimizeButton(),
-          const Spacer(),
-          // Duration (only when connected)
-          _buildDuration(),
-          const Spacer(),
-          // Placeholder for symmetry
-          SizedBox(width: 40.px),
-        ],
+    return SafeArea(
+      bottom: false,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.px, vertical: 12.px),
+        child: Row(
+          children: [
+            // Minimize / PiP button
+            _buildMinimizeButton(),
+            const Spacer(),
+            // Duration (only when connected)
+            _buildDuration(),
+            const Spacer(),
+            // Placeholder for symmetry
+            SizedBox(width: 40.px),
+          ],
+        ),
       ),
     );
   }
