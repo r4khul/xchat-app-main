@@ -18,19 +18,19 @@ class _MuteButton extends StatelessWidget {
         if (disabled) {
           return CallControlButton.inactive(
             icon: isMuted ? Icons.mic_off : Icons.mic,
-            label: isMuted ? 'Mic Off' : 'Mic On',
+            label: isMuted ? Localized.text('ox_chat.call_mic_off') : Localized.text('ox_chat.call_mic_on'),
             onTap: () {},
           );
         }
         return isMuted
             ? CallControlButton.inactive(
           icon: Icons.mic_off,
-          label: 'Mic Off',
+          label: Localized.text('ox_chat.call_mic_off'),
           onTap: controller.toggleMute,
         )
             : CallControlButton.active(
           icon: Icons.mic,
-          label: 'Mic On',
+          label: Localized.text('ox_chat.call_mic_on'),
           onTap: controller.toggleMute,
         );
       },
@@ -56,19 +56,19 @@ class _SpeakerButton extends StatelessWidget {
         if (disabled) {
           return CallControlButton.inactive(
             icon: isSpeakerOn ? Icons.volume_up : Icons.volume_mute,
-            label: isSpeakerOn ? 'Speaker' : 'Speaker Off',
+            label: isSpeakerOn ? Localized.text('ox_chat.call_speaker') : Localized.text('ox_chat.call_speaker_off'),
             onTap: () {},
           );
         }
         return isSpeakerOn
             ? CallControlButton.active(
           icon: Icons.volume_up,
-          label: 'Speaker',
+          label: Localized.text('ox_chat.call_speaker'),
           onTap: controller.toggleSpeaker,
         )
             : CallControlButton.inactive(
           icon: Icons.volume_off,
-          label: 'Speaker',
+          label: Localized.text('ox_chat.call_speaker'),
           onTap: controller.toggleSpeaker,
         );
       },
@@ -94,19 +94,19 @@ class _CameraButton extends StatelessWidget {
         if (disabled) {
           return CallControlButton.inactive(
             icon: isCameraOn ? Icons.videocam : Icons.videocam_off,
-            label: isCameraOn ? 'Camera On' : 'Camera Off',
+            label: isCameraOn ? Localized.text('ox_chat.call_camera_on') : Localized.text('ox_chat.call_camera_off'),
             onTap: () {},
           );
         }
         return isCameraOn
             ? CallControlButton.active(
           icon: Icons.videocam,
-          label: 'Camera On',
+          label: Localized.text('ox_chat.call_camera_on'),
           onTap: controller.toggleCamera,
         )
             : CallControlButton.inactive(
           icon: Icons.videocam_off,
-          label: 'Camera Off',
+          label: Localized.text('ox_chat.call_camera_off'),
           onTap: controller.toggleCamera,
         );
       },
@@ -162,13 +162,13 @@ class _AcceptButton extends StatelessWidget {
     if (disabled) {
       return CallControlButton.inactive(
         icon: Icons.call,
-        label: isConnecting ? 'Connecting...' : 'Accept',
+        label: isConnecting ? Localized.text('ox_chat.call_connecting') : Localized.text('ox_chat.call_accept'),
         onTap: () {},
       );
     }
     return CallControlButton.success(
       icon: Icons.call,
-      label: 'Accept',
+      label: Localized.text('ox_chat.call_accept'),
       onTap: controller.accept,
     );
   }
@@ -191,13 +191,13 @@ class _DeclineButton extends StatelessWidget {
     if (disabled) {
       return CallControlButton.inactive(
         icon: Icons.call_end,
-        label: isConnecting ? 'Connecting...' : 'Decline',
+        label: isConnecting ? Localized.text('ox_chat.call_connecting') : Localized.text('ox_chat.call_decline'),
         onTap: () {},
       );
     }
     return CallControlButton.danger(
       icon: Icons.call_end,
-      label: 'Decline',
+      label: Localized.text('ox_chat.call_decline'),
       onTap: controller.reject,
     );
   }

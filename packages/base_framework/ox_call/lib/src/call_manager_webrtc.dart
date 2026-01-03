@@ -97,11 +97,6 @@ extension CallManagerWebRTC on CallManager {
   void _handleRemoteStream(String sessionId, MediaStream stream) {
     CallLogger.info('Remote stream received: sessionId=$sessionId');
     _remoteStreams[sessionId] = stream;
-    // Mark connected as soon as remote media arrives (helps when connection state callbacks delay)
-    final session = _getSession(sessionId);
-    if (session != null && session.state != CallState.ended && session.state != CallState.connected) {
-      _updateSession(sessionId, state: CallState.connected);
-    }
     for (final callback in _streamCallbacks) {
       callback(sessionId, stream);
     }

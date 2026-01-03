@@ -89,8 +89,8 @@ class ChatMessageHelper {
         if (type == null) break ;
 
         switch (type) {
-          case CallMessageType.audio: return '[${'str_voice_call'.localized()}]';
-          case CallMessageType.video: return '[${'str_video_call'.localized()}]';
+          case CallMessageType.audio: return '[${Localized.text('ox_chat.voice_call')}]';
+          case CallMessageType.video: return '[${Localized.text('ox_chat.video_call')}]';
         }
       case MessageType.template:
         if (contentText.isEmpty) break ;
@@ -128,8 +128,8 @@ class ChatMessageHelper {
             final sourceScheme = NoteMessageEx.getSourceSchemeWithMetadata(metaMap);
             if (sourceScheme != null && sourceScheme.isNotEmpty) return sourceScheme;
             return Localized.text('ox_common.message_type_template');
-          // case CustomMessageType.call:
-          //   return CallMessageEx.getDescriptionWithMetadata(metaMap) ?? unknownText;
+          case CustomMessageType.call:
+            return CallMessageEx.getDescriptionWithMetadata(metaMap) ?? unknownText;
         }
         break ;
     }
@@ -261,6 +261,8 @@ class ChatMessageHelper {
       case MessageType.audio:
       case MessageType.encryptedAudio:
         return AudioMessageFactory();
+      case MessageType.call:
+        return CallMessageFactory();
       case MessageType.system:
         return SystemMessageFactory();
       case MessageType.template:

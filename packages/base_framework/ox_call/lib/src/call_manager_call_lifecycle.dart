@@ -125,6 +125,8 @@ extension CallManagerCallLifecycle on CallManager {
 
     _cancelOfferTimer(session.sessionId);
 
+    _updateSession(session.sessionId, state: CallState.connecting);
+
     try {
       // Note: Permission check and local stream acquisition are now handled by CallPageController
       // The local stream should already be set when user clicks accept
@@ -169,7 +171,6 @@ extension CallManagerCallLifecycle on CallManager {
       await _backgroundKeepAlive.configureForCall();
       await _backgroundKeepAlive.activate();
 
-      _updateSession(session.sessionId, state: CallState.connecting);
       CallLogger.info('Answer sent: sessionId=${session.sessionId}');
     } catch (e) {
       CallLogger.error('Failed to accept call: $e');

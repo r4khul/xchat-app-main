@@ -22,8 +22,9 @@ class CallTopBar extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 16.px, vertical: 12.px),
         child: Row(
           children: [
-            // Minimize / PiP button
-            _buildMinimizeButton(),
+            // Minimize / PiP button - Temporarily disabled
+            // _buildMinimizeButton(),
+            SizedBox(width: 40.px),
             const Spacer(),
             // Duration (only when connected)
             _buildDuration(),
@@ -36,24 +37,25 @@ class CallTopBar extends StatelessWidget {
     );
   }
 
-  Widget _buildMinimizeButton() {
-    return GestureDetector(
-      onTap: onMinimize,
-      child: Container(
-        width: 40.px,
-        height: 40.px,
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(8.px),
-        ),
-        child: Icon(
-          Icons.picture_in_picture_alt_outlined,
-          color: Colors.white,
-          size: 22.px,
-        ),
-      ),
-    );
-  }
+  // Temporarily disabled minimize button
+  // Widget _buildMinimizeButton() {
+  //   return GestureDetector(
+  //     onTap: onMinimize,
+  //     child: Container(
+  //       width: 40.px,
+  //       height: 40.px,
+  //       decoration: BoxDecoration(
+  //         color: Colors.white.withValues(alpha: 0.1),
+  //         borderRadius: BorderRadius.circular(8.px),
+  //       ),
+  //       child: Icon(
+  //         Icons.picture_in_picture_alt_outlined,
+  //         color: Colors.white,
+  //         size: 22.px,
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget _buildDuration() {
     return ValueListenableBuilder<Duration>(

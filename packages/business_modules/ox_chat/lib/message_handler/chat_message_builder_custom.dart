@@ -273,4 +273,40 @@ extension ChatMessageBuilderCustomEx on ChatMessageBuilder {
       ),
     );
   }
+
+  static Widget _buildCallMessage(
+    types.CustomMessage message,
+    bool isMe,
+  ) {
+    return ChatCallMessage(
+      message: message,
+      isMe: isMe,
+    );
+  }
+
+  static Widget _buildUnknownMessage() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.px, vertical: 8.px),
+      decoration: BoxDecoration(
+        color: Colors.grey.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8.px),
+        border: Border.all(color: Colors.grey, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CLText.labelMedium(
+            Localized.text('ox_common.message_type_unknown'),
+            customColor: Colors.grey,
+          ),
+          SizedBox(height: 4.px),
+          CLText.labelSmall(
+            Localized.text('ox_chat.unknown_message_hint'),
+            customColor: Colors.grey,
+          ),
+        ],
+      ),
+    );
+  }
 }

@@ -1,7 +1,7 @@
 
 enum CustomMessageType {
   // zaps,
-  // call,
+  call,
   template,
   note,
   // ecash,    // normal token
@@ -15,8 +15,8 @@ extension CustomMessageTypeEx on CustomMessageType {
     switch (this) {
       // case CustomMessageType.zaps:
       //   return '1';
-      // case CustomMessageType.call:
-      //   return '2';
+      case CustomMessageType.call:
+        return '2';
       case CustomMessageType.template:
         return '3';
       case CustomMessageType.note:

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_call/src/models/call_state.dart';
+import 'package:ox_localizable/ox_localizable.dart';
 import 'call_page_controller.dart';
 import 'call_control_button.dart';
 
@@ -126,7 +127,7 @@ class _VoiceCallControls extends StatelessWidget {
           _HangUpButton(
             controller: controller,
             disabled: disabled,
-            label: isOutgoingRinging ? 'Cancel' : 'Hang Up',
+            label: isOutgoingRinging ? Localized.text('ox_chat.call_cancel') : Localized.text('ox_chat.call_hang_up'),
             isOutgoingRinging: isOutgoingRinging,
           ),
           SizedBox(width: 40.px),

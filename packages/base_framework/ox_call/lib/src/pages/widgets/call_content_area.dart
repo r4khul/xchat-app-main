@@ -5,6 +5,7 @@ import 'package:ox_common/component.dart';
 import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/widgets/avatar.dart';
 import 'package:ox_call/src/models/call_state.dart';
+import 'package:ox_localizable/ox_localizable.dart';
 import 'call_page_controller.dart';
 
 /// Content area that automatically renders voice or video call UI.
@@ -99,24 +100,24 @@ class _VoiceCallContent extends StatelessWidget {
   }
 
   String _getStatusText(CallState state) {
-    final callTypeText = controller.isVideoCall ? 'video' : 'voice';
-
     switch (state) {
       case CallState.initiating:
       case CallState.ringing:
         if (controller.isIncoming) {
-          return 'invites you to $callTypeText call..';
+          return controller.isVideoCall
+              ? Localized.text('ox_chat.call_invites_you_to_video_call')
+              : Localized.text('ox_chat.call_invites_you_to_voice_call');
         } else {
-          return 'Awaiting response......';
+          return Localized.text('ox_chat.call_awaiting_response');
         }
       case CallState.connecting:
-        return 'Connecting...';
+        return Localized.text('ox_chat.call_connecting');
       case CallState.connected:
         return '';
       case CallState.reconnecting:
-        return 'Reconnecting...';
+        return Localized.text('ox_chat.call_reconnecting');
       case CallState.ended:
-        return 'Call ended';
+        return Localized.text('ox_chat.call_ended');
       default:
         return '';
     }
@@ -313,15 +314,15 @@ class _VideoCallContentState extends State<_VideoCallContent> {
     switch (state) {
       case CallState.initiating:
       case CallState.ringing:
-        return 'Awaiting response...';
+        return Localized.text('ox_chat.call_awaiting_response_short');
       case CallState.connecting:
-        return 'Connecting...';
+        return Localized.text('ox_chat.call_connecting');
       case CallState.connected:
-        return 'Connecting...'; // Waiting for remote video
+        return Localized.text('ox_chat.call_connecting'); // Waiting for remote video
       case CallState.reconnecting:
-        return 'Reconnecting...';
+        return Localized.text('ox_chat.call_reconnecting');
       case CallState.ended:
-        return 'Call ended';
+        return Localized.text('ox_chat.call_ended');
       default:
         return '';
     }
