@@ -194,6 +194,7 @@
   "call_canceled": "Törölve",
   "call_timeout": "Időtúllépés",
   "call_busy": "A másik fél foglalt",
+  "call_busy_not_answered": "Foglalt, nem vette fel",
   "call_duration": "Hívás időtartama ${duration}",
   "unknown_message_hint": "Ez egy ismeretlen üzenettípus. Kérjük, frissítse az ügyfelet a megtekintéshez.",
   "call_invites_you_to_voice_call": "meghív egy hanghívásra..",

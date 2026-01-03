@@ -194,6 +194,7 @@
   "call_canceled": "Annulé",
   "call_timeout": "Délai d'attente dépassé",
   "call_busy": "L'autre partie est occupée",
+  "call_busy_not_answered": "Occupé, pas répondu",
   "call_duration": "Durée de l'appel ${duration}",
   "unknown_message_hint": "Il s'agit d'un type de message inconnu. Veuillez mettre à jour votre client pour le visualiser.",
   "call_invites_you_to_voice_call": "vous invite à un appel vocal..",

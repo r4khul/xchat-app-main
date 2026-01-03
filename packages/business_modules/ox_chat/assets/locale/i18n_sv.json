@@ -194,6 +194,7 @@
   "call_canceled": "Avbruten",
   "call_timeout": "Tidsgräns överskriden",
   "call_busy": "Den andra parten är upptagen",
+  "call_busy_not_answered": "Upptagen, inte svarat",
   "call_duration": "Samtalets varaktighet ${duration}",
   "unknown_message_hint": "Detta är en okänd meddelandetyp. Uppdatera din klient för att visa den.",
   "call_invites_you_to_voice_call": "bjuder in dig till ett röstsamtal..",

@@ -194,6 +194,7 @@
   "call_canceled": "已取消",
   "call_timeout": "超時",
   "call_busy": "對方忙線中",
+  "call_busy_not_answered": "忙線未接聽",
   "call_duration": "通話時長 ${duration}",
   "unknown_message_hint": "這是一條未知訊息類型，請更新客戶端以查看。",
   "call_invites_you_to_voice_call": "邀請您進行語音通話..",

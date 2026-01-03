@@ -194,6 +194,7 @@
   "call_canceled": "Tühistatud",
   "call_timeout": "Aegumine",
   "call_busy": "Teine osapool on hõivatud",
+  "call_busy_not_answered": "Hõivatud, ei vastatud",
   "call_duration": "Kõne kestus ${duration}",
   "unknown_message_hint": "See on tundmatu sõnumitüüp. Palun uuendage oma klienti selle vaatamiseks.",
   "call_invites_you_to_voice_call": "kutsub teid helistama..",

@@ -194,6 +194,7 @@
   "call_canceled": "Cancelado",
   "call_timeout": "Tiempo agotado",
   "call_busy": "La otra parte está ocupada",
+  "call_busy_not_answered": "Ocupado, no contestado",
   "call_duration": "Duración de la llamada ${duration}",
   "unknown_message_hint": "Este es un tipo de mensaje desconocido. Actualice su cliente para verlo.",
   "call_invites_you_to_voice_call": "te invita a una llamada de voz..",

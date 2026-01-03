@@ -194,6 +194,7 @@
   "call_canceled": "ยกเลิก",
   "call_timeout": "หมดเวลา",
   "call_busy": "อีกฝ่ายกำลังยุ่ง",
+  "call_busy_not_answered": "ไม่ว่าง ไม่ได้รับสาย",
   "call_duration": "ระยะเวลาการโทร ${duration}",
   "unknown_message_hint": "นี่คือประเภทข้อความที่ไม่ทราบ กรุณาอัปเดตไคลเอนต์เพื่อดู",
   "call_invites_you_to_voice_call": "เชิญคุณเข้าร่วมการโทรด้วยเสียง..",

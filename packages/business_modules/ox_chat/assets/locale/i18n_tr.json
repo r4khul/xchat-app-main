@@ -194,6 +194,7 @@
   "call_canceled": "İptal edildi",
   "call_timeout": "Zaman aşımı",
   "call_busy": "Diğer taraf meşgul",
+  "call_busy_not_answered": "Meşgul, cevap verilmedi",
   "call_duration": "Arama süresi ${duration}",
   "unknown_message_hint": "Bu bilinmeyen bir mesaj türüdür. Görüntülemek için lütfen istemcinizi güncelleyin.",
   "call_invites_you_to_voice_call": "sizi sesli aramaya davet ediyor..",

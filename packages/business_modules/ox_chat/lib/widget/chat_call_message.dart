@@ -85,7 +85,9 @@ class ChatCallMessage extends StatelessWidget {
           borderColor = Colors.grey;
           textColor = Colors.grey;
           iconColor = Colors.grey;
-          statusText = Localized.text('ox_chat.call_busy');
+          statusText = isMe
+              ? Localized.text('ox_chat.call_busy')
+              : Localized.text('ox_chat.call_busy_not_answered');
           break;
         case CallMessageState.disconnect:
         case CallMessageState.offer:

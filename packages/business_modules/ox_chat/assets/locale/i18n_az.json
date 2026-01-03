@@ -194,6 +194,7 @@
   "call_canceled": "Ləğv edildi",
   "call_timeout": "Vaxt bitdi",
   "call_busy": "Digər tərəf məşğuldur",
+  "call_busy_not_answered": "Məşğul, cavab verilmədi",
   "call_duration": "Zəng müddəti ${duration}",
   "unknown_message_hint": "Bu naməlum mesaj növüdür. Görmək üçün müştərinizi yeniləyin.",
   "call_invites_you_to_voice_call": "sizi səs zənginə dəvət edir..",

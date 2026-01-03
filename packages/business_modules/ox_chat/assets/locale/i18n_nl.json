@@ -194,6 +194,7 @@
   "call_canceled": "Geannuleerd",
   "call_timeout": "Time-out",
   "call_busy": "De andere partij is bezet",
+  "call_busy_not_answered": "Bezet, niet beantwoord",
   "call_duration": "Gespreksduur ${duration}",
   "unknown_message_hint": "Dit is een onbekend berichttype. Update uw client om het weer te geven.",
   "call_invites_you_to_voice_call": "nodigt je uit voor een spraakoproep..",

@@ -194,6 +194,7 @@
   "call_canceled": "Zrušeno",
   "call_timeout": "Časový limit",
   "call_busy": "Druhá strana je zaneprázdněna",
+  "call_busy_not_answered": "Obsazeno, nezvedáno",
   "call_duration": "Délka hovoru ${duration}",
   "unknown_message_hint": "Toto je neznámý typ zprávy. Aktualizujte prosím svého klienta pro zobrazení.",
   "call_invites_you_to_voice_call": "vás zve na hlasový hovor..",

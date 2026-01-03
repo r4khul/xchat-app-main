@@ -194,6 +194,7 @@
   "call_canceled": "キャンセルされました",
   "call_timeout": "タイムアウト",
   "call_busy": "相手が通話中です",
+  "call_busy_not_answered": "通話中、応答なし",
   "call_duration": "通話時間 ${duration}",
   "unknown_message_hint": "これは不明なメッセージタイプです。表示するにはクライアントを更新してください。",
   "call_invites_you_to_voice_call": "音声通話に招待しています..",

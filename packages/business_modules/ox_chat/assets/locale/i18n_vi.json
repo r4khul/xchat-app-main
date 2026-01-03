@@ -194,6 +194,7 @@
   "call_canceled": "Đã hủy",
   "call_timeout": "Hết thời gian chờ",
   "call_busy": "Bên kia đang bận",
+  "call_busy_not_answered": "Bận, không trả lời",
   "call_duration": "Thời lượng cuộc gọi ${duration}",
   "unknown_message_hint": "Đây là loại tin nhắn không xác định. Vui lòng cập nhật ứng dụng để xem.",
   "call_invites_you_to_voice_call": "mời bạn tham gia cuộc gọi thoại..",

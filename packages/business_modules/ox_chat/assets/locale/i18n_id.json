@@ -194,6 +194,7 @@
   "call_canceled": "Dibatalkan",
   "call_timeout": "Waktu habis",
   "call_busy": "Pihak lain sedang sibuk",
+  "call_busy_not_answered": "Sibuk, tidak dijawab",
   "call_duration": "Durasi panggilan ${duration}",
   "unknown_message_hint": "Ini adalah jenis pesan yang tidak dikenal. Harap perbarui klien Anda untuk melihatnya.",
   "call_invites_you_to_voice_call": "mengundang Anda ke panggilan suara..",

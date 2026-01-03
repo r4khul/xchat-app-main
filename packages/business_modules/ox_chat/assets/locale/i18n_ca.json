@@ -194,6 +194,7 @@
   "call_canceled": "Cancel·lat",
   "call_timeout": "Temps esgotat",
   "call_busy": "L'altra part està ocupada",
+  "call_busy_not_answered": "Ocupat, no contestat",
   "call_duration": "Durada de la trucada ${duration}",
   "unknown_message_hint": "Aquest és un tipus de missatge desconegut. Actualitzeu el vostre client per veure'l.",
   "call_invites_you_to_voice_call": "t'invita a una trucada de veu..",

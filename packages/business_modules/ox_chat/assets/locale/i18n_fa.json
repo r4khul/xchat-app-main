@@ -194,6 +194,7 @@
   "call_canceled": "لغو شد",
   "call_timeout": "زمان تمام شد",
   "call_busy": "طرف دیگر مشغول است",
+  "call_busy_not_answered": "مشغول، پاسخ داده نشد",
   "call_duration": "مدت تماس ${duration}",
   "unknown_message_hint": "این یک نوع پیام ناشناخته است. لطفاً کلاینت خود را برای مشاهده به‌روزرسانی کنید.",
   "call_invites_you_to_voice_call": "شما را به تماس صوتی دعوت می‌کند..",

@@ -194,6 +194,7 @@
   "call_canceled": "ملغي",
   "call_timeout": "انتهت المهلة",
   "call_busy": "الطرف الآخر مشغول",
+  "call_busy_not_answered": "مشغول، لم يتم الرد",
   "call_duration": "مدة المكالمة ${duration}",
   "unknown_message_hint": "هذا نوع رسالة غير معروف. يرجى تحديث عميلك لعرضه.",
   "call_invites_you_to_voice_call": "يدعوك إلى مكالمة صوتية..",
