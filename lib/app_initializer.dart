@@ -23,6 +23,7 @@ import 'package:ox_login/ox_login.dart';
 import 'package:ox_theme/ox_theme.dart';
 import 'package:ox_usercenter/ox_usercenter.dart';
 import 'package:ox_usercenter/utils/app_config_helper.dart';
+import 'package:ox_call/ox_call.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:nostr_mls_package/nostr_mls_package.dart';
 import 'main.reflectable.dart';
@@ -130,6 +131,7 @@ class AppInitializer {
       OXChat().setup(),
       OXChatUI().setup(),
       OxChatHome().setup(),
+      OXCall().setup(),
     ]);
   }
 

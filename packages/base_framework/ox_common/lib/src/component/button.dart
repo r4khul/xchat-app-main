@@ -262,4 +262,16 @@ class CLButton {
       child: child,
     );
   }
+
+  static Widget back() {
+    if (PlatformStyle.isUseMaterial) {
+      return BackButton();
+    } else {
+      return SizedBox(
+        height: 36,
+        width: 36,
+        child: FittedBox(child: BackButton()),
+      );
+    }
+  }
 }

@@ -5,15 +5,11 @@ import 'package:ox_chat/widget/common_chat_widget.dart';
 import 'package:ox_chat_ui/ox_chat_ui.dart';
 import 'package:ox_chat/utils/general_handler/chat_general_handler.dart';
 import 'package:ox_common/business_interface/ox_chat/utils.dart';
-import 'package:ox_common/utils/adapt.dart';
-import 'package:ox_common/widgets/avatar.dart';
-import 'package:ox_common/widgets/smart_group_avatar.dart';
 import 'package:ox_common/model/chat_session_model_isar.dart';
 import 'package:ox_common/utils/ox_chat_binding.dart';
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_common/widgets/common_loading.dart';
 import 'package:ox_localizable/ox_localizable.dart';
-import 'package:ox_module_service/ox_module_service.dart';
 import '../../utils/block_helper.dart';
 
 class ChatGroupMessagePage extends StatefulWidget {
@@ -63,34 +59,6 @@ class _ChatGroupMessagePageState extends State<ChatGroupMessagePage> {
         return CommonChatWidget(
           handler: handler,
           title: showName,
-          actions: [
-            Container(
-              alignment: Alignment.center,
-              child: isSingleChat
-                  ? OXUserAvatar(
-                      chatId: session.chatId,
-                      user: otherUser,
-                      size: Adapt.px(36),
-                      isClickable: true,
-                      onReturnFromNextPage: () {
-                        if (!mounted) return;
-                        setState(() {});
-                      },
-                    )
-                  : SmartGroupAvatar(
-                      group: group,
-                      size: Adapt.px(36),
-                      isClickable: true,
-                      onTap: () async {
-                        await OXModuleService.pushPage(context, 'ox_chat', 'GroupInfoPage', {
-                          'groupId': group.privateGroupId,
-                        });
-                        if (!mounted) return;
-                        setState(() {});
-                      },
-                    ),
-            ),
-          ],
           bottomHintParam: bottomHintParam,
           showUserNames: !isSingleChat,
         );

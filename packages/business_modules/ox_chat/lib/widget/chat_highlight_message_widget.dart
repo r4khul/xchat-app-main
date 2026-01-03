@@ -84,16 +84,17 @@ class ChatHighlightMessageWidgetState extends State<ChatHighlightMessageWidget> 
                 },
               ),
             ),
-            _buildAnimatedItem(
-              visible: widget.showScrollToBottomItem,
-              child: _buildItem(
-                count: 0,
-                iconName: 'icon_arrow_down.png',
-                onTap: () {
-                  widget.scrollToBottomOnTap.call();
-                },
-              ),
-            ),
+            // Temporarily disabled floating scroll to bottom button
+            // _buildAnimatedItem(
+            //   visible: widget.showScrollToBottomItem,
+            //   child: _buildItem(
+            //     count: 0,
+            //     iconName: 'icon_arrow_down.png',
+            //     onTap: () {
+            //       widget.scrollToBottomOnTap.call();
+            //     },
+            //   ),
+            // ),
           ],
         );
       },

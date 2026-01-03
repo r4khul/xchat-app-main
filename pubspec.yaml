@@ -55,6 +55,8 @@ dependencies:
     path: packages/base_framework/ox_localizable
   ox_common:
     path: packages/base_framework/ox_common
+  ox_call:
+    path: packages/base_framework/ox_call
 
 
   # business framework

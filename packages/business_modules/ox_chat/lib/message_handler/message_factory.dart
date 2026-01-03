@@ -1,10 +1,11 @@
 import 'dart:convert';
 
+import 'package:chatcore/chat-core.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_chat_types/src/message.dart' as UIMessage;
+import 'package:ox_common/business_interface/ox_chat/call_message_type.dart';
 import 'package:ox_common/business_interface/ox_chat/custom_message_type.dart';
 import 'package:ox_common/utils/web_url_helper.dart';
-import 'package:ox_localizable/ox_localizable.dart';
 
 import 'custom_message_utils.dart';
 import 'system_message_interpreter.dart';
@@ -201,8 +202,6 @@ class VideoMessageFactory implements MessageFactory {
     bool isMe = false,
   }) {
     final uri = content;
-    final snapshotUrl =
-        '${uri}?spm=qipa250&x-oss-process=video/snapshot,t_7000,f_jpg,w_0,h_0,m_fast';
     if (uri.isEmpty) {
       return null;
     }
@@ -375,6 +374,76 @@ class SystemMessageFactory implements MessageFactory {
       zapsInfoList: zapsInfoList,
       isMe: isMe,
     );
+  }
+}
+
+class CallMessageFactory implements MessageFactory {
+  @override
+  types.Message? createMessage({
+    required types.User author,
+    required int timestamp,
+    required String roomId,
+    required String? messageId,
+    required String? remoteId,
+    required dynamic sourceKey,
+    required String content,
+    UIMessage.Status? status,
+    UIMessage.EncryptionType fileEncryptionType = UIMessage.EncryptionType.none,
+    types.Message? repliedMessage,
+    String? repliedMessageId,
+    String? previewData,
+    String? decryptKey,
+    String? decryptNonce,
+    int? expiration,
+    List<types.Reaction> reactions = const [],
+    List<types.ZapsInfo> zapsInfoList = const [],
+    bool isMe = false,
+  }) {
+    if (content.isEmpty) return null;
+
+    try {
+      final contentMap = json.decode(content);
+      if (contentMap is! Map) return null;
+
+      final stateValue = contentMap['state'];
+      final state = CallMessageStateEx.fromValue(stateValue)
+          ?? CallMessageState.disconnect;
+
+      final mediaValue = contentMap['media'];
+      final type = CallMessageTypeEx.fromValue(mediaValue)
+          ?? CallMessageType.audio;
+      
+      final duration = contentMap['duration'];
+      final durationInt = duration is int 
+          ? duration 
+          : (duration is String ? int.tryParse(duration) : null);
+
+      return types.CustomMessage(
+        author: author,
+        createdAt: timestamp,
+        id: remoteId ?? messageId ?? '',
+        sourceKey: sourceKey,
+        remoteId: remoteId,
+        roomId: roomId,
+        repliedMessage: repliedMessage,
+        repliedMessageId: repliedMessageId,
+        metadata: CustomMessageEx.callMetaData(
+          text: '',
+          type: type,
+          state: state,
+          duration: durationInt,
+        ),
+        type: types.MessageType.custom,
+        expiration: expiration,
+        status: status,
+        reactions: reactions,
+        zapsInfoList: zapsInfoList,
+        viewWithoutBubble: true,
+        isMe: isMe,
+      );
+    } catch (e) {
+      return null;
+    }
   }
 }
 
@@ -620,6 +689,9 @@ class CustomMessageFactory implements MessageFactory {
           encryptedNonce: encryptedNonce,
           isMe: isMe,
         );
+      case CustomMessageType.call:
+        // Not support call message sending
+        return null;
     }
   }
 

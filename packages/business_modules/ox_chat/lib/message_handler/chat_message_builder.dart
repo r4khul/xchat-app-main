@@ -4,6 +4,7 @@ import 'package:ox_chat/message_handler/chat_message_helper.dart';
 import 'package:ox_chat/message_handler/custom_message_utils.dart';
 import 'package:ox_chat/widget/chat_video_message.dart';
 import 'package:ox_chat/widget/chat_image_preview_widget.dart';
+import 'package:ox_chat/widget/chat_call_message.dart';
 import 'package:ox_common/business_interface/ox_chat/call_message_type.dart';
 import 'package:ox_common/business_interface/ox_chat/custom_message_type.dart';
 import 'package:ox_common/component.dart';
@@ -391,6 +392,11 @@ class ChatMessageBuilder {
     final type = message.customType;
 
     switch (type) {
+      case CustomMessageType.call:
+        return ChatMessageBuilderCustomEx._buildCallMessage(
+          message,
+          isMe,
+        );
       case CustomMessageType.template:
         return ChatMessageBuilderCustomEx._buildTemplateMessage(message, isMe);
       case CustomMessageType.note:
@@ -415,7 +421,7 @@ class ChatMessageBuilder {
           isSelfChat,
         );
       default:
-        return SizedBox();
+        return ChatMessageBuilderCustomEx._buildUnknownMessage();
     }
   }
 }

@@ -15,9 +15,9 @@ import 'group_remove_members_page.dart';
 import 'package:chatcore/chat-core.dart';
 
 class GroupInfoPage extends StatefulWidget {
-  final String groupId;
+  final String privateGroupId;
 
-  GroupInfoPage({Key? key, required this.groupId}) : super(key: key);
+  GroupInfoPage({Key? key, required this.privateGroupId}) : super(key: key);
 
   @override
   _GroupInfoPageState createState() => new _GroupInfoPageState();
@@ -31,7 +31,7 @@ class _GroupInfoPageState extends State<GroupInfoPage> {
   @override
   void initState() {
     super.initState();
-    _groupNotifier = Groups.sharedInstance.getPrivateGroupNotifier(widget.groupId);
+    _groupNotifier = Groups.sharedInstance.getPrivateGroupNotifier(widget.privateGroupId);
     _groupInfoInit();
     
     // Listen to group changes and update member list
@@ -39,7 +39,7 @@ class _GroupInfoPageState extends State<GroupInfoPage> {
   }
 
   void _groupInfoInit() async {
-    String groupId = widget.groupId;
+    String groupId = widget.privateGroupId;
     List<UserDBISAR>? groupList =
     await Groups.sharedInstance.getAllGroupMembers(groupId);
 
@@ -224,7 +224,7 @@ class _GroupInfoPageState extends State<GroupInfoPage> {
               ChatSessionUtils.leaveConfirmWidget(
                 context, 
                 ChatType.chatGroup, 
-                widget.groupId, 
+                widget.privateGroupId,
                 isGroupOwner: _isGroupOwner,
               );
             },
@@ -302,7 +302,7 @@ class _GroupInfoPageState extends State<GroupInfoPage> {
     if (!_isGroupMember) return;
     OXNavigator.pushPage(
       context, (context) => ContactGroupMemberPage(
-        groupId: widget.groupId,
+        groupId: widget.privateGroupId,
       ),
     );
   }
@@ -313,10 +313,10 @@ class _GroupInfoPageState extends State<GroupInfoPage> {
       return;
     }
     if (value) {
-      await Groups.sharedInstance.muteGroup(widget.groupId);
+      await Groups.sharedInstance.muteGroup(widget.privateGroupId);
       CommonToast.instance.show(context, Localized.text('ox_chat.group_mute_operate_success_toast'));
     } else {
-      await Groups.sharedInstance.unMuteGroup(widget.groupId);
+      await Groups.sharedInstance.unMuteGroup(widget.privateGroupId);
       CommonToast.instance.show(context, Localized.text('ox_chat.group_mute_operate_success_toast'));
     }
     setState(() {

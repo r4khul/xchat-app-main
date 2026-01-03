@@ -4,22 +4,30 @@ import 'package:ox_chat/manager/chat_draft_manager.dart';
 import 'package:ox_chat/message_handler/chat_message_builder.dart';
 import 'package:ox_chat/message_handler/chat_message_helper.dart';
 import 'package:ox_chat/manager/chat_page_config.dart';
+import 'package:ox_chat/page/contacts/contact_user_info_page.dart';
+import 'package:ox_chat/page/contacts/groups/group_info_page.dart';
 import 'package:ox_chat/utils/chat_voice_helper.dart';
 import 'package:ox_chat/utils/general_handler/chat_general_handler.dart';
 import 'package:ox_chat/widget/chat_highlight_message_widget.dart';
 import 'package:ox_chat/utils/general_handler/chat_mention_handler.dart';
 import 'package:ox_chat/utils/general_handler/message_data_controller.dart';
 import 'package:ox_chat_ui/ox_chat_ui.dart';
+import 'package:chatcore/chat-core.dart';
+import 'package:ox_call/ox_call.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/model/chat_session_model_isar.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/utils/adapt.dart';
+import 'package:ox_module_service/ox_module_service.dart';
+import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_common/utils/chat_prompt_tone.dart';
 import 'package:ox_common/utils/extension.dart';
 import 'package:ox_common/utils/ox_chat_binding.dart';
 import 'package:ox_common/utils/ox_chat_observer.dart';
 import 'package:ox_common/utils/platform_utils.dart';
 import 'package:ox_common/utils/web_url_helper.dart';
+import 'package:ox_common/utils/permission_utils.dart';
+import 'package:ox_common/business_interface/ox_chat/call_message_type.dart';
 import 'package:ox_common/widgets/avatar.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 
@@ -29,7 +37,6 @@ class CommonChatWidget extends StatefulWidget {
   CommonChatWidget({
     required this.handler,
     this.title,
-    this.actions = const [],
     this.showUserNames = false,
     this.customTopWidget,
     this.customCenterWidget,
@@ -42,7 +49,6 @@ class CommonChatWidget extends StatefulWidget {
   final ChatGeneralHandler handler;
 
   final String? title;
-  final List<Widget> actions;
   final bool showUserNames;
 
   // Custom
@@ -79,7 +85,6 @@ class CommonChatWidgetState extends State<CommonChatWidget> with OXChatObserver 
   @override
   void initState() {
     super.initState();
-
     // Initialize input height controller
     _inputHeightController = InputHeightController();
     
@@ -171,9 +176,138 @@ class CommonChatWidgetState extends State<CommonChatWidget> with OXChatObserver 
 
   CLAppBar buildAppBar() {
     return CLAppBar(
-      title: widget.title,
-      actions: widget.actions,
+      leading: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () {
+          if (session.isSingleChat) {
+            OXNavigator.pushPage(context, (_) => ContactUserInfoPage(
+              chatId: session.chatId,
+              user: handler.otherUser,
+            ));
+          } else {
+            final groupId = session.groupId;
+            if (groupId == null || groupId.isEmpty) return;
+
+            final group = Groups.sharedInstance.getPrivateGroupNotifier(groupId);
+            OXNavigator.pushPage(context, (_) => GroupInfoPage(
+              privateGroupId: group.value.privateGroupId,
+            ));
+          }
+        },
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CLButton.back(),
+            SizedBox(width: 16.px),
+            buildAppBarAvatar(),
+            SizedBox(width: 8.px),
+            CLText.labelLarge(widget.title ?? ''),
+          ],
+        ),
+      ),
+      actions: buildAppBarActions(),
     );
+  }
+
+  Widget buildAppBarAvatar() {
+    if (session.isSingleChat) {
+      return buildUserAvatar();
+    } else {
+      return buildGroupAvatar();
+    }
+  }
+
+  Widget buildUserAvatar() {
+    return OXUserAvatar(
+      chatId: session.chatId,
+      user: handler.otherUser,
+      size: 36.px,
+      onReturnFromNextPage: () {
+        if (!mounted) return;
+        setState(() {});
+      },
+    );
+  }
+
+  Widget buildGroupAvatar() {
+    final groupId = session.groupId;
+    if (groupId == null) return const SizedBox();
+
+    return ValueListenableBuilder<GroupDBISAR>(
+      valueListenable: Groups.sharedInstance.getPrivateGroupNotifier(groupId),
+      builder: (context, group, child) {
+        return Container(
+          alignment: Alignment.center,
+          child: SmartGroupAvatar(
+            group: group,
+            size: 36.px,
+            onTap: () async {
+              await OXModuleService.pushPage(context, 'ox_chat', 'GroupInfoPage', {
+                'groupId': group.privateGroupId,
+              });
+              if (!mounted) return;
+              setState(() {});
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  List<Widget> buildAppBarActions() {
+    if (!session.isSingleChat) return [];
+    
+    final otherUser = handler.otherUser;
+    if (otherUser == null) return [];
+    return [
+      CLButton.icon(
+        iconName: 'icon_message_call.png',
+        package: 'ox_chat',
+        iconSize: 24.px,
+        onTap: () => _startCall(otherUser, CallType.audio),
+      ),
+      CLButton.icon(
+        iconName: 'icon_message_camera.png',
+        package: 'ox_chat',
+        iconSize: 24.px,
+        onTap: () => _startCall(otherUser, CallType.video),
+      ),
+    ];
+  }
+
+  Future<void> _startCall(UserDBISAR user, CallType callType) async {
+    try {
+      // Check permission before starting call
+      final mediaType = callType == CallType.video
+          ? CallMessageType.video.text
+          : CallMessageType.audio.text;
+      final hasPermission = await PermissionUtils.getCallPermission(
+        context,
+        mediaType: mediaType,
+      );
+      if (!hasPermission) {
+        // Permission dialog already shown by getCallPermission
+        return;
+      }
+
+      String groupId = session.groupId ?? '';
+      if (groupId.isEmpty) {
+        groupId = session.chatId;
+      }
+      if (groupId.isEmpty) {
+        throw Exception('PrivateGroupId is empty');
+      }
+
+      await CallManager().startCall(
+        target: user,
+        privateGroupId: groupId,
+        callType: callType,
+      );
+    } catch (e) {
+      if (mounted) {
+        CommonToast.instance.show(context, e.toString());
+      }
+    }
   }
 
   Widget buildChatContentWidget() {

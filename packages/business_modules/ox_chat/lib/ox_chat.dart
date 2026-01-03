@@ -75,7 +75,7 @@ class OXChat extends OXFlutterModule {
         return OXNavigator.pushPage(
           context,
               (context) => GroupInfoPage(
-            groupId: params?['groupId'],
+            privateGroupId: params?['groupId'],
           ),
         );
       case 'ChatVideoPlayPage':
@@ -93,7 +93,7 @@ class OXChat extends OXFlutterModule {
   }
 
   Future<void> _groupInfoPage(BuildContext? context,{required String groupId}) async {
-    OXNavigator.pushPage(context!, (context) => GroupInfoPage(groupId: groupId));
+    OXNavigator.pushPage(context!, (context) => GroupInfoPage(privateGroupId: groupId));
   }
 
   void _sendSystemMsg(BuildContext context,{required String chatId,required String content, required String localTextKey}){

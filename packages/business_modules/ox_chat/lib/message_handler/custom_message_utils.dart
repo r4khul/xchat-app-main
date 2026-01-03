@@ -1,5 +1,6 @@
 
 import 'dart:convert';
+import 'package:chatcore/chat-core.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:ox_chat/utils/widget_tool.dart';
 import 'package:ox_common/business_interface/ox_chat/call_message_type.dart';
@@ -27,15 +28,19 @@ extension CustomMessageEx on types.CustomMessage {
   //   });
   // }
   //
-  // static Map<String, dynamic> callMetaData({
-  //   required String text,
-  //   required CallMessageType type,
-  // }) {
-  //   return _metaData(CustomMessageType.call, {
-  //     'text': text,
-  //     'type': type.value,
-  //   });
-  // }
+  static Map<String, dynamic> callMetaData({
+    required String text,
+    required CallMessageType type,
+    CallMessageState? state,
+    int? duration,
+  }) {
+    return _metaData(CustomMessageType.call, {
+      'text': text,
+      'type': type.value,
+      if (state != null) 'state': state,
+      if (duration != null) 'duration': duration,
+    });
+  }
 
   static Map<String, dynamic> templateMetaData({
     required String title,
