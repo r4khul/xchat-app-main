@@ -13,6 +13,22 @@ extension CallManagerCallLifecycle on CallManager {
     required CallType callType,
     List<UserDBISAR>? additionalParticipants,
   }) async {
+    // Check permission before starting call
+    final mediaType = callType == CallType.video
+        ? CallMessageType.video.text
+        : CallMessageType.audio.text;
+    final context = OXNavigator.rootContext;
+    
+    final hasPermission = await PermissionUtils.getCallPermission(
+      context,
+      mediaType: mediaType,
+    );
+    if (!hasPermission) {
+      // Permission dialog already shown by getCallPermission
+      CallLogger.warning('Call permission denied, aborting call start');
+      return;
+    }
+
     final sessionId = _generateSessionId();
     final currentPubkey = Account.sharedInstance.currentPubkey;
 

@@ -54,8 +54,8 @@ import 'package:ox_chat/utils/message_report.dart';
 import 'package:ox_chat/utils/widget_tool.dart';
 import 'package:ox_chat/widget/report_dialog.dart';
 import 'package:ox_common/business_interface/ox_chat/custom_message_type.dart';
-import 'package:ox_common/business_interface/ox_calling/interface.dart';
 import 'package:ox_common/model/chat_session_model_isar.dart';
+import 'package:ox_call/ox_call.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/utils/permission_utils.dart';
 import 'package:ox_common/widgets/common_toast.dart';
@@ -63,9 +63,7 @@ import 'package:ox_common/widgets/common_loading.dart';
 import 'package:ox_common/model/chat_type.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import 'package:chatcore/chat-core.dart';
-import 'package:isar/isar.dart' hide Filter;
 import 'package:nostr_core_dart/nostr.dart';
-import 'package:sqflite_sqlcipher/sqlite_api.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:ox_usercenter/page/settings/file_server_page.dart';
 import 'package:ox_common/utils/file_server_helper.dart';
@@ -330,9 +328,9 @@ extension ChatGestureHandlerEx on ChatGeneralHandler {
         // case CustomMessageType.zaps:
         //   await zapsMessagePressHandler(context, message);
         //   break;
-        // case CustomMessageType.call:
-        //   callMessagePressHandler(context, message);
-        //   break;
+        case CustomMessageType.call:
+          await callMessagePressHandler(context, message);
+          break;
         case CustomMessageType.template:
           templateMessagePressHandler(context, message);
           break;
@@ -451,25 +449,49 @@ extension ChatGestureHandlerEx on ChatGeneralHandler {
   //   OXUserCenterInterface.jumpToZapsRecordPage(context, zapsDetail);
   // }
 
-  void callMessagePressHandler(BuildContext context, types.CustomMessage message) {
-    final otherUser = this.otherUser;
-    CallMessageType? pageType;
-    switch (CallMessageEx(message).callType) {
-      case CallMessageType.audio:
-        pageType = CallMessageType.audio;
-        break ;
-      case CallMessageType.video:
-        pageType = CallMessageType.video;
-        break ;
-      default:
-        break ;
+  Future<void> callMessagePressHandler(BuildContext context, types.CustomMessage message) async {
+    try {
+      // Get call type from message
+      final CallMessageType? callMessageType = CallMessageEx(message).callType;
+      final UserDBISAR? targetUser = otherUser;
+      if (callMessageType == null || targetUser == null) return;
+      
+      // Convert CallMessageType to CallType
+      final CallType callType = switch (callMessageType) {
+        CallMessageType.audio => CallType.audio,
+        CallMessageType.video => CallType.video,
+      };
+      
+      // Get privateGroupId from session
+      String groupId = session.groupId ?? '';
+      if (groupId.isEmpty) {
+        groupId = session.chatId;
+      }
+      if (groupId.isEmpty) {
+        ChatLogUtils.error(
+          className: 'ChatGeneralHandler',
+          funcName: 'callMessagePressHandler',
+          message: 'PrivateGroupId is empty',
+        );
+        return;
+      }
+      
+      // Start call using CallManager
+      await CallManager().startCall(
+        target: targetUser,
+        privateGroupId: groupId,
+        callType: callType,
+      );
+    } catch (e) {
+      ChatLogUtils.error(
+        className: 'ChatGeneralHandler',
+        funcName: 'callMessagePressHandler',
+        message: 'Failed to start call: $e',
+      );
+      if (context.mounted) {
+        CommonToast.instance.show(context, e.toString());
+      }
     }
-    if (otherUser == null || pageType == null) return ;
-    OXCallingInterface.pushCallingPage(
-      context,
-      otherUser,
-      pageType,
-    );
   }
 
   void templateMessagePressHandler(BuildContext context, types.CustomMessage message) {

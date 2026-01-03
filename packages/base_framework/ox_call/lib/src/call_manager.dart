@@ -12,6 +12,9 @@ import 'package:ox_call/src/utils/call_logger.dart';
 import 'package:ox_call/src/utils/background_keep_alive.dart';
 import 'package:ox_call/src/utils/ice_server_config.dart';
 import 'package:ox_call/src/device_manager.dart';
+import 'package:ox_common/utils/permission_utils.dart';
+import 'package:ox_common/business_interface/ox_chat/call_message_type.dart';
+import 'package:ox_common/navigator/navigator.dart';
 
 // Extensions (using part files to access private members)
 part 'call_manager_signaling.dart';
