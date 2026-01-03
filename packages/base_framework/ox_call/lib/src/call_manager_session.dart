@@ -26,6 +26,12 @@ extension CallManagerSession on CallManager {
     if (session == null) return;
 
     session.state = state;
+    
+    // Cancel offer timer when connection starts or succeeds
+    if (state == CallState.connecting || state == CallState.connected) {
+      _cancelOfferTimer(sessionId);
+    }
+    
     _notifyStateChange(session);
   }
 

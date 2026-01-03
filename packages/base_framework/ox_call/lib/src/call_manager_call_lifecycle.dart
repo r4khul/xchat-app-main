@@ -123,8 +123,6 @@ extension CallManagerCallLifecycle on CallManager {
 
     CallLogger.info('Accepting call: sessionId=${session.sessionId}');
 
-    _cancelOfferTimer(session.sessionId);
-
     _updateSession(session.sessionId, state: CallState.connecting);
 
     try {
@@ -233,7 +231,6 @@ extension CallManagerCallLifecycle on CallManager {
     _endingSessions.add(sessionId);
 
     try {
-      _cancelOfferTimer(sessionId);
       _pendingCandidates.remove(sessionId);
 
       final endTime = DateTime.now().millisecondsSinceEpoch;
