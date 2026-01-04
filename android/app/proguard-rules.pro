@@ -100,3 +100,20 @@
 
 -keep class org.unifiedpush.** { *; }
 -keep class io.flutter.** { *; }
+
+# Google Play Billing Library
+# Keep all classes from Google Play Billing Library to prevent obfuscation
+-keep class com.android.billingclient.** { *; }
+-dontwarn com.android.billingclient.**
+
+# Flutter in_app_purchase plugin
+# Keep all classes from in_app_purchase plugin
+-keep class io.flutter.plugins.in_app_purchase.** { *; }
+-keep class io.flutter.plugins.** { *; }
+
+# Reflection support for in-app purchases
+# Keep attributes needed for reflection calls used by billing library
+-keepattributes Signature
+-keepattributes *Annotation*
+-keepattributes EnclosingMethod
+-keepattributes InnerClasses
