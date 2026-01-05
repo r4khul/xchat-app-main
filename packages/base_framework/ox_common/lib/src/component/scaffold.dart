@@ -30,38 +30,51 @@ class CLScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget body = this.body;
-    if (bottomWidget != null) {
-      body = Stack(
-        children: [
-          body,
-          Positioned(
-            left: CLLayout.horizontalPadding,
-            right: CLLayout.horizontalPadding,
-            bottom: 24.px,
-            child: SafeArea(
-              child: bottomWidget!
-            ),
-          ),
-        ],
-      );
-    }
     final safeBody = extendBody ? body : SafeArea(bottom: false, child: body);
+    
+    // Get the background color to use for Stack
+    final bgColor = backgroundColor ?? 
+        (PlatformStyle.isUseMaterial 
+            ? Theme.of(context).scaffoldBackgroundColor
+            : CupertinoColors.systemGroupedBackground.resolveFrom(context));
+    
+    Widget scaffold;
     if (PlatformStyle.isUseMaterial) {
-      return Scaffold(
+      scaffold = Scaffold(
         appBar: appBar?.buildMaterialAppBar(context),
         backgroundColor: backgroundColor,
         body: safeBody,
         resizeToAvoidBottomInset: resizeToAvoidBottomInset,
       );
     } else {
-      return CupertinoPageScaffold(
+      scaffold = CupertinoPageScaffold(
         navigationBar: appBar?.buildCupertinoAppBar(context),
         backgroundColor: backgroundColor ?? CupertinoColors.systemGroupedBackground.resolveFrom(context),
         resizeToAvoidBottomInset: resizeToAvoidBottomInset,
         child: safeBody,
       );
     }
+    
+    if (bottomWidget != null) {
+      return ColoredBox(
+        color: bgColor,
+        child: Stack(
+          children: [
+            scaffold,
+            Positioned(
+              left: CLLayout.horizontalPadding,
+              right: CLLayout.horizontalPadding,
+              bottom: 12.px,
+              child: SafeArea(
+                child: bottomWidget!,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    
+    return scaffold;
   }
 
   static Color defaultPageBgColor(BuildContext context, bool isSectionListPage) {

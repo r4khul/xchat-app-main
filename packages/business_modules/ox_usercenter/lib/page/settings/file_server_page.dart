@@ -6,7 +6,6 @@ import 'package:ox_common/component.dart';
 import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/model/file_server_model.dart';
 import 'package:ox_common/repository/file_server_repository.dart';
-import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/utils/extension.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 
@@ -147,6 +146,15 @@ class _FileServerPageState extends State<FileServerPage> {
       ),
       isSectionListPage: true,
       body: bodyWidget,
+      bottomWidget: AnimatedOpacity(
+        opacity: _isEditing ? 0.0 : 1.0,
+        duration: const Duration(milliseconds: 200),
+        child: CLButton.filled(
+          text: Localized.text('ox_usercenter.add_server'),
+          expanded: true,
+          onTap: _addServer,
+        ),
+      ),
     );
   }
 
@@ -202,42 +210,7 @@ class _FileServerPageState extends State<FileServerPage> {
       },
     );
 
-    return Stack(
-      children: [
-        Positioned.fill(child: listWidget),
-        if (PlatformStyle.isUseMaterial)
-          Positioned(
-            bottom: 24.px,
-            right: 24.px,
-            child: SafeArea(
-              child: Visibility(
-                visible: !_isEditing,
-                child: FloatingActionButton(
-                  onPressed: _addServer,
-                  child: const Icon(Icons.add),
-                ),
-              ),
-            ),
-          )
-        else
-          Positioned(
-            left: CLLayout.horizontalPadding,
-            right: CLLayout.horizontalPadding,
-            bottom: 12.px,
-            child: SafeArea(
-              child: AnimatedOpacity(
-                opacity: _isEditing ? 0.0 : 1.0,
-                duration: const Duration(milliseconds: 200),
-                child: CLButton.filled(
-                  text: Localized.text('ox_usercenter.add_server'),
-                  expanded: true,
-                  onTap: _addServer,
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
+    return listWidget;
   }
 
   Future<void> _addServer() async {

@@ -77,7 +77,7 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
   }
 
   void _checkIfOwner() {
-    _isOwner = true; return;
+    _isOwner = false; return;
     final currentPubkey = LoginManager.instance.currentPubkey;
     _isOwner = widget.circle.pubkey == currentPubkey;
   }

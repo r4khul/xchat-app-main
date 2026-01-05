@@ -44,38 +44,27 @@ class _CircleActivatedPageState extends State<CircleActivatedPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        CLScaffold(
-          appBar: CLAppBar(),
-          body: SingleChildScrollView(
-            padding: EdgeInsets.only(
-              left: CLLayout.horizontalPadding,
-              right: CLLayout.horizontalPadding,
-              top: 24.px,
-              bottom: 100.px,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildSuccessHeader(),
-                SizedBox(height: 32.px),
-                _buildStep1(),
-                SizedBox(height: 24.px),
-                _buildStep2(),
-              ],
-            ),
-          ),
-        ),
-        Positioned(
+    return CLScaffold(
+      appBar: CLAppBar(),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.only(
           left: CLLayout.horizontalPadding,
           right: CLLayout.horizontalPadding,
-          bottom: 12.px,
-          child: SafeArea(
-            child: _buildEnterButton(),
-          ),
+          top: 24.px,
+          bottom: 100.px,
         ),
-      ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSuccessHeader(),
+            SizedBox(height: 32.px),
+            _buildStep1(),
+            SizedBox(height: 24.px),
+            _buildStep2(),
+          ],
+        ),
+      ),
+      bottomWidget: _buildEnterButton(),
     );
   }
 

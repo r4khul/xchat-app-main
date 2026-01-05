@@ -385,37 +385,26 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        CLScaffold(
-          appBar: CLAppBar(
-            title: Localized.text('ox_login.private_relay'),
-            actions: [
-              // Test button for simulating subscription success
-              if (kDebugMode)
-                IconButton(
-                  icon: Icon(Icons.check_circle),
-                  tooltip: 'Test: Simulate Success',
-                  onPressed: _isProcessing ? null : _simulatePurchaseSuccess,
-                ),
-              IconButton(
-                icon: Icon(Icons.restore),
-                tooltip: Localized.text('ox_usercenter.restore_purchases'),
-                onPressed: _isRestoring ? null : _restorePurchases,
-              ),
-            ],
+    return CLScaffold(
+      appBar: CLAppBar(
+        title: Localized.text('ox_login.private_relay'),
+        actions: [
+          // Test button for simulating subscription success
+          if (kDebugMode)
+            IconButton(
+              icon: Icon(Icons.check_circle),
+              tooltip: 'Test: Simulate Success',
+              onPressed: _isProcessing ? null : _simulatePurchaseSuccess,
+            ),
+          IconButton(
+            icon: Icon(Icons.restore),
+            tooltip: Localized.text('ox_usercenter.restore_purchases'),
+            onPressed: _isRestoring ? null : _restorePurchases,
           ),
-          body: _buildBody(),
-        ),
-        Positioned(
-          left: CLLayout.horizontalPadding,
-          right: CLLayout.horizontalPadding,
-          bottom: 12.px,
-          child: SafeArea(
-            child: _buildPayButton(),
-          ),
-        ),
-      ],
+        ],
+      ),
+      body: _buildBody(),
+      bottomWidget: _buildPayButton(),
     );
   }
 
@@ -425,6 +414,7 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
         left: CLLayout.horizontalPadding,
         right: CLLayout.horizontalPadding,
         top: 24.px,
+        bottom: 100.px, // Add bottom padding to avoid button overlap
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -37,21 +37,10 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        CLScaffold(
-          appBar: CLAppBar(),
-          body: _buildBody(),
-        ),
-        Positioned(
-          left: CLLayout.horizontalPadding,
-          right: CLLayout.horizontalPadding,
-          bottom: 12.px,
-          child: SafeArea(
-            child: _buildConnectButton(),
-          ),
-        ),
-      ],
+    return CLScaffold(
+      appBar: CLAppBar(),
+      body: _buildBody(),
+      bottomWidget: _buildConnectButton(),
     );
   }
 
@@ -155,18 +144,6 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
           showArrow: false,
           isSelected: _selectedCircleType == CircleType.private,
           isRecommended: true,
-          tags: [
-            _buildTag(
-              icon: Icons.bolt_rounded,
-              label: Localized.text('ox_login.zero_config'),
-              color: Colors.blue,
-            ),
-            _buildTag(
-              icon: Icons.lock_rounded,
-              label: Localized.text('ox_login.encrypted'),
-              color: Colors.blue,
-            ),
-          ],
           onTap: () => setState(() => _selectedCircleType = CircleType.private),
         ),
         Positioned(
@@ -182,7 +159,7 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
               borderRadius: BorderRadius.circular(6.px),
             ),
             child: CLText.labelSmall(
-              Localized.text('ox_login.recommended'),
+              Localized.text('ox_login.most_popular'),
               customColor: Colors.white,
             ),
           ),
@@ -290,35 +267,6 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildTag({
-    required IconData icon,
-    required String label,
-    required Color color,
-  }) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.px, vertical: 4.px),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8.px),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            size: 14.px,
-            color: color,
-          ),
-          SizedBox(width: 4.px),
-          CLText.labelSmall(
-            label,
-            customColor: color,
-          ),
-        ],
       ),
     );
   }
