@@ -22,7 +22,6 @@ import 'package:ox_common/component.dart';
 import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/login/login_models.dart';
 import 'package:ox_common/ox_common.dart';
-import 'package:ox_common/upload/file_type.dart';
 import 'package:ox_common/upload/upload_utils.dart';
 import 'package:ox_common/utils/aes_encrypt_utils.dart';
 import 'package:ox_common/utils/clipboard.dart';

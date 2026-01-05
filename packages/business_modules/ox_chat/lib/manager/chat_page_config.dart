@@ -5,6 +5,7 @@ import 'package:ox_chat/widget/message_long_press_widget.dart';
 import 'package:ox_chat_ui/ox_chat_ui.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:ox_chat/utils/general_handler/chat_general_handler.dart';
+import 'package:ox_common/component.dart';
 import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/utils/platform_utils.dart';
 import 'package:ox_common/utils/theme_color.dart';
@@ -57,16 +58,16 @@ class ChatPageConfig {
     return items;
   }
 
-  ChatTheme get pageTheme =>
+  ChatTheme pageTheme(BuildContext context) =>
       DefaultChatTheme(
         sentMessageBodyTextStyle: TextStyle(
-          color: ThemeColor.white,
+          color: ColorToken.white.of(context),
           fontSize: Adapt.sp(16),
           fontWeight: FontWeight.w400,
           height: 1.5,
         ),
         receivedMessageBodyTextStyle: TextStyle(
-          color: ThemeColor.color0,
+          color: ColorToken.onSurface.of(context),
           fontSize: Adapt.sp(16),
           fontWeight: FontWeight.w400,
           height: 1.5,

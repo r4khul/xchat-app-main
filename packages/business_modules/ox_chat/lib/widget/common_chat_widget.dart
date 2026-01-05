@@ -356,7 +356,7 @@ class CommonChatWidgetState extends State<CommonChatWidget> with OXChatObserver 
             scrollController: scrollController,
             isContentInteractive: !handler.isPreviewMode,
             chatId: handler.session.chatId,
-            theme: pageConfig.pageTheme,
+            theme: pageConfig.pageTheme(context),
             anchorMsgId: handler.anchorMsgId,
             messages: messages,
             isFirstPage: !dataController.hasMoreNewMessage,

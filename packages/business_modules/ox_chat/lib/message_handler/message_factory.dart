@@ -438,7 +438,7 @@ class CallMessageFactory implements MessageFactory {
         status: status,
         reactions: reactions,
         zapsInfoList: zapsInfoList,
-        viewWithoutBubble: true,
+        viewWithoutBubble: false,
         isMe: isMe,
       );
     } catch (e) {
