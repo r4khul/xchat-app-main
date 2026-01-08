@@ -498,7 +498,7 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
       margin: EdgeInsets.symmetric(horizontal: 4.px),
       padding: EdgeInsets.all(16.px),
       decoration: BoxDecoration(
-        color: feature['backgroundColor'] as Color,
+        color: Color.lerp(feature['backgroundColor'] as Color, ColorToken.surface.of(context), 0.7),
         borderRadius: BorderRadius.circular(12.px),
         boxShadow: [
           BoxShadow(
@@ -669,12 +669,6 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
             decoration: BoxDecoration(
               color: plan.cardColor.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(16.px),
-              border: Border.all(
-                color: isSelected
-                    ? ColorToken.xChat.of(context)
-                    : ColorToken.onSurfaceVariant.of(context).withValues(alpha: 0.2),
-                width: isSelected ? 2 : 1,
-              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -761,6 +755,19 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
                   ],
                 ),
               ],
+            ),
+          ),
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16.px),
+                border: Border.all(
+                  color: isSelected
+                      ? ColorToken.xChat.of(context)
+                      : ColorToken.onSurfaceVariant.of(context).withValues(alpha: 0.2),
+                  width: isSelected ? 2 : 1,
+                ),
+              ),
             ),
           ),
           if (plan.isPopular)

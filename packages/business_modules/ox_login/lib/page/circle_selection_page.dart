@@ -192,80 +192,92 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
     required VoidCallback? onTap,
   }) {
     final isDisabled = onTap == null;
-
+    final borderRadius = BorderRadius.circular(16.px);
     return GestureDetector(
       onTap: onTap,
       child: AnimatedOpacity(
         duration: const Duration(milliseconds: 200),
         opacity: isDisabled ? 0.5 : 1.0,
-        child: Container(
-          padding: EdgeInsets.all(20.px),
-          decoration: BoxDecoration(
-            color: ColorToken.surface.of(context),
-            borderRadius: BorderRadius.circular(16.px),
-            border: Border.all(
-              color: isSelected
-                  ? ColorToken.xChat.of(context)
-                  : ColorToken.onSurfaceVariant.of(context).withValues(alpha: 0.2),
-              width: isSelected ? 2 : 1,
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 56.px,
-                    height: 56.px,
-                    decoration: BoxDecoration(
-                      color: iconColor.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(12.px),
-                    ),
-                    child: Icon(
-                      icon,
-                      size: 28.px,
-                      color: iconColor,
-                    ),
-                  ),
-                  SizedBox(width: 16.px),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            ClipRRect(
+              borderRadius: borderRadius,
+              child: Container(
+                color: ColorToken.cardContainer.of(context),
+                padding: EdgeInsets.all(20.px),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        CLText.titleMedium(
-                          title,
-                          colorToken: ColorToken.onSurface,
+                        Container(
+                          width: 56.px,
+                          height: 56.px,
+                          decoration: BoxDecoration(
+                            color: Color.lerp(iconColor, Colors.white, 0.7),
+                            borderRadius: BorderRadius.circular(12.px),
+                          ),
+                          child: Icon(
+                            icon,
+                            size: 28.px,
+                            color: iconColor,
+                          ),
                         ),
-                        SizedBox(height: 4.px),
-                        CLText.bodySmall(
-                          subtitle,
-                          colorToken: ColorToken.onSurfaceVariant,
-                          maxLines: 2,
+                        SizedBox(width: 16.px),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              CLText.titleMedium(
+                                title,
+                                colorToken: ColorToken.onSurface,
+                              ),
+                              SizedBox(height: 4.px),
+                              CLText.bodySmall(
+                                subtitle,
+                                colorToken: ColorToken.onSurfaceVariant,
+                                maxLines: 2,
+                              ),
+                            ],
+                          ),
                         ),
+                        if (showArrow) ...[
+                          SizedBox(width: 8.px),
+                          Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            size: 16.px,
+                            color: ColorToken.onSurfaceVariant.of(context),
+                          ),
+                        ],
                       ],
                     ),
-                  ),
-                  if (showArrow) ...[
-                    SizedBox(width: 8.px),
-                    Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      size: 16.px,
-                      color: ColorToken.onSurfaceVariant.of(context),
-                    ),
+                    if (tags != null && tags.isNotEmpty) ...[
+                      SizedBox(height: 12.px),
+                      Wrap(
+                        spacing: 8.px,
+                        runSpacing: 8.px,
+                        children: tags,
+                      ),
+                    ],
                   ],
-                ],
-              ),
-              if (tags != null && tags.isNotEmpty) ...[
-                SizedBox(height: 12.px),
-                Wrap(
-                  spacing: 8.px,
-                  runSpacing: 8.px,
-                  children: tags,
                 ),
-              ],
-            ],
-          ),
+              ),
+            ),
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: borderRadius,
+                  border: Border.all(
+                    color: isSelected
+                        ? ColorToken.xChat.of(context)
+                        : ColorToken.onSurfaceVariant.of(context).withValues(alpha: 0.2),
+                    width: isSelected ? 2 : 1,
+                  ),
+                ),
+              ),
+            )
+          ],
         ),
       ),
     );
@@ -410,8 +422,6 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
       (context) => PrivateRelayUpgradePage(
         groupId: null, // Will be set after payment
       ),
-      type: OXPushPageType.present,
-      fullscreenDialog: true,
     );
   }
 

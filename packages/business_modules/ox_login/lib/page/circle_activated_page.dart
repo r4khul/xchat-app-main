@@ -4,6 +4,7 @@ import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/login/circle_service.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/utils/adapt.dart';
+import 'package:ox_common/utils/color_extension.dart';
 import 'package:ox_common/widgets/common_loading.dart';
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_localizable/ox_localizable.dart';
@@ -76,12 +77,12 @@ class _CircleActivatedPageState extends State<CircleActivatedPage> {
           width: 64.px,
           height: 64.px,
           decoration: BoxDecoration(
-            color: const Color(0xFFE8F5E9), // Light green background
+            color: ColorToken.green.of(context).lighten(0.4),
             borderRadius: BorderRadius.circular(16.px),
           ),
           child: Icon(
             Icons.check_circle,
-            color: const Color(0xFF4CAF50), // Dark green checkmark
+            color: ColorToken.green.of(context),
             size: 40.px,
           ),
         ),
@@ -105,62 +106,84 @@ class _CircleActivatedPageState extends State<CircleActivatedPage> {
     );
   }
 
+  Widget _buildStepHeader(int stepNumber, String title) {
+    return Row(
+      children: [
+        Container(
+          width: 24.px,
+          height: 24.px,
+          decoration: BoxDecoration(
+            color: ColorToken.onSurface.of(context),
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: CLText.labelMedium(
+              stepNumber.toString(),
+              colorToken: ColorToken.surface,
+            ),
+          ),
+        ),
+        SizedBox(width: 8.px),
+        CLText.titleMedium(
+          title,
+          colorToken: ColorToken.onSurface,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCardContainer({
+    required Widget child,
+    EdgeInsets? padding,
+    VoidCallback? onTap,
+  }) {
+    final container = Container(
+      padding: padding ?? EdgeInsets.all(16.px),
+      decoration: BoxDecoration(
+        color: ColorToken.cardContainer.of(context),
+        borderRadius: BorderRadius.circular(12.px),
+      ),
+      child: child,
+    );
+
+    if (onTap != null) {
+      return GestureDetector(
+        onTap: onTap,
+        child: container,
+      );
+    }
+
+    return container;
+  }
+
   Widget _buildStep1() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Container(
-              width: 24.px,
-              height: 24.px,
-              decoration: BoxDecoration(
-                color: ColorToken.onSurface.of(context),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: CLText.labelSmall(
-                  '1',
-                  customColor: Colors.white,
-                ),
-              ),
-            ),
-            SizedBox(width: 8.px),
-            CLText.titleMedium(
-              Localized.text('ox_login.name_your_circle'),
-              colorToken: ColorToken.onSurface,
-            ),
-          ],
-        ),
+        _buildStepHeader(1, Localized.text('ox_login.name_your_circle')),
         SizedBox(height: 12.px),
-        GestureDetector(
+        _buildCardContainer(
+          padding: EdgeInsets.symmetric(
+            horizontal: 16.px,
+            vertical: 14.px,
+          ),
           onTap: _editCircleName,
-          child: Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: 16.px,
-              vertical: 14.px,
-            ),
-            decoration: BoxDecoration(
-              color: ColorToken.surfaceContainer.of(context),
-              borderRadius: BorderRadius.circular(12.px),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: CLText.titleMedium(
-                    _circleName,
-                    colorToken: ColorToken.onSurface,
-                    isBold: true,
-                  ),
+          child: Row(
+            children: [
+              Expanded(
+                child: CLText.titleMedium(
+                  _circleName,
+                  colorToken: ColorToken.onSurface,
+                  isBold: true,
                 ),
-                SizedBox(width: 8.px),
-                Icon(
-                  Icons.edit_outlined,
-                  size: 18.px,
-                  color: ColorToken.onSurfaceVariant.of(context),
-                ),
-              ],
-            ),
+              ),
+              SizedBox(width: 8.px),
+              Icon(
+                Icons.edit_outlined,
+                size: 18.px,
+                color: ColorToken.onSurfaceVariant.of(context),
+              ),
+            ],
           ),
         ),
       ],
@@ -171,36 +194,9 @@ class _CircleActivatedPageState extends State<CircleActivatedPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Container(
-              width: 24.px,
-              height: 24.px,
-              decoration: BoxDecoration(
-                color: ColorToken.onSurface.of(context),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: CLText.labelSmall(
-                  '2',
-                  customColor: Colors.white,
-                ),
-              ),
-            ),
-            SizedBox(width: 8.px),
-            CLText.titleMedium(
-              Localized.text('ox_login.invite_members'),
-              colorToken: ColorToken.onSurface,
-            ),
-          ],
-        ),
+        _buildStepHeader(2, Localized.text('ox_login.invite_members')),
         SizedBox(height: 12.px),
-        Container(
-          padding: EdgeInsets.all(16.px),
-          decoration: BoxDecoration(
-            color: ColorToken.surfaceContainer.of(context),
-            borderRadius: BorderRadius.circular(12.px),
-          ),
+        _buildCardContainer(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

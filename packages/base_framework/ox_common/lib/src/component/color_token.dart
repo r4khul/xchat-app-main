@@ -27,6 +27,7 @@ enum ColorToken {
 
   white,
   black,
+  green,
 }
 
 extension AppColorResolver on ColorToken {
@@ -81,6 +82,8 @@ extension AppColorResolver on ColorToken {
           return Colors.white;
         case ColorToken.black:
           return Colors.black;
+        case ColorToken.green:
+          return Colors.green;
       }
     } else {
       final cupertino = CupertinoTheme.of(context);
@@ -135,6 +138,8 @@ extension AppColorResolver on ColorToken {
           return CupertinoColors.white;
         case ColorToken.black:
           return CupertinoColors.black;
+        case ColorToken.green:
+          return CupertinoColors.systemGreen;
       }
     }
   }
