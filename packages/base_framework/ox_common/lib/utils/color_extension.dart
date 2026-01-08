@@ -1,5 +1,7 @@
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
+import 'package:ox_theme/ox_theme.dart';
 
 extension ColorX on Color {
   Color darken([double amount = 0.1]) {
@@ -48,6 +50,26 @@ extension ColorX on Color {
       if (_contrastRatio(c, white) >= minRatio) break;
     }
     return c;
+  }
+
+  Color asBackgroundTint() {
+    final brightness = ThemeManager.brightness();
+    final isLightMode = brightness == Brightness.light;
+    if (isLightMode) {
+      return Color.lerp(this, const Color(0xFFFFFFFF), 0.9) ?? this;
+    } else {
+      return withValues(alpha: 0.2);
+    }
+  }
+
+  Color asIconBackground() {
+    final brightness = ThemeManager.brightness();
+    final isLightMode = brightness == Brightness.light;
+    if (isLightMode) {
+      return Color.lerp(this, const Color(0xFFFFFFFF), 0.7) ?? this;
+    } else {
+      return Color.lerp(this, const Color(0xFF000000), 0.6) ?? this;
+    }
   }
 }
 

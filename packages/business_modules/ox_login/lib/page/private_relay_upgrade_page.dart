@@ -12,6 +12,7 @@ import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/login/login_models.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/utils/adapt.dart';
+import 'package:ox_common/utils/color_extension.dart';
 import 'package:ox_common/widgets/common_loading.dart';
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_localizable/ox_localizable.dart';
@@ -111,6 +112,20 @@ class PrivateRelayUpgradePage extends StatefulWidget {
       _PrivateRelayUpgradePageState();
 }
 
+class _FeatureCard {
+  final IconData icon;
+  final String title;
+  final String description;
+  final Color tintColor;
+
+  const _FeatureCard({
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.tintColor,
+  });
+}
+
 class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
   final InAppPurchase _inAppPurchase = InAppPurchase.instance;
   late StreamSubscription<List<PurchaseDetails>> _subscription;
@@ -122,6 +137,33 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
   late PageController _featurePageController;
   int _currentFeatureIndex = 0;
   Timer? _featureCarouselTimer;
+
+  List<_FeatureCard> get _features => [
+        _FeatureCard(
+          icon: Icons.bolt,
+          title: Localized.text('ox_login.feature_high_speed_relay'),
+          description: Localized.text('ox_login.feature_high_speed_relay_desc'),
+          tintColor: const Color(0xFFE88D3A),
+        ),
+        _FeatureCard(
+          icon: Icons.lock,
+          title: Localized.text('ox_login.feature_encrypted_storage'),
+          description: Localized.text('ox_login.feature_encrypted_storage_desc'),
+          tintColor: const Color(0xFF4A90E2),
+        ),
+        _FeatureCard(
+          icon: Icons.visibility_off,
+          title: Localized.text('ox_login.feature_zero_logging'),
+          description: Localized.text('ox_login.feature_zero_logging_desc'),
+          tintColor: const Color(0xFF525B6B),
+        ),
+        _FeatureCard(
+          icon: Icons.delete_outline,
+          title: Localized.text('ox_login.feature_total_control'),
+          description: Localized.text('ox_login.feature_total_control_desc'),
+          tintColor: const Color(0xFFE53935),
+        ),
+      ];
 
   static const List<SubscriptionPlan> plans = [
     SubscriptionPlan(
@@ -210,7 +252,7 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
         timer.cancel();
         return;
       }
-      final nextIndex = (_currentFeatureIndex + 1) % 4;
+      final nextIndex = (_currentFeatureIndex + 1) % _features.length;
       _featurePageController.animateToPage(
         nextIndex,
         duration: const Duration(milliseconds: 300),
@@ -445,9 +487,9 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
               // Reset timer when user manually swipes
               _resetFeatureCarousel();
             },
-            itemCount: 4,
+            itemCount: _features.length,
             itemBuilder: (context, index) {
-              return _buildFeatureCard(index);
+              return _buildFeatureCard(_features[index]);
             },
           ),
         ),
@@ -457,70 +499,32 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
     );
   }
 
-  Widget _buildFeatureCard(int index) {
-    final features = [
-      {
-        'icon': Icons.bolt,
-        'title': Localized.text('ox_login.feature_high_speed_relay'),
-        'description': Localized.text('ox_login.feature_high_speed_relay_desc'),
-        'backgroundColor': const Color(0xFFFFFBEB),
-        'iconBackgroundColor': const Color(0xFFFFF8E1),
-        'iconColor': const Color(0xFFE88D3A),
-      },
-      {
-        'icon': Icons.lock,
-        'title': Localized.text('ox_login.feature_encrypted_storage'),
-        'description': Localized.text('ox_login.feature_encrypted_storage_desc'),
-        'backgroundColor': const Color(0xFFF8F9FC),
-        'iconBackgroundColor': const Color(0xFFF0F4FF),
-        'iconColor': const Color(0xFF4A90E2),
-      },
-      {
-        'icon': Icons.visibility_off,
-        'title': Localized.text('ox_login.feature_zero_logging'),
-        'description': Localized.text('ox_login.feature_zero_logging_desc'),
-        'backgroundColor': Colors.white,
-        'iconBackgroundColor': const Color(0xFFF0F2F5),
-        'iconColor': const Color(0xFF525B6B),
-      },
-      {
-        'icon': Icons.delete_outline,
-        'title': Localized.text('ox_login.feature_total_control'),
-        'description': Localized.text('ox_login.feature_total_control_desc'),
-        'backgroundColor': const Color(0xFFFCE8E8),
-        'iconBackgroundColor': const Color(0xFFFCE8E8),
-        'iconColor': const Color(0xFFE53935),
-      },
-    ];
-
-    final feature = features[index];
+  Widget _buildFeatureCard(_FeatureCard feature) {
+    final tintColor = feature.tintColor;
+    final iconColor = tintColor;
+    Color iconBgColor = tintColor.asIconBackground();
+    Color containerBgColor = tintColor.asBackgroundTint();
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 4.px),
-      padding: EdgeInsets.all(16.px),
+      padding: EdgeInsets.symmetric(horizontal: 16.px),
       decoration: BoxDecoration(
-        color: Color.lerp(feature['backgroundColor'] as Color, ColorToken.surface.of(context), 0.7),
+        color: containerBgColor,
         borderRadius: BorderRadius.circular(12.px),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: iconBgColor, width: 0.5),
       ),
       child: Row(
         children: [
           Container(
-            width: 56.px,
-            height: 56.px,
+            width: 40.px,
+            height: 40.px,
             decoration: BoxDecoration(
-              color: feature['iconBackgroundColor'] as Color,
+              color: iconBgColor,
               shape: BoxShape.circle,
             ),
             child: Icon(
-              feature['icon'] as IconData,
-              color: feature['iconColor'] as Color,
-              size: 28.px,
+              feature.icon,
+              color: iconColor,
+              size: 24.px,
             ),
           ),
           SizedBox(width: 16.px),
@@ -530,15 +534,15 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 CLText.titleSmall(
-                  feature['title'] as String,
+                  feature.title,
                   colorToken: ColorToken.onSurface,
                   isBold: true,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                SizedBox(height: 2.px), // Reduce spacing from 4.px to 2.px
+                SizedBox(height: 2.px),
                 CLText.bodySmall(
-                  feature['description'] as String,
+                  feature.description,
                   colorToken: ColorToken.onSurfaceVariant,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -554,7 +558,7 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
   Widget _buildFeatureIndicator() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(4, (index) {
+      children: List.generate(_features.length, (index) {
         final isActive = index == _currentFeatureIndex;
         return AnimatedContainer(
           duration: const Duration(milliseconds: 200),
