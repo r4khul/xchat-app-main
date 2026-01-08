@@ -451,22 +451,26 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
   }
 
   Widget _buildBody() {
-    return SingleChildScrollView(
+    return Padding(
       padding: EdgeInsets.only(
-        left: CLLayout.horizontalPadding,
-        right: CLLayout.horizontalPadding,
-        top: 24.px,
-        bottom: 100.px, // Add bottom padding to avoid button overlap
+        bottom: 100.px,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeader(),
-          SizedBox(height: 32.px),
-          _buildPeriodSelector(),
-          SizedBox(height: 24.px),
-          _buildPlansList(),
-        ],
+      child: SingleChildScrollView(
+        padding: EdgeInsets.only(
+          left: CLLayout.horizontalPadding,
+          right: CLLayout.horizontalPadding,
+          top: 24.px,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(),
+            SizedBox(height: 32.px),
+            Center(child: _buildPeriodSelector()),
+            SizedBox(height: 24.px),
+            _buildPlansList(),
+          ],
+        ),
       ),
     );
   }
@@ -521,6 +525,7 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
               color: iconBgColor,
               shape: BoxShape.circle,
             ),
+            alignment: Alignment.center,
             child: Icon(
               feature.icon,
               color: iconColor,
@@ -577,48 +582,52 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
   }
 
   Widget _buildPeriodSelector() {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Container(
-          padding: EdgeInsets.all(4.px),
-          decoration: BoxDecoration(
-            color: ColorToken.surfaceContainer.of(context),
-            borderRadius: BorderRadius.circular(12.px),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: _buildPeriodOption(
-                  period: SubscriptionPeriod.monthly,
-                  label: Localized.text('ox_login.monthly'),
-                ),
-              ),
-              Expanded(
-                child: _buildPeriodOption(
-                  period: SubscriptionPeriod.yearly,
-                  label: Localized.text('ox_login.yearly'),
-                ),
-              ),
-            ],
-          ),
-        ),
-        Positioned(
-          top: -8.px,
-          right: 8.px,
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 6.px, vertical: 2.px),
+    return SizedBox(
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            padding: EdgeInsets.all(6),
+            width: 260.px,
+            height: 50.px,
             decoration: BoxDecoration(
-              color: Colors.green,
-              borderRadius: BorderRadius.circular(4.px),
+              color: ColorToken.surfaceContainer.of(context),
+              borderRadius: BorderRadius.circular(12.px),
             ),
-            child: CLText.labelSmall(
-              Localized.text('ox_login.save_17_percent'),
-              customColor: Colors.white,
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildPeriodOption(
+                    period: SubscriptionPeriod.monthly,
+                    label: Localized.text('ox_login.monthly'),
+                  ),
+                ),
+                Expanded(
+                  child: _buildPeriodOption(
+                    period: SubscriptionPeriod.yearly,
+                    label: Localized.text('ox_login.yearly'),
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
-      ],
+          Positioned(
+            top: -8.px,
+            right: -16.px,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 6.px, vertical: 2.px),
+              decoration: BoxDecoration(
+                color: Colors.green,
+                borderRadius: BorderRadius.circular(4.px),
+              ),
+              child: CLText.labelSmall(
+                Localized.text('ox_login.save_17_percent'),
+                customColor: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -630,7 +639,6 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
     return GestureDetector(
       onTap: () => setState(() => _selectedPeriod = period),
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 12.px),
         decoration: BoxDecoration(
           color:
               isSelected ? ColorToken.surface.of(context) : Colors.transparent,
@@ -650,12 +658,17 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
 
   Widget _buildPlansList() {
     return Column(
-      children: plans.map((plan) {
-        return Padding(
-          padding: EdgeInsets.only(bottom: 16.px),
-          child: _buildPlanCard(plan),
-        );
-      }).toList(),
+      children: [
+        ...plans.map((plan) {
+          return Padding(
+            padding: EdgeInsets.only(bottom: 16.px),
+            child: _buildPlanCard(plan),
+          );
+        }).toList(),
+        SizedBox(height: 24.px),
+        _buildFooterLinks(),
+        SizedBox(height: 24.px),
+      ],
     );
   }
 
@@ -671,7 +684,7 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
           Container(
             padding: EdgeInsets.all(20.px),
             decoration: BoxDecoration(
-              color: plan.cardColor.withValues(alpha: 0.3),
+              color: ColorToken.cardContainer.of(context),
               borderRadius: BorderRadius.circular(16.px),
             ),
             child: Column(
@@ -879,8 +892,6 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildFooterLinks(),
-        SizedBox(height: 24.px),
         if (Platform.isIOS)
           Container(
             width: double.infinity,
