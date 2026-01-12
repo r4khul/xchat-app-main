@@ -102,8 +102,15 @@ class CommonImageGallery extends StatefulWidget {
   final int initialPage;
   final Widget? extraMenus;
   final void Function(VoidCallback nextPage)? onNextPage;
+  final bool reverse;
+
   const CommonImageGallery({
-    required this.imageList, required this.initialPage, this.extraMenus, this.onNextPage});
+    required this.imageList,
+    required this.initialPage,
+    this.extraMenus,
+    this.onNextPage,
+    this.reverse = false,
+  });
 
   @override
   _CommonImageGalleryState createState() => _CommonImageGalleryState();
@@ -112,6 +119,7 @@ class CommonImageGallery extends StatefulWidget {
     BuildContext? context,
     required List<ImageEntry> imageList,
     int initialPage = 0,
+    bool reverse = false,
   }) {
     context ??= OXNavigator.navigatorKey.currentContext;
     if (context == null) return ;
@@ -119,6 +127,7 @@ class CommonImageGallery extends StatefulWidget {
     OXNavigator.pushPage(context, (context) => CommonImageGallery(
       imageList: imageList,
       initialPage: initialPage,
+      reverse: reverse,
     ), type: OXPushPageType.opacity);
   }
 }
@@ -230,6 +239,7 @@ class _CommonImageGalleryState extends State<CommonImageGallery>
                 canScrollPage: (GestureDetails? gestureDetails) {
                   return true;
                 },
+                reverse: widget.reverse,
                 itemBuilder: (BuildContext context, int index) {
                   final entry = widget.imageList[index];
                   return buildImageWidget(entry);

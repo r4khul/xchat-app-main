@@ -402,6 +402,7 @@ extension ChatGestureHandlerEx on ChatGeneralHandler {
         decryptedNonce: e.decryptNonce,
       )).toList(),
       initialPage: initialPage,
+      reverse: true,
     );
   }
 
