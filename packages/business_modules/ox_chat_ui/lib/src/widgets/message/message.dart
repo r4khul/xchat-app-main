@@ -475,19 +475,12 @@ class MessageState extends State<Message> {
                 context: context,
                 currentUserIsAuthor: currentUserIsAuthor,
               ),
-            _messageBuilder(context, borderRadius),
+            content,
           ],
         ),
       );
     }
-    final theme = InheritedChatTheme.of(context).theme;
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: theme.messageInsetsHorizontal,
-        vertical: theme.messageInsetsVertical,
-      ),
-      child: content,
-    );
+    return content;
   }
 
   Widget _buildReplyPreview({
@@ -509,19 +502,26 @@ class MessageState extends State<Message> {
     required BorderRadius borderRadius,
     required bool useBubbleBg,
     required Widget child,
-  }) => Container(
-    key: key,
-    decoration: useBubbleBg
-        ? BoxDecoration(
-      gradient: gradient,
+  }) {
+    if (!useBubbleBg) return child;
+    final theme = InheritedChatTheme.of(context).theme;
+    return ClipRRect(
       borderRadius: borderRadius,
-      color: bgColor,
-    ) : null,
-    child: ClipRRect(
-      borderRadius: borderRadius,
-      child: child,
-    ),
-  );
+      child: Container(
+        key: key,
+        padding: EdgeInsets.symmetric(
+          horizontal: theme.messageInsetsHorizontal,
+          vertical: theme.messageInsetsVertical,
+        ),
+        decoration: BoxDecoration(
+          gradient: gradient,
+          borderRadius: borderRadius,
+          color: bgColor,
+        ),
+        child: child,
+      ),
+    );
+  }
 
   Widget _wrapWithContextMenu({
     required BuildContext context,
