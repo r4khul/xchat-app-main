@@ -108,61 +108,9 @@ class PingHelper {
   }
 
   static Future<int?> _nostrPingViaPingPong(Uri uri) async {
-    final cmp = Completer<int?>();
-    final String pingId = DateTime.now().microsecondsSinceEpoch.toString();
-
-    try {
-      final ws = await WebSocket.connect(uri.toString()).timeout(
-        _timeoutDuration,
-        onTimeout: () => throw Exception('relay($uri) connect timeout'),
-      );
-
-      final sw = Stopwatch()..start();
-      late StreamSubscription sub;
-      sub = ws.listen((msg) {
-        if (_isPongMessage(msg, pingId)) {
-          if (!cmp.isCompleted) cmp.complete(sw.elapsedMilliseconds);
-          sw.stop();
-          sub.cancel();
-          ws.close();
-        }
-      });
-
-      ws.add(jsonEncode(['PING', pingId]));
-
-      Future.delayed(_singlePingTimeout, () {
-        if (!cmp.isCompleted) cmp.complete(null);
-        sw.stop();
-        sub.cancel();
-        ws.close();
-      });
-
-      return cmp.future;
-    } catch (e) {
-      LogUtils.e(() => 'nostrPingViaPingPong error: $e');
-      return null;
-    }
-  }
-
-  static bool _isPongMessage(dynamic msg, String pingId) {
-    if (msg is String) {
-      if (msg == 'PONG') return true;
-      try {
-        final decoded = jsonDecode(msg);
-        return _matchesPongPayload(decoded, pingId);
-      } catch (_) {
-        return false;
-      }
-    }
-    return _matchesPongPayload(msg, pingId);
-  }
-
-  static bool _matchesPongPayload(dynamic payload, String pingId) {
-    if (payload is List && payload.isNotEmpty) {
-      if (payload[0] == 'PONG' || payload[0] == 'NOTICE') {
-        return true;
-      }
-    }
-    return false;
+    return Connect.sharedInstance.testRelayLatency(
+      uri.toString(),
+      timeout: _singlePingTimeout,
+    );
   }
 }
