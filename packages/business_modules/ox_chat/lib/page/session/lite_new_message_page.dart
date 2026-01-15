@@ -249,7 +249,7 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
             return Row(
               children: [
                 CLText.bodyMedium(
-                  '${Localized.text('ox_common.me')} (${Localized.text('ox_chat.file_transfer_assistant')})',
+                  '${Localized.text('ox_chat.file_transfer_assistant')}',
                   colorToken: ColorToken.onSurface,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -260,12 +260,7 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
             );
           }
         ),
-        subtitleWidget: circleType == CircleType.bitchat ? null : CLText.bodySmall(
-          '${user$.value.encodedPubkey} (${Localized.text('ox_chat.click_to_send_message_to_yourself')})',
-          colorToken: ColorToken.onSurfaceVariant,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
+        subtitleWidget: null,
         onTap: () => _onUserTap(user$),
       );
     }
@@ -304,34 +299,79 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
   }
 
   Widget _buildSelfAvatar(BuildContext context) {
+    final size = 40.px;
     return Container(
-      width: 40.px,
-      height: 40.px,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: CLThemeData.themeGradientOf(context),
+        color: const Color(0xFFFFE5E5), // Light pink background
       ),
       child: Center(
-        child: CLText.bodyLarge(
-          Localized.text('ox_common.me'),
-          customColor: Colors.white,
-          isBold: true,
+        child: Container(
+          width: size * 0.4,
+          height: size * 0.5,
+          decoration: BoxDecoration(
+            color: const Color(0xFFE53935), // Red color
+            borderRadius: BorderRadius.circular(4.px),
+          ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 4.px, vertical: 2.5.px),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Top line (shorter, like a title)
+                Container(
+                  width: size * 0.2,
+                  height: 2.px,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(1.px),
+                  ),
+                ),
+                SizedBox(height: 2.px),
+                // Three lines below (body text)
+                Container(
+                  width: size * 0.28,
+                  height: 2.px,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(1.px),
+                  ),
+                ),
+                SizedBox(height: 2.px),
+                Container(
+                  width: size * 0.24,
+                  height: 2.px,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(1.px),
+                  ),
+                ),
+                SizedBox(height: 2.px),
+                Container(
+                  width: size * 0.26,
+                  height: 2.px,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(1.px),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
   Widget _buildYourselfTag(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.px, vertical: 2.px),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(4.px),
-        gradient: CLThemeData.themeGradientOf(context),
-      ),
-      child: CLText.labelSmall(
-        Localized.text('ox_chat.yourself'),
-        customColor: Colors.white,
-      ),
+    return Icon(
+      CupertinoIcons.checkmark_seal_fill,
+      size: 16.px,
+      color: ColorToken.primary.of(context),
     );
   }
 

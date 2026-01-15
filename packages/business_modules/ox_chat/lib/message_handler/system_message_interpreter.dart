@@ -13,6 +13,11 @@ class SystemMessageInterpreter {
     r'^(.+?) invite you to join the private (chat|group)$',
     caseSensitive: false,
   );
+  // Regex: "Note to Self chat created!" (exclamation mark optional)
+  static final RegExp _reSelfChatCreated = RegExp(
+    r'^Note to Self chat created!?$',
+    caseSensitive: false,
+  );
   // Regex: "Private chat created!" / "Private group created!" (exclamation mark optional)
   static final RegExp _rePrivateChatCreated = RegExp(
     r'^Private chat created!?$',
@@ -39,6 +44,13 @@ class SystemMessageInterpreter {
   );
 
   static final List<SystemSpec> _specs = [
+    SystemSpec(
+      detect: (content) => _reSelfChatCreated.hasMatch(content),
+      sysType: SystemType.createChat,
+      toParams: (content) {
+        return (text: Localized.text('ox_chat.self_chat_created'));
+      },
+    ),
     SystemSpec(
       detect: (content) => _rePrivateChatCreated.hasMatch(content),
       sysType: SystemType.createChat,

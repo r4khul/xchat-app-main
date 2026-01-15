@@ -6,6 +6,7 @@ import 'package:ox_common/model/chat_session_model_isar.dart';
 import 'package:ox_common/model/chat_type.dart';
 import 'package:ox_common/utils/date_utils.dart';
 import 'package:ox_common/utils/extension.dart';
+import 'package:ox_localizable/ox_localizable.dart';
 
 class SessionListViewModel {
   SessionListViewModel(this._raw) {
@@ -90,6 +91,11 @@ class SessionListViewModel {
   }
 
   String get name {
+    // Check if this is a self chat first
+    if (sessionModel.isSelfChat) {
+      return Localized.text('ox_chat.file_transfer_assistant');
+    }
+    
     final entity = entity$.value;
     switch (entity) {
       case UserDBISAR user:

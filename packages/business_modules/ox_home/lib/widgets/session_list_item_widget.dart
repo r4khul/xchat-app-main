@@ -98,11 +98,26 @@ class SessionListItemWidget extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      CLText.bodyLarge(
-                        item.name,
-                        customColor: ColorToken.onSurface.of(context),
-                        maxLines: 1,
-                        isBold: true,
+                      Row(
+                        children: [
+                          Flexible(
+                            child: CLText.bodyLarge(
+                              item.name,
+                              customColor: ColorToken.onSurface.of(context),
+                              maxLines: 1,
+                              isBold: true,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (item.sessionModel.isSelfChat) ...[
+                            SizedBox(width: 6.px),
+                            Icon(
+                              CupertinoIcons.checkmark_seal_fill,
+                              size: 16.px,
+                              color: ColorToken.primary.of(context),
+                            ),
+                          ],
+                        ],
                       ),
                       _buildItemSubtitle(context),
                     ],
@@ -139,6 +154,12 @@ class SessionListItemWidget extends StatelessWidget {
           valueListenable: item.groupMember$,
           builder: (context, groupMember, _) {
             final size = 40.px;
+            
+            // Check if this is a self chat, show note icon
+            if (item.sessionModel.isSelfChat) {
+              return _buildSelfChatIcon(size);
+            }
+            
             if (entity is UserDBISAR) {
               return OXUserAvatar(
                 user: entity,
@@ -154,6 +175,74 @@ class SessionListItemWidget extends StatelessWidget {
           },
         );
       },
+    );
+  }
+
+  Widget _buildSelfChatIcon(double size) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: const Color(0xFFFFE5E5), // Light pink background
+      ),
+      child: Center(
+        child: Container(
+          width: size * 0.5,
+          height: size * 0.6,
+          decoration: BoxDecoration(
+            color: const Color(0xFFE53935), // Red color
+            borderRadius: BorderRadius.circular(4.px),
+          ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 4.px, vertical: 3.px),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Top line (shorter, like a title)
+                Container(
+                  width: size * 0.25,
+                  height: 2.px,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(1.px),
+                  ),
+                ),
+                SizedBox(height: 2.5.px),
+                // Three lines below (body text)
+                Container(
+                  width: size * 0.35,
+                  height: 2.px,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(1.px),
+                  ),
+                ),
+                SizedBox(height: 2.5.px),
+                Container(
+                  width: size * 0.3,
+                  height: 2.px,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(1.px),
+                  ),
+                ),
+                SizedBox(height: 2.5.px),
+                Container(
+                  width: size * 0.32,
+                  height: 2.px,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(1.px),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 

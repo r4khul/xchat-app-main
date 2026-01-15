@@ -9,6 +9,7 @@ import 'package:ox_common/utils/theme_color.dart';
 import 'package:ox_common/widgets/avatar.dart';
 import 'package:ox_common/widgets/smart_group_avatar.dart';
 import 'package:ox_common/widgets/common_image.dart';
+import 'package:ox_localizable/ox_localizable.dart';
 
 ///Title: share_item_info
 ///Description: TODO(Fill in by oneself)
@@ -23,14 +24,19 @@ mixin ShareItemInfoMixin {
   }
 
   Widget buildItemName(ChatSessionModelISAR item) {
+    // Check if this is a self chat first
     String showName = '';
-    switch (item.chatType) {
-      case ChatType.chatSingle:
-        showName = Account.sharedInstance.userCache[item.getOtherPubkey]?.value.name ?? '';
-        break;
-      case ChatType.chatGroup:
-        showName = Groups.sharedInstance.groups[item.chatId]?.value.name ?? '';
-        break;
+    if (item.isSelfChat) {
+      showName = Localized.text('ox_chat.file_transfer_assistant');
+    } else {
+      switch (item.chatType) {
+        case ChatType.chatSingle:
+          showName = Account.sharedInstance.userCache[item.getOtherPubkey]?.value.name ?? '';
+          break;
+        case ChatType.chatGroup:
+          showName = Groups.sharedInstance.groups[item.chatId]?.value.name ?? '';
+          break;
+      }
     }
     return Container(
       margin: EdgeInsets.only(right: 4.px),

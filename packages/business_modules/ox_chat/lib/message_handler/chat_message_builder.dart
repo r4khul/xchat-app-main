@@ -265,9 +265,13 @@ class ChatMessageBuilder {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 6.px, horizontal: 8.px),
       child: Center(
-        child: CLText.labelSmall(
-          text,
-          colorToken: ColorToken.onSurfaceVariant,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: Adapt.screenW * 0.8),
+          child: CLText.labelSmall(
+            text,
+            colorToken: ColorToken.onSurfaceVariant,
+            textAlign: TextAlign.center,
+          ),
         ),
       ),
     );
@@ -298,14 +302,20 @@ class ChatMessageBuilder {
 
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 6.px, horizontal: 8.px),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          _systemTipIcon(context),
-          SizedBox(width: 6.px),
-          Flexible(child: rich),
-        ],
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: Adapt.screenW * 0.8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _systemTipIcon(context),
+              SizedBox(width: 6.px),
+              Flexible(child: rich),
+            ],
+          ),
+        ),
       ),
     );
   }

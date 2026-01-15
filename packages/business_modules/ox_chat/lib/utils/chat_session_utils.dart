@@ -41,6 +41,11 @@ class ChatSessionUtils {
   }
 
   static String getChatName(ChatSessionModelISAR model) {
+    // Check if this is a self chat first
+    if (model.isSelfChat) {
+      return Localized.text('ox_chat.file_transfer_assistant');
+    }
+    
     String showName = '';
     switch (model.chatType) {
       case ChatType.chatSingle:

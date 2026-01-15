@@ -50,7 +50,11 @@ class _ChatGroupMessagePageState extends State<ChatGroupMessagePage> {
         String showName = group.name;
         UserDBISAR? otherUser;
         final isSingleChat = session.isSingleChat == true;
-        if (isSingleChat) {
+        
+        // Check if this is a self chat first
+        if (session.isSelfChat) {
+          showName = Localized.text('ox_chat.file_transfer_assistant');
+        } else if (isSingleChat) {
           otherUser = Account.sharedInstance.userCache[group.otherPubkey]?.value;
           showName = otherUser?.getUserShowName() ?? '';
         }

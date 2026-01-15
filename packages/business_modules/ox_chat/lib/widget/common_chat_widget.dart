@@ -177,6 +177,9 @@ class CommonChatWidgetState extends State<CommonChatWidget> with OXChatObserver 
       leading: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: () {
+          // Don't navigate to profile page for self chat
+          if (session.isSelfChat) return;
+          
           if (session.isSingleChat) {
             OXNavigator.pushPage(context, (_) => ContactUserInfoPage(
               chatId: session.chatId,
@@ -216,6 +219,11 @@ class CommonChatWidgetState extends State<CommonChatWidget> with OXChatObserver 
   }
 
   Widget buildUserAvatar() {
+    // Check if this is a self chat, show note icon
+    if (session.isSelfChat) {
+      return _buildSelfChatIcon(36.px);
+    }
+    
     return OXUserAvatar(
       chatId: session.chatId,
       user: handler.otherUser,
@@ -224,6 +232,74 @@ class CommonChatWidgetState extends State<CommonChatWidget> with OXChatObserver 
         if (!mounted) return;
         setState(() {});
       },
+    );
+  }
+
+  Widget _buildSelfChatIcon(double size) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: const Color(0xFFFFE5E5), // Light pink background
+      ),
+      child: Center(
+        child: Container(
+          width: size * 0.5,
+          height: size * 0.6,
+          decoration: BoxDecoration(
+            color: const Color(0xFFE53935), // Red color
+            borderRadius: BorderRadius.circular(4.px),
+          ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 4.px, vertical: 3.px),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Top line (shorter, like a title)
+                Container(
+                  width: size * 0.25,
+                  height: 2.px,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(1.px),
+                  ),
+                ),
+                SizedBox(height: 2.5.px),
+                // Three lines below (body text)
+                Container(
+                  width: size * 0.35,
+                  height: 2.px,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(1.px),
+                  ),
+                ),
+                SizedBox(height: 2.5.px),
+                Container(
+                  width: size * 0.3,
+                  height: 2.px,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(1.px),
+                  ),
+                ),
+                SizedBox(height: 2.5.px),
+                Container(
+                  width: size * 0.32,
+                  height: 2.px,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(1.px),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -254,6 +330,9 @@ class CommonChatWidgetState extends State<CommonChatWidget> with OXChatObserver 
 
   List<Widget> buildAppBarActions() {
     if (!session.isSingleChat) return [];
+    
+    // Don't show call buttons for self chat
+    if (session.isSelfChat) return [];
     
     final otherUser = handler.otherUser;
     if (otherUser == null) return [];
