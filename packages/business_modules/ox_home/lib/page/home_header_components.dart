@@ -105,7 +105,7 @@ class HomeHeaderComponents {
                   ? 'icon_common_add.png'
                   : 'icon_common_add_cupertino.png',
               package: 'ox_common',
-              iconSize: 24.px,
+              iconSize: 28.px,
               onTap: addOnTap,
             ).setPaddingOnly(right: 4.px),
           );
