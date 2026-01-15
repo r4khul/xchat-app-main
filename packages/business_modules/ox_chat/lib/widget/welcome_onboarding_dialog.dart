@@ -13,6 +13,7 @@ import 'package:ox_localizable/ox_localizable.dart';
 import 'package:ox_cache_manager/ox_cache_manager.dart';
 import 'package:chatcore/chat-core.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:ox_chat/utils/chat_session_utils.dart';
 
 /// Welcome onboarding dialog shown after registration or first login
 class WelcomeOnboardingDialog extends StatefulWidget {
@@ -124,8 +125,28 @@ class _WelcomeOnboardingDialogState extends State<WelcomeOnboardingDialog> {
           _isLoadingInviteLink = false;
         });
         if (mounted) {
-          CommonToast.instance.show(context,
-              Localized.text('ox_usercenter.invite_link_generation_failed'));
+          // Check if it's a keypackage expiration issue
+          // Show dialog asking if user wants to refresh their keypackage
+          final shouldRefresh = await CLAlertDialog.show<bool>(
+            context: context,
+            title: Localized.text('ox_chat.key_package_expired'),
+            content: Localized.text('ox_chat.key_package_may_expired'),
+            actions: [
+              CLAlertAction.cancel(),
+              CLAlertAction<bool>(
+                label: Localized.text('ox_chat.refresh'),
+                value: true,
+                isDefaultAction: true,
+              ),
+            ],
+          );
+
+          if (shouldRefresh == true) {
+            // Refresh keypackage and retry
+            await Groups.sharedInstance.recreatePermanentKeyPackage(relays);
+            // Retry generating invite link
+            await _generateInviteLink();
+          }
         }
         return;
       }
@@ -167,8 +188,25 @@ class _WelcomeOnboardingDialogState extends State<WelcomeOnboardingDialog> {
       await OXLoading.dismiss();
       debugPrint('Error generating invite link: $e');
       if (mounted) {
-        CommonToast.instance.show(context,
-            '${Localized.text('ox_usercenter.invite_link_generation_failed')}: $e');
+        // Handle KeyPackageError
+        final handled = await ChatSessionUtils.handleKeyPackageError(
+          context: context,
+          error: e,
+          onRetry: () async {
+            // Retry generating invite link
+            await _generateInviteLink();
+          },
+          onOtherError: (message) {
+            CommonToast.instance.show(context,
+                '${Localized.text('ox_usercenter.invite_link_generation_failed')}: $e');
+          },
+        );
+
+        if (!handled) {
+          // Other errors
+          CommonToast.instance.show(context,
+              '${Localized.text('ox_usercenter.invite_link_generation_failed')}: $e');
+        }
       }
     } finally {
       setState(() {

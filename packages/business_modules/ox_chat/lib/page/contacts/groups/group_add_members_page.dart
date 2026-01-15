@@ -194,7 +194,24 @@ class _GroupAddMembersPageState extends State<GroupAddMembersPage> {
     } catch (e) {
       await OXLoading.dismiss();
       if (!mounted) return;
-      CommonToast.instance.show(context, 'Failed to add members: $e');
+      
+      // Handle KeyPackageError
+      final handled = await ChatSessionUtils.handleKeyPackageError(
+        context: context,
+        error: e,
+        onRetry: () async {
+          // After refresh, show success message
+          CommonToast.instance.show(context, Localized.text('ox_chat.key_package_refreshed_retry'));
+        },
+        onOtherError: (message) {
+          CommonToast.instance.show(context, 'Failed to add members: $e');
+        },
+      );
+
+      if (!handled) {
+        // Other errors
+        CommonToast.instance.show(context, 'Failed to add members: $e');
+      }
     }
   }
 } 

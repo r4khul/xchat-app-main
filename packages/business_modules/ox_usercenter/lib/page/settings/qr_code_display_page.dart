@@ -21,6 +21,7 @@ import 'package:ox_common/utils/compression_utils.dart';
 import 'package:ox_common/utils/user_config_tool.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:ox_chat/utils/chat_session_utils.dart';
 
 enum QRCodeStyle {
   defaultStyle, // Default
@@ -140,7 +141,26 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
 
       if (keyPackageEvent == null) {
         await OXLoading.dismiss();
-        CommonToast.instance.show(context, Localized.text('ox_usercenter.invite_link_generation_failed'));
+        // Check if it's a keypackage expiration issue
+        // Show dialog asking if user wants to refresh their keypackage
+        final shouldRefresh = await CLAlertDialog.show<bool>(
+          context: context,
+          title: Localized.text('ox_chat.key_package_expired'),
+          content: Localized.text('ox_chat.key_package_may_expired'),
+          actions: [
+            CLAlertAction.cancel(),
+            CLAlertAction<bool>(
+              label: Localized.text('ox_chat.refresh'),
+              value: true,
+              isDefaultAction: true,
+            ),
+          ],
+        );
+
+        if (shouldRefresh == true) {
+          // Refresh keypackage and retry
+          await _generateInviteLink(linkType);
+        }
         return;
       }
 
@@ -197,7 +217,24 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
       setState(() {});
     } catch (e) {
       await OXLoading.dismiss();
-      CommonToast.instance.show(context, '${Localized.text('ox_usercenter.invite_link_generation_failed')}: $e');
+      
+      // Handle KeyPackageError
+      final handled = await ChatSessionUtils.handleKeyPackageError(
+        context: context,
+        error: e,
+        onRetry: () async {
+          // Retry generating invite link
+          await _generateInviteLink(linkType);
+        },
+        onOtherError: (message) {
+          CommonToast.instance.show(context, '${Localized.text('ox_usercenter.invite_link_generation_failed')}: $e');
+        },
+      );
+
+      if (!handled) {
+        // Other errors
+        CommonToast.instance.show(context, '${Localized.text('ox_usercenter.invite_link_generation_failed')}: $e');
+      }
     }
   }
 

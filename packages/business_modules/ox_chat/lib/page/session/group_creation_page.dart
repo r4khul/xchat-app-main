@@ -280,7 +280,23 @@ class _GroupCreationPageState extends State<GroupCreationPage> {
       );
     } catch (e) {
       await OXLoading.dismiss();
-      CommonToast.instance.show(context, e.toString());
+      
+      // Handle KeyPackageError
+      final handled = await ChatSessionUtils.handleKeyPackageError(
+        context: context,
+        error: e,
+        onRetry: () async {
+          _onCreateGroup();
+        },
+        onOtherError: (message) {
+          CommonToast.instance.show(context, message);
+        },
+      );
+
+      if (!handled) {
+        // Other errors
+        CommonToast.instance.show(context, e.toString());
+      }
     }
   }
 } 

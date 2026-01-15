@@ -315,8 +315,110 @@ class ChatSessionUtils {
       return true;
     } catch (e) {
       await OXLoading.dismiss();
-      CommonToast.instance.show(context, e.toString());
+      
+      // Handle KeyPackageError
+      final handled = await ChatSessionUtils.handleKeyPackageError(
+        context: context,
+        error: e,
+        onRetry: () async {
+          await ChatSessionUtils.createSecretChatWithConfirmation(
+            context: context,
+            user: user,
+            isPushWithReplace: isPushWithReplace,
+          );
+        },
+        onOtherError: (message) {
+          CommonToast.instance.show(context, message);
+        },
+      );
+
+      if (!handled) {
+        // Other errors
+        CommonToast.instance.show(context, e.toString());
+      }
       return false;
+    }
+  }
+
+  /// Handle KeyPackageError with common logic
+  /// Returns true if the error was handled, false otherwise
+  /// [onRetry] Optional callback to retry the operation after refreshing keypackage
+  /// [onOtherError] Optional callback to handle other errors
+  static Future<bool> handleKeyPackageError({
+    required BuildContext context,
+    required dynamic error,
+    Future<void> Function()? onRetry,
+    void Function(String message)? onOtherError,
+  }) async {
+    // Check if it's a KeyPackageError
+    if (error is! KeyPackageError) {
+      if (onOtherError != null) {
+        onOtherError(error.toString());
+      }
+      return false;
+    }
+
+    final currentPubkey = LoginManager.instance.currentPubkey;
+
+    if (error.isOwnKeyPackage(currentPubkey)) {
+      // Show dialog asking if user wants to refresh their keypackage
+      final shouldRefresh = await CLAlertDialog.show<bool>(
+        context: context,
+        title: Localized.text('ox_chat.key_package_expired'),
+        content: Localized.text('ox_chat.your_key_package_expired_refresh'),
+        actions: [
+          CLAlertAction.cancel(),
+          CLAlertAction<bool>(
+            label: Localized.text('ox_chat.refresh'),
+            value: true,
+            isDefaultAction: true,
+          ),
+        ],
+      );
+
+      if (shouldRefresh == true) {
+        // Refresh keypackage
+        await OXLoading.show();
+        try {
+          final circle = LoginManager.instance.currentCircle;
+          if (circle == null) {
+            await OXLoading.dismiss();
+            CommonToast.instance.show(context, 'Current circle is null');
+            return true;
+          }
+
+          await Groups.sharedInstance.recreatePermanentKeyPackage(
+            [circle.relayUrl],
+          );
+          await OXLoading.dismiss();
+
+          // Retry the operation if callback is provided
+          if (onRetry != null) {
+            await onRetry();
+          }
+        } catch (refreshError) {
+          await OXLoading.dismiss();
+          CommonToast.instance.show(
+            context,
+            '${Localized.text('ox_chat.refresh_keypackage_failed')}: $refreshError',
+          );
+        }
+      }
+      return true;
+    } else {
+      // Show dialog informing that other user's keypackage has expired
+      await CLAlertDialog.show(
+        context: context,
+        title: Localized.text('ox_chat.key_package_expired'),
+        content: Localized.text('ox_chat.other_user_keypackage_expired'),
+        actions: [
+          CLAlertAction(
+            label: Localized.text('ox_common.ok'),
+            value: true,
+          ),
+        ],
+      );
+      return true;
     }
   }
 
