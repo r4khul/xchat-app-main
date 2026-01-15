@@ -25,12 +25,6 @@ import 'font_size_settings_page.dart';
 import 'profile_settings_page.dart';
 import 'qr_code_display_page.dart';
 
-/// Logout options for user selection
-enum LogoutOption {
-  logout,
-  deleteAccount,
-}
-
 class SettingSlider extends StatefulWidget {
   const SettingSlider({super.key});
 
@@ -169,6 +163,11 @@ class SettingSliderState extends State<SettingSlider> {
       SectionListViewItem.button(
         text: Localized.text('ox_usercenter.Logout'),
         onTap: logoutItemOnTap,
+        type: ButtonType.destructive,
+      ),
+      SectionListViewItem.button(
+        text: Localized.text('ox_usercenter.delete_account'),
+        onTap: deleteAccountItemOnTap,
         type: ButtonType.destructive,
       )
     ];
@@ -349,32 +348,11 @@ class SettingSliderState extends State<SettingSlider> {
   }
 
   void logoutItemOnTap() async {
-    // Show picker with logout options
-    final logoutOption = await CLPicker.show<LogoutOption>(
-      context: context,
-      items: [
-        CLPickerItem<LogoutOption>(
-          label: Localized.text('ox_usercenter.Logout'),
-          value: LogoutOption.logout,
-        ),
-        CLPickerItem<LogoutOption>(
-          label: Localized.text('ox_usercenter.delete_account'),
-          value: LogoutOption.deleteAccount,
-          isDestructive: true,
-        ),
-      ],
-    );
+    await _confirmLogout();
+  }
 
-    if (logoutOption == null) return;
-
-    switch (logoutOption) {
-      case LogoutOption.logout:
-        await _confirmLogout();
-        break;
-      case LogoutOption.deleteAccount:
-        await _confirmDeleteAccount();
-        break;
-    }
+  void deleteAccountItemOnTap() async {
+    await _confirmDeleteAccount();
   }
 
   Future<void> _confirmLogout() async {
