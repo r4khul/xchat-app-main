@@ -17,6 +17,7 @@ import 'package:ox_usercenter/page/settings/advanced_settings_page.dart';
 import 'circle_detail_page.dart';
 import 'profile_settings_page.dart';
 import 'settings_detail_page.dart';
+import 'qr_code_display_page.dart';
 import 'package:ox_common/login/login_models.dart';
 import 'package:ox_login/page/circle_selection_page.dart' show CircleSelectionPage;
 
@@ -380,10 +381,17 @@ class SettingSliderState extends State<SettingSlider> {
                         ],
                   ),
                 ),
-                // Trailing
+                // Trailing - QR code button
                 Padding(
                   padding: const EdgeInsets.only(right: 14),
-                  child: CLListTile.buildDefaultTrailing(profileItemOnTap),
+                  child: GestureDetector(
+                    onTap: inviteItemOnTap,
+                    child: Icon(
+                      CupertinoIcons.qrcode,
+                      color: ColorToken.onSurfaceVariant.of(context),
+                      size: 24.px,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -472,6 +480,19 @@ class SettingSliderState extends State<SettingSlider> {
     }
     
     OXNavigator.pushPage(context, (_) => ProfileSettingsPage(previousPageTitle: title,));
+  }
+
+  void inviteItemOnTap() {
+    final circle = LoginManager.instance.currentCircle;
+    if (circle == null) {
+      CircleJoinUtils.showJoinCircleGuideDialog(context: OXNavigator.rootContext);
+      return;
+    }
+    
+    OXNavigator.pushPage(
+      context, 
+      (context) => QRCodeDisplayPage(previousPageTitle: title),
+    );
   }
 
   void settingsItemOnTap() {
