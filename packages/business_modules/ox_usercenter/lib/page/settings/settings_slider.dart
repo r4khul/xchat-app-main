@@ -6,24 +6,19 @@ import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/utils/circle_join_utils.dart';
 import 'package:ox_common/utils/string_utils.dart';
-import 'package:ox_common/utils/extension.dart';
-import 'package:ox_common/utils/font_size_notifier.dart';
 import 'package:ox_common/widgets/avatar.dart';
 import 'package:ox_common/widgets/common_loading.dart';
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_localizable/ox_localizable.dart';
-import 'package:ox_theme/ox_theme.dart';
-import 'package:ox_usercenter/page/settings/language_settings_page.dart';
-import 'package:ox_usercenter/page/settings/theme_settings_page.dart';
-import 'package:ox_usercenter/page/settings/notification_settings_page.dart';
 import 'package:ox_usercenter/page/settings/about_xchat_page.dart';
+import 'package:ox_usercenter/page/settings/notification_settings_page.dart';
 import 'package:ox_usercenter/page/settings/advanced_settings_page.dart';
 
-import 'keys_page.dart';
 import 'circle_detail_page.dart';
-import 'font_size_settings_page.dart';
 import 'profile_settings_page.dart';
-import 'qr_code_display_page.dart';
+import 'settings_detail_page.dart';
+import 'package:ox_common/login/login_models.dart';
+import 'package:ox_login/page/circle_selection_page.dart' show CircleSelectionPage;
 
 class SettingSlider extends StatefulWidget {
   const SettingSlider({super.key});
@@ -36,10 +31,6 @@ class SettingSliderState extends State<SettingSlider> {
 
   String get title => Localized.text('ox_usercenter.str_settings');
 
-  late ValueNotifier themeItemNty;
-  late ValueNotifier languageItemNty;
-  late ValueNotifier textSizeItemNty;
-
   late LoginUserNotifier userNotifier;
   late List<SectionListViewItem> pageData;
 
@@ -48,134 +39,113 @@ class SettingSliderState extends State<SettingSlider> {
     super.initState();
 
     prepareData();
-
-    languageItemNty.addListener(() {
-      // Update label notifier when language changed.
-      themeItemNty.value = themeManager.themeStyle.text;
-      prepareLiteData();
-    });
   }
 
   void prepareData() {
-    prepareNotifier();
     prepareLiteData();
     userNotifier = LoginUserNotifier.instance;
   }
 
-  void prepareNotifier() {
-    themeItemNty = themeManager.styleNty.map((style) => style.text);
-    languageItemNty = Localized.localized.localeTypeNty.map((type) => type.languageText);
-    textSizeItemNty = textScaleFactorNotifier.map((scale) => getFormattedTextSize(scale));
-  }
-
   void prepareLiteData() {
-    final hasCircle = LoginManager.instance.currentCircle != null;
-    
     // Build first section items
     List<ListViewItem> firstSectionItems = [
       CustomItemModel(
         customWidgetBuilder: buildUserInfoWidget,
       ),
-      // LabelItemModel(
-      //   style: ListViewItemStyle.theme,
-      //   icon: ListViewIcon(iconName: 'icon_setting_add.png', package: 'ox_usercenter'),
-      //   title: 'My Circles',
-      //   valueNty: ValueNotifier('Upgrade'),
-      // ),
-      LabelItemModel(
-        icon: ListViewIcon(iconName: 'icon_setting_security.png', package: 'ox_usercenter'),
-        title: Localized.text('ox_usercenter.keys'),
-        onTap: keysItemOnTap,
-      ),
-      LabelItemModel(
-        icon: ListViewIcon.data(Icons.share),
-        title: Localized.text('ox_usercenter.invite'),
-        onTap: inviteItemOnTap,
-      ),
     ];
     
-    // Only add circle settings when user has a circle
-    if (hasCircle) {
-      firstSectionItems.add(
-        LabelItemModel(
-          icon: ListViewIcon(iconName: 'icon_setting_circles.png', package: 'ox_usercenter'),
-          title: Localized.text('ox_usercenter.circle_settings'),
-          onTap: circleItemOnTap,
+    // // Only add circle settings when user has a circle
+    // if (hasCircle) {
+    //   firstSectionItems.add(
+    //     LabelItemModel(
+    //       icon: ListViewIcon(iconName: 'icon_setting_circles.png', package: 'ox_usercenter'),
+    //       title: Localized.text('ox_usercenter.circle_settings'),
+    //       onTap: circleItemOnTap,
+    //     ),
+    //   );
+    // }
+    
+    // Build circles section
+    final account = LoginManager.instance.currentState.account;
+    final circles = account?.circles ?? [];
+    final currentCircle = LoginManager.instance.currentCircle;
+    
+    List<SectionListViewItem> sections = [
+      SectionListViewItem(data: firstSectionItems),
+    ];
+    
+    // Add CIRCLES section if there are any circles
+    if (circles.isNotEmpty) {
+      final circleItems = circles.map((circle) => _buildCircleItem(circle, currentCircle)).toList();
+      
+      // Add "Add a Circle" button item
+      circleItems.add(
+        CustomItemModel(
+          customWidgetBuilder: buildAddCircleButton,
+        ),
+      );
+      
+      sections.add(
+        SectionListViewItem(
+          headerWidget: _buildCirclesSectionHeader(),
+          data: circleItems,
+        ),
+      );
+    } else {
+      // If no circles, show add circle button in a separate section
+      sections.add(
+        SectionListViewItem(
+          headerWidget: _buildCirclesSectionHeader(),
+          data: [
+            CustomItemModel(
+              customWidgetBuilder: buildAddCircleButton,
+            ),
+          ],
         ),
       );
     }
     
-    pageData = [
-      SectionListViewItem(data: firstSectionItems),
-      // SectionListViewItem(data: [
-      //   LabelItemModel(
-      //     icon: ListViewIcon(iconName: 'icon_setting_contact.png', package: 'ox_usercenter'),
-      //     title: 'Contact',
-      //     valueNty: ValueNotifier('23'),
-      //   ),
-      //   LabelItemModel(
-      //     icon: ListViewIcon(iconName: 'icon_setting_security.png', package: 'ox_usercenter'),
-      //     title: 'Private and Security',
-      //   ),
-      // ]),
-      SectionListViewItem(data: [
-        LabelItemModel(
-          icon: ListViewIcon(iconName: 'icon_setting_notification.png', package: 'ox_usercenter'),
-          title: Localized.text('ox_usercenter.notification'),
-          onTap: notificationItemOnTap,
-        ),
-        LabelItemModel(
-          icon: ListViewIcon(iconName: 'icon_setting_theme.png', package: 'ox_usercenter'),
-          title: Localized.text('ox_usercenter.theme'),
-          value$: themeItemNty,
-          onTap: themeItemOnTap,
-        ),
-        LabelItemModel(
-          icon: ListViewIcon(iconName: 'icon_setting_lang.png', package: 'ox_usercenter'),
-          title: Localized.text('ox_usercenter.language'),
-          value$: languageItemNty,
-          onTap: languageItemOnTap,
-        ),
-        LabelItemModel(
-          icon: ListViewIcon(iconName: 'icon_setting_textsize.png', package: 'ox_usercenter'),
-          title: Localized.text('ox_usercenter.text_size'),
-          value$: textSizeItemNty,
-          onTap: textSizeItemOnTap,
-        ),
-        // LabelItemModel(
-        //   icon: ListViewIcon(iconName: 'icon_setting_sound.png', package: 'ox_usercenter'),
-        //   title: 'Sound',
-        //   valueNty: ValueNotifier('Default'),
-        // ),
-        LabelItemModel(
-          icon: ListViewIcon.data(CupertinoIcons.info),
-          title: Localized.text('ox_usercenter.about_xchat'),
-          onTap: aboutXChatItemOnTap,
-        ),
-      ]),
-      SectionListViewItem(data: [
-        LabelItemModel(
-          icon: ListViewIcon.data(CupertinoIcons.gear_alt),
-          title: Localized.text('ox_usercenter.advanced_settings'),
-          onTap: advancedSettingsItemOnTap,
-        ),
-      ]),
-      SectionListViewItem.button(
-        text: Localized.text('ox_usercenter.Logout'),
-        onTap: logoutItemOnTap,
-        type: ButtonType.destructive,
+    // Add PREFERENCES section (Preferences, Notifications, Privacy)
+    sections.add(
+      SectionListViewItem(
+        data: [
+          LabelItemModel(
+            icon: ListViewIcon(iconName: 'icon_setting_theme.png', package: 'ox_usercenter'),
+            title: Localized.text('ox_usercenter.preferences'),
+            onTap: settingsItemOnTap,
+          ),
+          LabelItemModel(
+            icon: ListViewIcon(iconName: 'icon_setting_notification.png', package: 'ox_usercenter'),
+            title: Localized.text('ox_usercenter.notification'),
+            onTap: notificationItemOnTap,
+          ),
+          LabelItemModel(
+            icon: ListViewIcon.data(CupertinoIcons.lock),
+            title: Localized.text('ox_usercenter.privacy'),
+            onTap: privacyItemOnTap,
+          ),
+        ],
       ),
-      SectionListViewItem.button(
-        text: Localized.text('ox_usercenter.delete_account'),
-        onTap: deleteAccountItemOnTap,
-        type: ButtonType.destructive,
-      )
-    ];
+    );
+    
+    // Add HELP section
+    sections.add(
+      SectionListViewItem(
+        data: [
+          LabelItemModel(
+            icon: ListViewIcon.data(CupertinoIcons.info),
+            title: Localized.text('ox_usercenter.about_xchat'),
+            onTap: aboutXChatItemOnTap,
+          ),
+        ],
+      ),
+    );
+    
+    pageData = sections;
   }
 
   @override
   void dispose() {
-    languageItemNty.dispose();
     super.dispose();
   }
 
@@ -198,6 +168,143 @@ class SettingSliderState extends State<SettingSlider> {
           items: pageData,
         );
       },
+    );
+  }
+
+  Widget _buildCirclesSectionHeader() {
+    final title = Localized.text('ox_common.circles').toUpperCase();
+    Widget widget = CLText.titleSmall(title);
+    if (PlatformStyle.isUseMaterial) {
+      widget = Padding(
+        padding: EdgeInsets.only(
+          left: 20.px,
+          top: 16.px,
+        ),
+        child: widget,
+      );
+    }
+    return widget;
+  }
+
+
+  ListViewItem _buildCircleItem(Circle circle, Circle? currentCircle) {
+    return CustomItemModel(
+      customWidgetBuilder: (context) => _buildCircleItemWidget(context, circle, currentCircle),
+    );
+  }
+
+  Widget _buildCircleItemWidget(BuildContext context, Circle circle, Circle? currentCircle) {
+    final isSelected = circle.id == currentCircle?.id;
+    
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: () => _onCircleTap(circle),
+      child: Container(
+        color: Colors.transparent,
+        padding: EdgeInsets.symmetric(
+          horizontal: CLLayout.horizontalPadding,
+          vertical: 12.px,
+        ),
+        child: Row(
+          children: [
+            // Circle avatar
+            CircleAvatar(
+              radius: 20.px,
+              backgroundColor: isSelected 
+                ? ColorToken.primaryContainer.of(context)
+                : ColorToken.surfaceContainer.of(context),
+              child: Text(
+                circle.name.isNotEmpty ? circle.name[0].toUpperCase() : '?',
+                style: TextStyle(
+                  color: isSelected
+                    ? ColorToken.onPrimaryContainer.of(context)
+                    : ColorToken.onSurfaceVariant.of(context),
+                  fontSize: 16.px,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            SizedBox(width: 12.px),
+            // Circle name and relay URL
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CLText.bodyLarge(
+                    circle.name,
+                    isBold: true,
+                  ),
+                  if (circle.type != CircleType.bitchat)
+                    CLText.bodyMedium(
+                      circle.relayUrl,
+                      colorToken: ColorToken.onSurfaceVariant,
+                    ),
+                ],
+              ),
+            ),
+            // Selected indicator and settings icon
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isSelected)
+                  Padding(
+                    padding: EdgeInsets.only(right: 8.px),
+                    child: Icon(
+                      CupertinoIcons.checkmark_circle_fill,
+                      color: ColorToken.primary.of(context),
+                      size: 24.px,
+                    ),
+                  ),
+                GestureDetector(
+                  onTap: () => _onCircleSettingsTap(circle),
+                  child: Icon(
+                    CupertinoIcons.gear,
+                    color: ColorToken.onSurfaceVariant.of(context),
+                    size: 20.px,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildAddCircleButton(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: addCircleItemOnTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: CLLayout.horizontalPadding,
+          vertical: 12.px,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40.px,
+              height: 40.px,
+              decoration: BoxDecoration(
+                color: ColorToken.primaryContainer.of(context),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                CupertinoIcons.add,
+                color: ColorToken.onPrimaryContainer.of(context),
+                size: 20.px,
+              ),
+            ),
+            SizedBox(width: 12.px),
+            Expanded(
+              child: CLText.bodyLarge(
+                Localized.text('ox_home.add_circle'),
+                colorToken: ColorToken.primary,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -286,23 +393,6 @@ class SettingSliderState extends State<SettingSlider> {
     );
   }
 
-  void keysItemOnTap() {
-    OXNavigator.pushPage(context, (_) => KeysPage(previousPageTitle: title,));
-  }
-
-  void inviteItemOnTap() {
-    final circle = LoginManager.instance.currentCircle;
-    if (circle == null) {
-      CircleJoinUtils.showJoinCircleGuideDialog(context: OXNavigator.rootContext);
-      return;
-    }
-    
-    OXNavigator.pushPage(
-      context, 
-      (context) => QRCodeDisplayPage(previousPageTitle: title),
-    );
-  }
-
   void circleItemOnTap() {
     final circle = LoginManager.instance.currentCircle;
     if (circle == null) return;
@@ -311,6 +401,67 @@ class SettingSliderState extends State<SettingSlider> {
       previousPageTitle: title,
       circle: circle,
     ));
+  }
+
+  void _onCircleTap(Circle circle) async {
+    final currentCircle = LoginManager.instance.currentCircle;
+    if (currentCircle?.id == circle.id) {
+      // Already selected, do nothing
+      return;
+    }
+
+    // Show confirmation dialog
+    final shouldSwitch = await CLAlertDialog.show<bool>(
+      context: context,
+      title: Localized.text('ox_usercenter.switch_circle_confirm_title'),
+      content: Localized.text('ox_usercenter.switch_circle_confirm_content'),
+      actions: [
+        CLAlertAction.cancel(),
+        CLAlertAction<bool>(
+          label: Localized.text('ox_common.confirm'),
+          value: true,
+        ),
+      ],
+    );
+
+    if (!mounted || shouldSwitch != true) {
+      return;
+    }
+
+    OXLoading.show();
+    try {
+      final failure = await LoginManager.instance.switchToCircle(circle);
+      OXLoading.dismiss();
+
+      if (failure != null) {
+        CommonToast.instance.show(context, failure.message);
+      } else {
+        // Switch successful, close settings page after a short delay
+        await Future.delayed(const Duration(milliseconds: 100));
+        if (mounted) {
+          OXNavigator.pop(context);
+        }
+      }
+    } catch (e) {
+      OXLoading.dismiss();
+      CommonToast.instance.show(context, e.toString());
+    }
+  }
+
+  void _onCircleSettingsTap(Circle circle) {
+    OXNavigator.pushPage(context, (_) => CircleDetailPage(
+      previousPageTitle: title,
+      circle: circle,
+    ));
+  }
+
+  void addCircleItemOnTap() {
+    OXNavigator.pushPage(
+      context,
+      (context) => const CircleSelectionPage(controller: null),
+      type: OXPushPageType.present,
+      fullscreenDialog: true,
+    );
   }
 
   void profileItemOnTap() {
@@ -323,93 +474,20 @@ class SettingSliderState extends State<SettingSlider> {
     OXNavigator.pushPage(context, (_) => ProfileSettingsPage(previousPageTitle: title,));
   }
 
-  void themeItemOnTap() {
-    OXNavigator.pushPage(context, (_) => ThemeSettingsPage(previousPageTitle: title,));
+  void settingsItemOnTap() {
+    OXNavigator.pushPage(context, (_) => SettingsDetailPage(previousPageTitle: title,));
   }
 
   void notificationItemOnTap() {
     OXNavigator.pushPage(context, (_) => NotificationSettingsPage(previousPageTitle: title,));
   }
 
-  void languageItemOnTap() {
-    OXNavigator.pushPage(context, (_) => LanguageSettingsPage(previousPageTitle: title,));
-  }
-
-  void textSizeItemOnTap() {
-    OXNavigator.pushPage(context, (_) => FontSizeSettingsPage(previousPageTitle: title,));
+  void privacyItemOnTap() {
+    OXNavigator.pushPage(context, (_) => AdvancedSettingsPage(previousPageTitle: title,));
   }
 
   void aboutXChatItemOnTap() {
     OXNavigator.pushPage(context, (_) => AboutXChatPage(previousPageTitle: title,));
   }
 
-  void advancedSettingsItemOnTap() {
-    OXNavigator.pushPage(context, (_) => AdvancedSettingsPage(previousPageTitle: title,));
-  }
-
-  void logoutItemOnTap() async {
-    await _confirmLogout();
-  }
-
-  void deleteAccountItemOnTap() async {
-    await _confirmDeleteAccount();
-  }
-
-  Future<void> _confirmLogout() async {
-    final shouldLogout = await CLAlertDialog.show<bool>(
-      context: context,
-      title: Localized.text('ox_usercenter.warn_title'),
-      content: Localized.text('ox_usercenter.sign_out_dialog_content'),
-      actions: [
-        CLAlertAction.cancel(),
-        CLAlertAction<bool>(
-          label: Localized.text('ox_usercenter.Logout'),
-          value: true,
-          isDestructiveAction: true,
-        ),
-      ],
-    );
-
-    if (mounted && shouldLogout == true) {
-      try {
-        await LoginManager.instance.logoutAccount();
-        OXNavigator.popToRoot(context);
-      } catch (e) {
-        CommonToast.instance.show(context, e.toString());
-      }
-    }
-  }
-
-  Future<void> _confirmDeleteAccount() async {
-    final shouldDelete = await CLAlertDialog.show<bool>(
-      context: context,
-      title: Localized.text('ox_usercenter.delete_account_confirm_title'),
-      content: Localized.text('ox_usercenter.delete_account_confirm_content'),
-      actions: [
-        CLAlertAction.cancel(),
-        CLAlertAction<bool>(
-          label: Localized.text('ox_usercenter.delete_account_confirm'),
-          value: true,
-          isDestructiveAction: true,
-        ),
-      ],
-    );
-
-    if (shouldDelete == true) {
-      OXLoading.show();
-      try {
-        final success = await LoginManager.instance.deleteAccount();
-        OXLoading.dismiss();
-        
-        if (success) {
-          OXNavigator.popToRoot(context);
-        } else {
-          CommonToast.instance.show(context, Localized.text('ox_usercenter.delete_account_failed'));
-        }
-      } catch (e) {
-        OXLoading.dismiss();
-        CommonToast.instance.show(context, '${Localized.text('ox_usercenter.delete_account_failed')}: $e');
-      }
-    }
-  }
 }

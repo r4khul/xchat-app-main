@@ -82,8 +82,10 @@ class HomeHeaderComponents {
   }
 
   AppBar buildAppBar(BuildContext ctx) => AppBar(
-    leadingWidth: 280.px,
+    leadingWidth: null,
     leading: _buildLeading(),
+    title: _buildTitle(ctx),
+    centerTitle: true,
     actions: [
       // if (PlatformStyle.isUseMaterial)
       //   CLButton.icon(
@@ -114,14 +116,21 @@ class HomeHeaderComponents {
   );
 
   Widget _buildLeading() {
+    return _buildAvatar();
+  }
+
+  Widget _buildTitle(BuildContext ctx) {
     return ValueListenableBuilder(
-      valueListenable: LoginManager.instance.state$,
-      builder: (_, __, ___) {
-        return Row(
-          children: [
-            _buildAvatar(),
-            Expanded(child: _buildCircleName()),
-          ],
+      valueListenable: selectedCircle$,
+      builder: (_, selectedCircle, __) {
+        return ValueListenableBuilder(
+          valueListenable: relayStatus$,
+          builder: (context, status, __) {
+            return GestureDetector(
+              onTap: circles.isNotEmpty ? nameOnTap : null,
+              child: _buildCircleTitleContent(context, selectedCircle, status),
+            );
+          },
         );
       },
     );
@@ -150,48 +159,11 @@ class HomeHeaderComponents {
     );
   }
 
-  Widget _buildCircleName() {
-    return ValueListenableBuilder(
-      valueListenable: selectedCircle$,
-      builder: (_, selectedCircle, __) {
-        return ValueListenableBuilder(
-          valueListenable: relayStatus$,
-          builder: (context, status, __) {
-            return GestureDetector(
-              onTap: circles.isNotEmpty ? nameOnTap : null,
-              child: Row(
-                children: [
-                  Flexible(
-                    child: _buildCircleTitleContent(context, selectedCircle, status),
-                  ),
-                  if (circles.isNotEmpty)
-                    ValueListenableBuilder(
-                      valueListenable: isShowExtendBody$,
-                      builder: (context, isShowExtendBody, _) {
-                        return AnimatedRotation(
-                          turns: isShowExtendBody ? 0.5 : 0,
-                          duration: const Duration(milliseconds: 300),
-                          child: Icon(
-                            Icons.arrow_drop_down,
-                            color: ColorToken.onSurface.of(context),
-                          ),
-                        );
-                      },
-                    ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
   Widget _buildCircleTitleContent(BuildContext context, CircleItem? selectedCircle, ConnectStatus status) {
     final isConnected = status == ConnectStatus.open;
     if (isConnected) {
       return CLText.titleLarge(
-        selectedCircle?.name ?? '',
+        Localized.text('ox_usercenter.chat'),
         maxLines: 1,
       );
     }

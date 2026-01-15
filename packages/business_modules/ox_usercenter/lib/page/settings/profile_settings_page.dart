@@ -6,11 +6,16 @@ import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/utils/widget_tool.dart';
 import 'package:ox_common/utils/profile_refresh_utils.dart';
+import 'package:ox_common/utils/circle_join_utils.dart';
 import 'package:ox_common/widgets/avatar.dart';
+import 'package:ox_common/widgets/common_loading.dart';
+import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import 'avatar_display_page.dart';
 import 'bio_settings_page.dart';
 import 'nickname_settings_page.dart';
+import 'keys_page.dart';
+import 'qr_code_display_page.dart';
 
 class ProfileSettingsPage extends StatefulWidget {
   const ProfileSettingsPage({
@@ -73,6 +78,30 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                 onTap: bioOnTap,
               ),
             ],
+          ),
+          SectionListViewItem(
+            data: [
+              LabelItemModel(
+                icon: ListViewIcon(iconName: 'icon_setting_security.png', package: 'ox_usercenter'),
+                title: Localized.text('ox_usercenter.keys'),
+                onTap: keysItemOnTap,
+              ),
+              LabelItemModel(
+                icon: ListViewIcon.data(Icons.share),
+                title: Localized.text('ox_usercenter.invite'),
+                onTap: inviteItemOnTap,
+              ),
+            ],
+          ),
+          SectionListViewItem.button(
+            text: Localized.text('ox_usercenter.Logout'),
+            onTap: logoutItemOnTap,
+            type: ButtonType.destructive,
+          ),
+          SectionListViewItem.button(
+            text: Localized.text('ox_usercenter.delete_account'),
+            onTap: deleteAccountItemOnTap,
+            type: ButtonType.destructive,
           ),
         ],
       ),
@@ -146,6 +175,89 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
         setState(() {
           _isRefreshing = false;
         });
+      }
+    }
+  }
+
+  void keysItemOnTap() {
+    OXNavigator.pushPage(context, (_) => KeysPage(previousPageTitle: 'Profile',));
+  }
+
+  void inviteItemOnTap() {
+    final circle = LoginManager.instance.currentCircle;
+    if (circle == null) {
+      CircleJoinUtils.showJoinCircleGuideDialog(context: OXNavigator.rootContext);
+      return;
+    }
+    
+    OXNavigator.pushPage(
+      context, 
+      (context) => QRCodeDisplayPage(previousPageTitle: 'Profile'),
+    );
+  }
+
+  void logoutItemOnTap() async {
+    await _confirmLogout();
+  }
+
+  void deleteAccountItemOnTap() async {
+    await _confirmDeleteAccount();
+  }
+
+  Future<void> _confirmLogout() async {
+    final shouldLogout = await CLAlertDialog.show<bool>(
+      context: context,
+      title: Localized.text('ox_usercenter.warn_title'),
+      content: Localized.text('ox_usercenter.sign_out_dialog_content'),
+      actions: [
+        CLAlertAction.cancel(),
+        CLAlertAction<bool>(
+          label: Localized.text('ox_usercenter.Logout'),
+          value: true,
+          isDestructiveAction: true,
+        ),
+      ],
+    );
+
+    if (mounted && shouldLogout == true) {
+      try {
+        await LoginManager.instance.logoutAccount();
+        OXNavigator.popToRoot(context);
+      } catch (e) {
+        CommonToast.instance.show(context, e.toString());
+      }
+    }
+  }
+
+  Future<void> _confirmDeleteAccount() async {
+    final shouldDelete = await CLAlertDialog.show<bool>(
+      context: context,
+      title: Localized.text('ox_usercenter.delete_account_confirm_title'),
+      content: Localized.text('ox_usercenter.delete_account_confirm_content'),
+      actions: [
+        CLAlertAction.cancel(),
+        CLAlertAction<bool>(
+          label: Localized.text('ox_usercenter.delete_account_confirm'),
+          value: true,
+          isDestructiveAction: true,
+        ),
+      ],
+    );
+
+    if (shouldDelete == true) {
+      OXLoading.show();
+      try {
+        final success = await LoginManager.instance.deleteAccount();
+        OXLoading.dismiss();
+        
+        if (success) {
+          OXNavigator.popToRoot(context);
+        } else {
+          CommonToast.instance.show(context, Localized.text('ox_usercenter.delete_account_failed'));
+        }
+      } catch (e) {
+        OXLoading.dismiss();
+        CommonToast.instance.show(context, '${Localized.text('ox_usercenter.delete_account_failed')}: $e');
       }
     }
   }

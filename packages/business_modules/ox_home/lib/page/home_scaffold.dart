@@ -86,7 +86,7 @@ class _HomeScaffoldState extends State<HomeScaffold> {
       selectedCircle$: selectedCircle$,
       onCircleSelected: _onCircleSelected,
       avatarOnTap: _avatarOnTap,
-      nameOnTap: _nameOnTap,
+      nameOnTap: null,
       addOnTap: _addOnTap,
       joinOnTap: _handleJoinCircle,
       paidOnTap: _paidOnTap,
