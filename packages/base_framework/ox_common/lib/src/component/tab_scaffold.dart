@@ -28,13 +28,16 @@ class CLTabScaffold extends StatelessWidget {
         }
       );
     } else {
-      return CupertinoTabScaffold(
-        tabBar: buildCupertinoTabBar(),
-        tabBuilder: (BuildContext context, int index) {
-          final items = [...dataController.items];
-          final item = items[index];
-          return item.pageBuilder(context);
-        },
+      return DefaultTextStyle(
+        style: const TextStyle(fontWeight: FontWeight.bold),
+        child: CupertinoTabScaffold(
+          tabBar: buildCupertinoTabBar(),
+          tabBuilder: (BuildContext context, int index) {
+            final items = [...dataController.items];
+            final item = items[index];
+            return item.pageBuilder(context);
+          },
+        ),
       );
     }
   }
@@ -51,6 +54,9 @@ class CLTabScaffold extends StatelessWidget {
       }).toList(),
       selectedIndex: dataController.selectedIndex,
       onDestinationSelected: selectedIndexOnChanged,
+      labelTextStyle: WidgetStateProperty.resolveWith((states) {
+        return const TextStyle(fontWeight: FontWeight.bold);
+      }),
     );
   }
 
