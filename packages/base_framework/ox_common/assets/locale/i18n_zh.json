@@ -37,6 +37,7 @@
   "str_scan": "扫一扫",
   "str_my_idcard": "我的名片",
   "str_album": "相册",
+  "str_scan_contact_qr_hint": "请扫描你联系人设备上的二维码",
   "str_invalid_qr_code": "无效的二维码",
   "str_error": "错误",
   "str_user_not_found": "用户未找到",

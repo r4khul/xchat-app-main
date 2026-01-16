@@ -37,6 +37,7 @@
   "str_scan": "スキャン",
   "str_my_idcard": "マイ名刺",
   "str_album": "アルバム",
+  "str_scan_contact_qr_hint": "連絡先のデバイス上のQRコードをスキャンしてください",
   "str_invalid_qr_code": "無効なQRコード",
   "str_error": "エラー",
   "str_user_not_found": "ユーザーが見つかりません",

@@ -37,6 +37,7 @@
   "str_scan": "اسکن کد QR",
   "str_my_idcard": "کارت شناسایی من",
   "str_album": "آلبوم",
+  "str_scan_contact_qr_hint": "لطفاً کد QR را روی دستگاه مخاطب خود اسکن کنید",
   "str_invalid_qr_code": "کد QR نامعتبر",
   "str_error": "خطا",
   "str_user_not_found": "کاربر یافت نشد",

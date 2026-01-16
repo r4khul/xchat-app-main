@@ -22,6 +22,8 @@ import 'package:ox_common/utils/user_config_tool.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:ox_chat/utils/chat_session_utils.dart';
+import 'package:ox_common/widgets/common_scan_page.dart';
+import 'package:flutter/services.dart';
 
 enum QRCodeStyle {
   defaultStyle, // Default
@@ -33,6 +35,11 @@ enum QRCodeStyle {
 enum InviteLinkType {
   oneTime,    // One-time invite link
   permanent,  // Permanent invite link
+}
+
+enum QRCodePageMode {
+  code,  // Show QR code
+  scan,  // Show scan page
 }
 
 class QRCodeDisplayPage extends StatefulWidget {
@@ -58,6 +65,9 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
   // QR Code style options
   QRCodeStyle currentStyle = QRCodeStyle.gradient;
   final GlobalKey qrWidgetKey = GlobalKey();
+  
+  // QR Code color
+  Color selectedColor = const Color(0xFF2196F3); // Default blue
 
   double get horizontal => 32.px;
 
@@ -71,6 +81,9 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
 
   // Discoverable by ID setting
   late final ValueNotifier<bool> discoverableByID$;
+
+  // Page mode (Code or Scan)
+  QRCodePageMode currentMode = QRCodePageMode.code;
 
   @override
   void initState() {
@@ -240,30 +253,158 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
 
   @override
   Widget build(BuildContext context) {
-    return CLScaffold(
-      appBar: CLAppBar(
-        title: widget.otherUser != null
-            ? Localized.text('ox_usercenter.user_qr_code')
-            : Localized.text('ox_usercenter.generate_invite_link'),
-        previousPageTitle: widget.previousPageTitle,
-        actions: widget.otherUser == null ? <Widget>[
-          // Reload button with proper alignment
-          CLButton.icon(
-              onTap: currentInviteLink != null ? _showRegenerateConfirmDialog : null,
-              tooltip: Localized.text('ox_usercenter.regenerate_invite_link'),
-              icon: Icons.refresh
+    if (PlatformStyle.isUseMaterial) {
+      return Scaffold(
+        appBar: _buildMaterialAppBar(),
+        body: _buildBody(),
+        backgroundColor: ColorToken.surface.of(context),
+      );
+    } else {
+      return CupertinoPageScaffold(
+        navigationBar: _buildCupertinoAppBar(),
+        child: SafeArea(
+          bottom: false,
+          child: _buildBody(),
+        ),
+      );
+    }
+  }
+
+  PreferredSizeWidget _buildMaterialAppBar() {
+    return AppBar(
+      backgroundColor: ColorToken.surface.of(context),
+      elevation: 0,
+      leading: Container(), // Remove default back button
+      title: _buildSegmentControl(),
+      centerTitle: true,
+      actions: [
+        // Close button (X)
+        Padding(
+          padding: EdgeInsets.only(right: 16.px),
+          child: CLButton.icon(
+            onTap: () => OXNavigator.pop(context),
+            icon: Icons.close,
+            iconSize: 24.px,
           ),
-        ] : <Widget>[],
+        ),
+      ],
+    );
+  }
+
+  CupertinoNavigationBar _buildCupertinoAppBar() {
+    return CupertinoNavigationBar(
+      middle: _buildSegmentControl(),
+      leading: null,
+      padding: EdgeInsetsDirectional.zero,
+      trailing: CupertinoButton(
+        padding: EdgeInsets.only(right: 16.px),
+        onPressed: () => OXNavigator.pop(context),
+        child: Text(Localized.text('ox_common.complete')),
       ),
-      body: _buildBody(),
+    );
+  }
+
+  Widget _buildSegmentControl() {
+    if (PlatformStyle.isUseMaterial) {
+      // Material style segment control
+      return Container(
+        constraints: BoxConstraints(
+          minWidth: 150.px,
+          maxWidth: 200.px,
+        ),
+        decoration: BoxDecoration(
+          color: ColorToken.surfaceContainerHigh.of(context),
+          borderRadius: BorderRadius.circular(20.px),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Expanded(
+              child: _buildSegmentButton(
+                mode: QRCodePageMode.code,
+                label: Localized.text('ox_usercenter.code'),
+              ),
+            ),
+            Expanded(
+              child: _buildSegmentButton(
+                mode: QRCodePageMode.scan,
+                label: Localized.text('ox_usercenter.scan'),
+              ),
+            ),
+          ],
+        ),
+      );
+    } else {
+      // Cupertino style segment control - use Center and IntrinsicWidth
+      // to properly size the control in CupertinoNavigationBar's middle slot
+      return Center(
+        child: IntrinsicWidth(
+          child: CupertinoSlidingSegmentedControl<QRCodePageMode>(
+            children: {
+              QRCodePageMode.code: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8.px),
+                child: Text(Localized.text('ox_usercenter.code')),
+              ),
+              QRCodePageMode.scan: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8.px),
+                child: Text(Localized.text('ox_usercenter.scan')),
+              ),
+            },
+            groupValue: currentMode,
+            onValueChanged: (QRCodePageMode? value) {
+              if (value != null) {
+                setState(() {
+                  currentMode = value;
+                });
+              }
+            },
+          ),
+        ),
+      );
+    }
+  }
+
+  Widget _buildSegmentButton({
+    required QRCodePageMode mode,
+    required String label,
+  }) {
+    final isSelected = currentMode == mode;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          currentMode = mode;
+        });
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 8.px),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? ColorToken.surface.of(context)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(16.px),
+        ),
+        child: Center(
+          child: CLText.bodyMedium(
+            label,
+            colorToken: isSelected
+                ? ColorToken.onSurface
+                : ColorToken.onSurfaceVariant,
+          ),
+        ),
+      ),
     );
   }
 
   Widget _buildBody() {
+    if (currentMode == QRCodePageMode.scan) {
+      return _buildScanPage();
+    }
+
     return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
       child: Column(
         children: [
-          // QR Code Card - Place at the top, following Signal's layout
+          // QR Code Card - Blue background with QR code
           RepaintBoundary(
             key: qrWidgetKey,
             child: Padding(
@@ -276,40 +417,106 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
             ),
           ),
 
-          // Discoverable by ID option (only for current user)
-          if (widget.otherUser == null) ...[
-            SizedBox(height: 24.px),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: horizontal),
-              child: _buildDiscoverableByIDOption(),
-            ),
-          ],
+          // Action buttons (Link, Share, Color)
+          SizedBox(height: 24.px),
+          _buildActionButtons(),
 
-          // Action buttons (only for current user, only show when invite link is generated)
-          if (widget.otherUser == null && currentInviteLink != null) ...[
-            SizedBox(height: 24.px),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: horizontal),
-              child: CLButton.filled(
-                text: Localized.text('ox_usercenter.share_invite_link'),
-                onTap: _shareInvite,
-                expanded: true,
-              ),
+          // Warning text
+          SizedBox(height: 24.px),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: horizontal),
+            child: CLText.bodySmall(
+              Localized.text('ox_usercenter.qr_code_share_warning'),
+              textAlign: TextAlign.center,
+              colorToken: ColorToken.onSurfaceVariant,
             ),
-            SizedBox(height: 12.px),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: horizontal),
-              child: CLButton.outlined(
-                text: Localized.text('ox_usercenter.save_qr_code'),
-                onTap: _saveQRCode,
-                expanded: true,
-              ),
+          ),
+
+          // Reset button
+          SizedBox(height: 24.px),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: horizontal),
+            child: CLButton.outlined(
+              text: Localized.text('ox_usercenter.reset'),
+              onTap: widget.otherUser == null && currentInviteLink != null
+                  ? _showRegenerateConfirmDialog
+                  : null,
+              expanded: true,
             ),
-          ],
+          ),
 
           SafeArea(child: SizedBox(height: 12.px))
         ],
       ),
+    );
+  }
+
+  Widget _buildScanPage() {
+    return CommonScanPage();
+  }
+
+  Widget _buildActionButtons() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: horizontal),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _buildCircularActionButton(
+            icon: Icons.link,
+            label: Localized.text('ox_usercenter.link'),
+            onTap: _copyLink,
+          ),
+          _buildCircularActionButton(
+            icon: Icons.share,
+            label: Localized.text('ox_usercenter.share'),
+            onTap: () async {
+              if (currentInviteLink != null) {
+                await Share.share(
+                  currentInviteLink!,
+                  subject: Localized.text('ox_usercenter.invite_to_chat'),
+                );
+              }
+            },
+          ),
+          _buildCircularActionButton(
+            icon: Icons.palette,
+            label: Localized.text('ox_usercenter.color'),
+            onTap: _showColorPicker,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCircularActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback? onTap,
+  }) {
+    return Column(
+      children: [
+        GestureDetector(
+          onTap: onTap,
+        child: Container(
+          width: 56.px,
+          height: 56.px,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: ColorToken.surfaceContainerHigh.of(context),
+          ),
+            child: Icon(
+              icon,
+              size: 24.px,
+              color: ColorToken.onSurface.of(context),
+            ),
+          ),
+        ),
+        SizedBox(height: 8.px),
+        CLText.bodySmall(
+          label,
+          colorToken: ColorToken.onSurface,
+        ),
+      ],
     );
   }
 
@@ -345,31 +552,34 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
 
   Widget _buildQRCodeCard() {
     return Container(
-      padding: EdgeInsets.all(24.px),
+      padding: EdgeInsets.fromLTRB(20.px, 40.px, 20.px, 20.px),
       decoration: BoxDecoration(
-        color: ColorToken.cardContainer.of(context).withValues(alpha: 0.3),
+        color: selectedColor, // Selected color background
         borderRadius: BorderRadius.circular(16.px),
-        border: Border.all(
-          color: ColorToken.onSurfaceVariant.of(context).withValues(alpha: 0.1),
-          width: 1.px,
-        ),
       ),
       child: Column(
         children: [
-          // User Header
-          _buildUserHeader(),
-          SizedBox(height: 24.px),
-
-          // QR Code
-          _buildQRCode(),
+          // QR Code with center icon
+          _buildQRCodeWithCenterIcon(),
 
           SizedBox(height: 16.px),
 
-          // Description text
-          CLText.bodyMedium(
-            Localized.text('ox_usercenter.scan_qr_to_find_me'),
-            textAlign: TextAlign.center,
-            colorToken: ColorToken.onSurfaceVariant,
+          // Username with icon
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.description_outlined,
+                size: 16.px,
+                color: Colors.white,
+              ),
+              SizedBox(width: 8.px),
+              CLText.bodyMedium(
+                userName,
+                textAlign: TextAlign.center,
+                colorToken: ColorToken.onPrimary,
+              ),
+            ],
           ),
         ],
       ),
@@ -500,9 +710,9 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
     );
   }
 
-  Widget _buildQRCode() {
+  Widget _buildQRCodeWithCenterIcon() {
     final double containerPadding = 16.px;
-    final double innerDefaultExtent = 280.px;
+    final double innerDefaultExtent = 220.px;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -525,12 +735,34 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
           child: Container(
             padding: EdgeInsets.all(containerPadding),
             decoration: BoxDecoration(
-              color: qrImage == null
-                  ? ColorToken.surfaceContainer.of(context)
-                  : Colors.white,
+              color: Colors.white,
               borderRadius: BorderRadius.circular(16.px),
             ),
-            child: _buildStyledQRCode(qrCanvasSize),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                _buildStyledQRCode(qrCanvasSize),
+                // Center icon overlay
+                Container(
+                  width: 48.px,
+                  height: 48.px,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(4.px),
+                    child: ClipOval(
+                      child: Image.asset(
+                        'assets/images/icon_chat_settings_left.png',
+                        package: 'ox_usercenter',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -602,11 +834,17 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
       currentDecoration = createDecoration(style);
     });
   }
+  
+  void changeQrColor(Color color) {
+    setState(() {
+      selectedColor = color;
+      previousDecoration = currentDecoration;
+      currentDecoration = createDecoration(currentStyle);
+    });
+  }
 
-  PrettyQrDecoration createDecoration(QRCodeStyle style) {
-    Color color = ColorToken.primary.of(
-        OXNavigator.rootContext
-    ).withValues(alpha: 0.8);
+  PrettyQrDecoration createDecoration(QRCodeStyle style, {Color? customColor}) {
+    Color color = customColor ?? selectedColor;
     double roundFactor = 1;
     PrettyQrShape shape;
 
@@ -633,12 +871,28 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
         break;
 
       case QRCodeStyle.gradient:
-        shape = PrettyQrSmoothSymbol(
-          color: PrettyQrBrush.gradient(
-            gradient: CLThemeData.themeGradientOf(OXNavigator.rootContext),
-          ),
-          roundFactor: roundFactor, // Rounded
-        );
+        // For gradient style, use theme gradient if no custom color is provided
+        // Otherwise, create a gradient from the custom color
+        if (customColor != null) {
+          shape = PrettyQrSmoothSymbol(
+            color: PrettyQrBrush.gradient(
+              gradient: LinearGradient(
+                colors: [
+                  color,
+                  color.withValues(alpha: 0.6),
+                ],
+              ),
+            ),
+            roundFactor: roundFactor,
+          );
+        } else {
+          shape = PrettyQrSmoothSymbol(
+            color: PrettyQrBrush.gradient(
+              gradient: CLThemeData.themeGradientOf(OXNavigator.rootContext),
+            ),
+            roundFactor: roundFactor, // Rounded
+          );
+        }
         break;
     }
 
@@ -702,81 +956,445 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
     }
   }
 
-  Future<void> _shareInvite() async {
-    // Show dialog to select share method
-    final shareMethod = await CLAlertDialog.show<String>(
-      context: context,
-      title: Localized.text('ox_usercenter.select_share_method'),
-      actions: [
-        CLAlertAction<String>(
-          label: Localized.text('ox_usercenter.share_via_sms'),
-          value: 'sms',
-          isDefaultAction: true,
+  Future<void> _copyLink() async {
+    if (currentInviteLink == null) return;
+    
+    // Show dialog with link information
+    if (PlatformStyle.isUseMaterial) {
+      await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          contentPadding: EdgeInsets.fromLTRB(24.px, 20.px, 24.px, 0),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Description text
+              CLText.bodyMedium(
+                Localized.text('ox_usercenter.invite_link_description'),
+                colorToken: ColorToken.onSurfaceVariant,
+              ),
+              SizedBox(height: 16.px),
+              // Link URL
+              GestureDetector(
+                onTap: () async {
+                  await Clipboard.setData(ClipboardData(text: currentInviteLink!));
+                  CommonToast.instance.show(context, Localized.text('ox_common.copied_to_clipboard'));
+                },
+                child: Container(
+                  padding: EdgeInsets.all(12.px),
+                  decoration: BoxDecoration(
+                    color: ColorToken.surfaceContainerHigh.of(context),
+                    borderRadius: BorderRadius.circular(8.px),
+                  ),
+                  child: Text(
+                    currentInviteLink!,
+                    style: TextStyle(
+                      fontSize: 14.px,
+                      color: ColorToken.onSurface.of(context),
+                    ),
+                    maxLines: 4,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton.icon(
+              onPressed: () async {
+                Navigator.pop(context);
+                await Clipboard.setData(ClipboardData(text: currentInviteLink!));
+                CommonToast.instance.show(context, Localized.text('ox_common.copied_to_clipboard'));
+              },
+              icon: Icon(Icons.description_outlined, size: 20.px),
+              label: Text(Localized.text('ox_usercenter.copy_link')),
+            ),
+            TextButton.icon(
+              onPressed: () async {
+                Navigator.pop(context);
+                await Share.share(
+                  currentInviteLink!,
+                  subject: Localized.text('ox_usercenter.invite_to_chat'),
+                );
+              },
+              icon: Icon(Icons.share, size: 20.px),
+              label: Text(Localized.text('ox_usercenter.share')),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text(Localized.text('ox_common.cancel')),
+            ),
+          ],
         ),
-        CLAlertAction<String>(
-          label: Localized.text('ox_usercenter.share_via_other'),
-          value: 'other',
+      );
+    } else {
+      await showCupertinoDialog(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Description text
+              CLText.bodyMedium(
+                Localized.text('ox_usercenter.invite_link_description'),
+                colorToken: ColorToken.onSurfaceVariant,
+              ),
+              SizedBox(height: 16.px),
+              // Link URL
+              GestureDetector(
+                onTap: () async {
+                  await Clipboard.setData(ClipboardData(text: currentInviteLink!));
+                  CommonToast.instance.show(context, Localized.text('ox_common.copied_to_clipboard'));
+                },
+                child: Container(
+                  padding: EdgeInsets.all(12.px),
+                  decoration: BoxDecoration(
+                    color: ColorToken.surfaceContainerHigh.of(context),
+                    borderRadius: BorderRadius.circular(8.px),
+                  ),
+                  child: Text(
+                    currentInviteLink!,
+                    style: TextStyle(
+                      fontSize: 14.px,
+                      color: ColorToken.onSurface.of(context),
+                    ),
+                    maxLines: 4,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            CupertinoDialogAction(
+              onPressed: () async {
+                Navigator.pop(context);
+                await Clipboard.setData(ClipboardData(text: currentInviteLink!));
+                CommonToast.instance.show(context, Localized.text('ox_common.copied_to_clipboard'));
+              },
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.description_outlined, size: 18.px),
+                  SizedBox(width: 6.px),
+                  Text(Localized.text('ox_usercenter.copy_link')),
+                ],
+              ),
+            ),
+            CupertinoDialogAction(
+              isDefaultAction: true,
+              onPressed: () async {
+                Navigator.pop(context);
+                await Share.share(
+                  currentInviteLink!,
+                  subject: Localized.text('ox_usercenter.invite_to_chat'),
+                );
+              },
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.share, size: 18.px),
+                  SizedBox(width: 6.px),
+                  Text(Localized.text('ox_usercenter.share')),
+                ],
+              ),
+            ),
+            CupertinoDialogAction(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text(Localized.text('ox_common.cancel')),
+            ),
+          ],
         ),
-        CLAlertAction<String>(
-          label: Localized.text('ox_common.cancel'),
-          value: null,
+      );
+    }
+  }
+
+  void _showColorPicker() {
+    // Define color palette
+    final List<Color> colors = [
+      const Color(0xFF2196F3), // Blue
+      Colors.white,
+      const Color(0xFF424242), // Dark gray
+      const Color(0xFFA1887F), // Light brown
+      const Color(0xFF8B9A5B), // Olive green
+      const Color(0xFFFF9800), // Orange
+      const Color(0xFFE91E63), // Pink
+      const Color(0xFFBA68C8), // Light purple
+    ];
+    
+    Color tempSelectedColor = selectedColor;
+    
+    if (PlatformStyle.isUseMaterial) {
+      showDialog(
+        context: context,
+        builder: (context) => StatefulBuilder(
+          builder: (context, setDialogState) => Dialog(
+            insetPadding: EdgeInsets.symmetric(horizontal: 16.px, vertical: 24.px),
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Header
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16.px, vertical: 12.px),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(16.px),
+                        topRight: Radius.circular(16.px),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.close),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                        Expanded(
+                          child: Center(
+                            child: CLText.titleMedium(
+                              Localized.text('ox_usercenter.color'),
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.check, color: ColorToken.primary.of(context)),
+                          onPressed: () {
+                            changeQrColor(tempSelectedColor);
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  // QR Code Preview
+                  Container(
+                    margin: EdgeInsets.all(16.px),
+                    padding: EdgeInsets.all(20.px),
+                    decoration: BoxDecoration(
+                      color: tempSelectedColor,
+                      borderRadius: BorderRadius.circular(16.px),
+                    ),
+                    child: Column(
+                      children: [
+                        _buildQRCodePreview(tempSelectedColor),
+                        SizedBox(height: 16.px),
+                        CLText.bodyMedium(
+                          userName,
+                          colorToken: ColorToken.onPrimary,
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Color Palette
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.px, vertical: 8.px),
+                    child: Wrap(
+                      spacing: 16.px,
+                      runSpacing: 16.px,
+                      alignment: WrapAlignment.center,
+                      children: colors.map((color) {
+                        final bool isSelected = color == tempSelectedColor;
+                        return GestureDetector(
+                          onTap: () {
+                            setDialogState(() {
+                              tempSelectedColor = color;
+                            });
+                          },
+                          child: Container(
+                            width: 48.px,
+                            height: 48.px,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: color,
+                              border: Border.all(
+                                color: isSelected ? Colors.black : Colors.transparent,
+                                width: isSelected ? 3.px : 0,
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  SizedBox(height: 16.px),
+                ],
+              ),
+            ),
+          ),
         ),
-      ],
+      );
+    } else {
+      showCupertinoDialog(
+        context: context,
+        builder: (context) => StatefulBuilder(
+          builder: (context, setDialogState) => Dialog(
+            insetPadding: EdgeInsets.symmetric(horizontal: 16.px, vertical: 24.px),
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              decoration: BoxDecoration(
+                color: ColorToken.surface.of(context),
+                borderRadius: BorderRadius.circular(16.px),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Header
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16.px, vertical: 12.px),
+                    child: Row(
+                      children: [
+                        CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          child: Icon(CupertinoIcons.xmark),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                        Expanded(
+                          child: Center(
+                            child: CLText.titleMedium(
+                              Localized.text('ox_usercenter.color'),
+                            ),
+                          ),
+                        ),
+                        CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          child: Icon(CupertinoIcons.check_mark, color: ColorToken.primary.of(context)),
+                          onPressed: () {
+                            changeQrColor(tempSelectedColor);
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  // QR Code Preview
+                  Container(
+                    margin: EdgeInsets.all(16.px),
+                    padding: EdgeInsets.all(20.px),
+                    decoration: BoxDecoration(
+                      color: tempSelectedColor,
+                      borderRadius: BorderRadius.circular(16.px),
+                    ),
+                    child: Column(
+                      children: [
+                        _buildQRCodePreview(tempSelectedColor),
+                        SizedBox(height: 16.px),
+                        CLText.bodyMedium(
+                          userName,
+                          colorToken: ColorToken.onPrimary,
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Color Palette
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.px, vertical: 8.px),
+                    child: Wrap(
+                      spacing: 16.px,
+                      runSpacing: 16.px,
+                      alignment: WrapAlignment.center,
+                      children: colors.map((color) {
+                        final bool isSelected = color == tempSelectedColor;
+                        return GestureDetector(
+                          onTap: () {
+                            setDialogState(() {
+                              tempSelectedColor = color;
+                            });
+                          },
+                          child: Container(
+                            width: 48.px,
+                            height: 48.px,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: color,
+                              border: Border.all(
+                                color: isSelected ? Colors.black : Colors.transparent,
+                                width: isSelected ? 3.px : 0,
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  SizedBox(height: 16.px),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+  }
+  
+  Widget _buildQRCodePreview(Color color) {
+    if (qrImage == null) return SizedBox.shrink();
+    
+    final double containerPadding = 16.px;
+    final decoration = createDecoration(currentStyle, customColor: color);
+    
+    return Container(
+      padding: EdgeInsets.all(containerPadding),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.px),
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          SizedBox(
+            width: 200.px,
+            height: 200.px,
+            child: TweenAnimationBuilder<PrettyQrDecoration>(
+              tween: PrettyQrDecorationTween(
+                begin: currentDecoration,
+                end: decoration,
+              ),
+              curve: Curves.ease,
+              duration: const Duration(milliseconds: 200),
+              builder: (context, animatedDecoration, child) {
+                return PrettyQrView(
+                  qrImage: qrImage!,
+                  decoration: animatedDecoration,
+                );
+              },
+            ),
+          ),
+          // Center icon overlay
+          Container(
+            width: 48.px,
+            height: 48.px,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white,
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(4.px),
+              child: ClipOval(
+                child: Image.asset(
+                  'assets/images/icon_chat_settings_left.png',
+                  package: 'ox_usercenter',
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
-
-    if (shareMethod == null) return;
-
-    try {
-      if (shareMethod == 'sms') {
-        // Share via SMS
-        await _shareViaSMS();
-      } else {
-        // Share via other methods (default share sheet)
-        await Share.share(
-          currentInviteLink!,
-          subject: Localized.text('ox_usercenter.invite_to_chat'),
-        );
-      }
-    } catch (e) {
-      CommonToast.instance.show(
-        context,
-        '${Localized.text('ox_usercenter.share_failed')}: $e',
-      );
-    }
   }
 
-  Future<void> _shareViaSMS() async {
-    try {
-      // Create friendly iMessage/SMS template with the invite link and user name
-      String template = Localized.text('ox_usercenter.sms_invite_message_template');
-      final inviteText = template
-          .replaceAll(r'${name}', userName)
-          .replaceAll(r'${link}', currentInviteLink!);
-      
-      final uri = Uri(
-        scheme: 'sms',
-        queryParameters: {
-          'body': inviteText,
-        },
-      );
 
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri);
-      } else {
-        // Fallback to regular share if SMS is not available
-        await Share.share(
-          currentInviteLink!,
-          subject: Localized.text('ox_usercenter.invite_to_chat'),
-        );
-      }
-    } catch (e) {
-      // Fallback to regular share on error
-      await Share.share(
-        currentInviteLink!,
-        subject: Localized.text('ox_usercenter.invite_to_chat'),
-      );
-    }
-  }
+
 
   Future<void> _regenerateInviteLink() async {
     try {

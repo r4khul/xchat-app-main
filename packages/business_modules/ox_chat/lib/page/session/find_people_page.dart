@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/utils/adapt.dart';
@@ -29,12 +28,15 @@ class _FindPeoplePageState extends State<FindPeoplePage> {
     super.dispose();
   }
 
-  Future<void> _onPasteFromClipboard() async {
-    final clipboard = await Clipboard.getData('text/plain');
-    final text = clipboard?.text;
-    if (text == null || text.isEmpty) return;
-    _userIdController.text = text;
-    _userIdController.selection = TextSelection.collapsed(offset: text.length);
+  bool get _isUsernameValid {
+    final text = _userIdController.text.trim();
+    // Username format: username followed by a dot and its set of numbers
+    // Example: username.12345
+    return text.isNotEmpty && text.contains('.') && text.split('.').length == 2;
+  }
+
+  void _onUsernameChanged(String value) {
+    setState(() {});
   }
 
   @override
@@ -42,6 +44,19 @@ class _FindPeoplePageState extends State<FindPeoplePage> {
     return CLScaffold(
       appBar: CLAppBar(
         title: Localized.text('ox_chat.add_friends_to_chat'),
+        actions: [
+          // Next button - disabled when username is invalid
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: _isUsernameValid ? () => _onFindAndAdd(context) : null,
+            child: CLText.bodyMedium(
+              Localized.text('ox_chat.next'),
+              colorToken: _isUsernameValid 
+                  ? ColorToken.primary
+                  : ColorToken.onSurfaceVariant,
+            ),
+          ),
+        ],
       ),
       body: LoseFocusWrap(
         child: SingleChildScrollView(
@@ -49,18 +64,29 @@ class _FindPeoplePageState extends State<FindPeoplePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Privacy notice
-              _buildPrivacyNotice(context),
-              
               SizedBox(height: 32.px),
               
-              // METHOD 1: SCAN
-              _buildMethod1Scan(context),
+              // Username input field
+              CLTextField(
+                controller: _userIdController,
+                focusNode: _userIdFocusNode,
+                placeholder: Localized.text('ox_chat.enter_user_id'),
+                onChanged: _onUsernameChanged,
+                autofocus: false,
+              ),
               
-              SizedBox(height: 32.px),
+              SizedBox(height: 12.px),
               
-              // METHOD 2: PASTE ID
-              _buildMethod2PasteId(context),
+              // Instruction text
+              CLText.bodySmall(
+                Localized.text('ox_chat.find_people_privacy_notice'),
+                colorToken: ColorToken.onSurfaceVariant,
+              ),
+              
+              SizedBox(height: 48.px),
+              
+              // Scan QR Code button
+              _buildScanQRCodeButton(context),
             ],
           ),
         ),
@@ -68,136 +94,37 @@ class _FindPeoplePageState extends State<FindPeoplePage> {
     );
   }
 
-  Widget _buildPrivacyNotice(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(16.px),
-      decoration: BoxDecoration(
-        color: ColorToken.cardContainer.of(context),
-        borderRadius: BorderRadius.circular(12.px),
-      ),
-      child: Row(
-        // crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 24.px,
-            height: 24.px,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: CLThemeData.themeGradientOf(context),
-            ),
-            child: CLIcon(
-              icon: PlatformStyle.isUseMaterial
-                  ? Icons.help_outline
-                  : CupertinoIcons.question_circle,
-              size: 16.px,
-              color: Colors.white,
-            ),
+  Widget _buildScanQRCodeButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _onScanQRCode(context),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16.px, vertical: 16.px),
+        decoration: BoxDecoration(
+          color: ColorToken.cardContainer.of(context),
+          borderRadius: BorderRadius.circular(12.px),
+          border: Border.all(
+            color: ColorToken.onSurfaceVariant.of(context),
+            width: 1,
           ),
-          SizedBox(width: 12.px),
-          Expanded(
-            child: CLText.bodyMedium(
-              Localized.text('ox_chat.find_people_privacy_notice'),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CLIcon(
+              icon: PlatformStyle.isUseMaterial
+                  ? Icons.qr_code_scanner
+                  : CupertinoIcons.qrcode_viewfinder,
+              size: 24.px,
+              color: ColorToken.onSurface.of(context),
+            ),
+            SizedBox(width: 12.px),
+            CLText.bodyMedium(
+              Localized.text('ox_chat.scan_qr_code'),
               colorToken: ColorToken.onSurface,
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    );
-  }
-
-  Widget _buildMethod1Scan(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        CLText.titleMedium(
-          Localized.text('ox_chat.method_1_scan'),
-          colorToken: ColorToken.onSurface,
-        ),
-        SizedBox(height: 12.px),
-        GestureDetector(
-          onTap: () => _onScanQRCode(context),
-          child: Container(
-            width: double.infinity,
-            padding: EdgeInsets.symmetric(vertical: 48.px),
-            decoration: BoxDecoration(
-              gradient: CLThemeData.themeGradientOf(context),
-              borderRadius: BorderRadius.circular(16.px),
-            ),
-            child: Column(
-              children: [
-                CLIcon(
-                  icon: PlatformStyle.isUseMaterial
-                      ? Icons.qr_code_scanner
-                      : CupertinoIcons.qrcode_viewfinder,
-                  size: 64.px,
-                  color: Colors.white,
-                ),
-                SizedBox(height: 16.px),
-                CLText.bodyLarge(
-                  Localized.text('ox_chat.scan_friend_qr_code'),
-                  customColor: Colors.white,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMethod2PasteId(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        CLText.titleMedium(
-          Localized.text('ox_chat.method_2_paste_id'),
-          colorToken: ColorToken.onSurface,
-        ),
-        SizedBox(height: 12.px),
-        CLTextField(
-          controller: _userIdController,
-          focusNode: _userIdFocusNode,
-          placeholder: Localized.text('ox_chat.enter_user_id'),
-          suffixIcon: GestureDetector(
-            onTap: _onPasteFromClipboard,
-            child: Padding(
-              padding: EdgeInsets.all(12.px),
-              child: CLIcon(
-                icon: PlatformStyle.isUseMaterial
-                    ? Icons.paste
-                    : CupertinoIcons.doc_on_clipboard,
-                size: 20.px,
-                color: CLThemeData.themeColorOf(context),
-              ),
-            ),
-          ),
-        ),
-        SizedBox(height: 16.px),
-        CLButton.filled(
-          // Use theme gradient (purple) by default when backgroundColor is null
-          expanded: true,
-          onTap: () => _onFindAndAdd(context),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CLIcon(
-                icon: PlatformStyle.isUseMaterial
-                    ? Icons.person_add
-                    : CupertinoIcons.person_add,
-                size: 20.px,
-                color: Colors.white,
-              ),
-              SizedBox(width: 8.px),
-              CLText.bodyMedium(
-                Localized.text('ox_chat.find_and_add'),
-                customColor: Colors.white,
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 
@@ -207,7 +134,12 @@ class _FindPeoplePageState extends State<FindPeoplePage> {
       // Navigate to scan page and get result
       String? result = await OXNavigator.pushPage(
         context,
-        (context) => CommonScanPage(),
+        (context) => CLScaffold(
+          appBar: CLAppBar(
+            title: Localized.text('ox_chat.scan_qr_code'),
+          ),
+          body: CommonScanPage(),
+        ),
       );
 
       if (result != null && result.isNotEmpty) {

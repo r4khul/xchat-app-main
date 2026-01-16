@@ -37,6 +37,7 @@
   "str_scan": "Scannen",
   "str_my_idcard": "Mijn Identiteitskaart",
   "str_album": "Album",
+  "str_scan_contact_qr_hint": "Scan de QR-code op het apparaat van uw contactpersoon",
   "str_invalid_qr_code": "Ongeldige QR-code",
   "str_error": "Fout",
   "str_user_not_found": "Gebruiker niet gevonden",

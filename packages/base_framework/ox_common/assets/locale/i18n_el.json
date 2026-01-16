@@ -37,6 +37,7 @@
   "str_scan": "Σάρωση",
   "str_my_idcard": "Η Κάρτα Ταυτότητάς Μου",
   "str_album": "Άλμπουμ",
+  "str_scan_contact_qr_hint": "Παρακαλώ σαρώστε τον κωδικό QR στη συσκευή της επαφής σας",
   "str_invalid_qr_code": "Μη Έγκυρος Κωδικός QR",
   "str_error": "Σφάλμα",
   "str_user_not_found": "Ο χρήστης δεν βρέθηκε",

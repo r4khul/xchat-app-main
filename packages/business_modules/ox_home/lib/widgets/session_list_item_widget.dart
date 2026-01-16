@@ -105,7 +105,7 @@ class SessionListItemWidget extends StatelessWidget {
                               item.name,
                               customColor: ColorToken.onSurface.of(context),
                               maxLines: 1,
-                              isBold: true,
+                              isBold: false,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),

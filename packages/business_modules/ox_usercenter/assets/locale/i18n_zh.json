@@ -138,5 +138,14 @@
   "google_pay_unavailable": "Google Pay 不可用",
   "show_message_info_option_description": "启用此选项可在聊天界面中显示消息信息详情。",
   "show_welcome_guide": "显示欢迎指南",
-  "use_tor_network_description": "通过 Tor 网络路由所有网络流量，以增强隐私和匿名性。这可能会减慢您的连接速度。"
+  "use_tor_network_description": "通过 Tor 网络路由所有网络流量，以增强隐私和匿名性。这可能会减慢您的连接速度。",
+  "code": "代码",
+  "scan": "扫描",
+  "link": "链接",
+  "copy_link": "复制链接",
+  "share": "分享",
+  "color": "颜色",
+  "reset": "重置",
+  "qr_code_share_warning": "仅与您信任的人分享您的二维码和链接。\n分享后，其他人将能够看到您的用户名并\n与您开始聊天。",
+  "invite_link_description": "收到该链接的任何人可以查看您的用户名并与您发起聊天。请仅将其分享给您信任的人。"
 }

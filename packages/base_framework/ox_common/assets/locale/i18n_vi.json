@@ -37,6 +37,7 @@
   "str_scan": "Quét mã QR",
   "str_my_idcard": "Danh thiếp của tôi",
   "str_album": "Album",
+  "str_scan_contact_qr_hint": "Vui lòng quét mã QR trên thiết bị của liên hệ của bạn",
   "str_invalid_qr_code": "Mã QR không hợp lệ",
   "str_error": "Lỗi",
   "str_user_not_found": "Không tìm thấy người dùng",

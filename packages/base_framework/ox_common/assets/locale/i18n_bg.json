@@ -37,6 +37,7 @@
   "str_scan": "Сканирай QR код",
   "str_my_idcard": "Моята карта за самоличност",
   "str_album": "Албум",
+  "str_scan_contact_qr_hint": "Моля, сканирайте QR кода на устройството на вашия контакт",
   "str_invalid_qr_code": "Невалиден QR код",
   "str_error": "Грешка",
   "str_user_not_found": "Потребителят не е намерен",

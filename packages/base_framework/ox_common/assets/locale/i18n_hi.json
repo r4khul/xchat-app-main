@@ -37,6 +37,7 @@
   "str_scan": "स्कैन करें",
   "str_my_idcard": "मेरा पहचान पत्र",
   "str_album": "एल्बम",
+  "str_scan_contact_qr_hint": "कृपया अपने संपर्क के डिवाइस पर QR कोड स्कैन करें",
   "str_invalid_qr_code": "अमान्य QR कोड",
   "str_error": "त्रुटि",
   "str_user_not_found": "उपयोगकर्ता नहीं मिला",

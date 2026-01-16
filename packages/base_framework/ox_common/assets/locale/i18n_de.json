@@ -37,6 +37,7 @@
   "str_scan": "QR-Code scannen",
   "str_my_idcard": "Meine Visitenkarte",
   "str_album": "Album",
+  "str_scan_contact_qr_hint": "Bitte scannen Sie den QR-Code auf dem Gerät Ihres Kontakts",
   "str_invalid_qr_code": "Ungültiger QR-Code",
   "str_error": "Fehler",
   "str_user_not_found": "Benutzer nicht gefunden",

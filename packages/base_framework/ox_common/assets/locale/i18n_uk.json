@@ -37,6 +37,7 @@
   "str_scan": "Сканувати QR-код",
   "str_my_idcard": "Моя візитка",
   "str_album": "Альбом",
+  "str_scan_contact_qr_hint": "Будь ласка, відскануйте QR-код на пристрої вашого контакту",
   "str_invalid_qr_code": "Неправильний QR-код",
   "str_error": "Помилка",
   "str_user_not_found": "Користувача не знайдено",

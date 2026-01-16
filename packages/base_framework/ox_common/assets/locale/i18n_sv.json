@@ -37,6 +37,7 @@
   "str_scan": "Skanna QR-kod",
   "str_my_idcard": "Mitt ID-kort",
   "str_album": "Album",
+  "str_scan_contact_qr_hint": "Vänligen skanna QR-koden på din kontakts enhet",
   "str_invalid_qr_code": "Ogiltig QR-kod",
   "str_error": "Fel",
   "str_user_not_found": "Användare hittades inte",

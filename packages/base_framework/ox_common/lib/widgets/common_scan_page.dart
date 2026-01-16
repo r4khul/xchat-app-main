@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:ox_common/business_interface/ox_usercenter/interface.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/ox_common.dart';
@@ -94,15 +93,23 @@ class CommonScanPageState extends State<CommonScanPage> {
 
   @override
   Widget build(BuildContext context) {
-    return CLScaffold(
-      appBar: CLAppBar(
-        title: 'str_scan'.commonLocalized(),
-      ),
-      body: Stack(
+    return Stack(
         fit: StackFit.expand,
         children: [
           Positioned.fill(
             child: _buildCameraView(),
+          ),
+          Positioned(
+            top: Adapt.px(100),
+            left: 0,
+            right: 0,
+            child: Center(
+              child: CLText.bodyMedium(
+                'str_scan_contact_qr_hint'.commonLocalized(),
+                colorToken: ColorToken.white,
+                textAlign: TextAlign.center,
+              ),
+            ),
           ),
           Positioned.fill(
             child: _ScannerOverlay(
@@ -115,8 +122,7 @@ class CommonScanPageState extends State<CommonScanPage> {
             child: buildOptionWidget(),
           ),
         ],
-      ),
-    );
+      );
   }
 
   Widget _buildCameraView() {
@@ -140,23 +146,10 @@ class CommonScanPageState extends State<CommonScanPage> {
       width: double.infinity,
       child: Row(
         children: [
+
           Expanded(
             child: buildOptionButton(
-              icon: 'icon_business_card.png',
-              label: 'str_my_idcard'.commonLocalized(),
-              onTap: () {
-                OXUserCenterInterface.pushQRCodeDisplayPage(context);
-              },
-            ),
-          ),
-          Container(
-            width: 0.5,
-            height: 80.px,
-            color: ColorToken.white.of(context),
-          ),
-          Expanded(
-            child: buildOptionButton(
-              icon: 'icon_scan_qr.png',
+              iconData: Icons.photo_library,
               label: 'str_album'.commonLocalized(),
               onTap: _onPicTap,
             ),
@@ -167,7 +160,8 @@ class CommonScanPageState extends State<CommonScanPage> {
   }
 
   Widget buildOptionButton({
-    required String icon,
+    String? icon,
+    IconData? iconData,
     required String label,
     required GestureTapCallback onTap,
   }) {
@@ -179,7 +173,7 @@ class CommonScanPageState extends State<CommonScanPage> {
             SizedBox(
               height: Adapt.px(20),
             ),
-            _itemView(icon),
+            _itemView(icon: icon, iconData: iconData),
             SizedBox(
               height: Adapt.px(7),
             ),
@@ -194,7 +188,7 @@ class CommonScanPageState extends State<CommonScanPage> {
     );
   }
 
-  Widget _itemView(String iconName) {
+  Widget _itemView({String? icon, IconData? iconData}) {
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -207,11 +201,17 @@ class CommonScanPageState extends State<CommonScanPage> {
           ),
         ),
         Center(
-          child: CommonImage(
-            iconName: iconName,
-            size: 24.px,
-            color: ColorToken.black.of(context),
-          ),
+          child: iconData != null
+              ? CLIcon(
+                  icon: iconData,
+                  size: 24.px,
+                  color: ColorToken.black.of(context),
+                )
+              : CommonImage(
+                  iconName: icon ?? '',
+                  size: 24.px,
+                  color: ColorToken.black.of(context),
+                ),
         ),
       ],
     );
@@ -301,10 +301,7 @@ class CommonScanPageState extends State<CommonScanPage> {
   }
 
   _showMessage(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    CommonToast.instance.show(context, message);
   }
 }
 

@@ -37,6 +37,7 @@
   "str_scan": "Escanegi",
   "str_my_idcard": "La Meva Targeta d'Identitat",
   "str_album": "Àlbum",
+  "str_scan_contact_qr_hint": "Si us plau, escanegeu el codi QR al dispositiu del vostre contacte",
   "str_invalid_qr_code": "Codi QR No Vàlid",
   "str_error": "Error",
   "str_user_not_found": "Usuari no trobat",

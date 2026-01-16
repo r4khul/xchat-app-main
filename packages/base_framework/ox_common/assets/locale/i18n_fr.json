@@ -37,6 +37,7 @@
   "str_scan": "Scanner le code QR",
   "str_my_idcard": "Ma carte d'identité",
   "str_album": "Album",
+  "str_scan_contact_qr_hint": "Veuillez scanner le code QR sur l'appareil de votre contact",
   "str_invalid_qr_code": "Code QR invalide",
   "str_error": "Erreur",
   "str_user_not_found": "Utilisateur non trouvé",

@@ -37,6 +37,7 @@
   "str_scan": "สแกนรหัส QR",
   "str_my_idcard": "บัตรประจำตัวของฉัน",
   "str_album": "อัลบั้ม",
+  "str_scan_contact_qr_hint": "กรุณาสแกน QR code บนอุปกรณ์ของรายชื่อติดต่อของคุณ",
   "str_invalid_qr_code": "รหัส QR ไม่ถูกต้อง",
   "str_error": "ข้อผิดพลาด",
   "str_user_not_found": "ไม่พบผู้ใช้",

@@ -37,6 +37,7 @@
   "str_scan": "Skenēt",
   "str_my_idcard": "Mana Identitātes Karte",
   "str_album": "Albums",
+  "str_scan_contact_qr_hint": "Lūdzu, noskenējiet QR kodu uz jūsu kontakta ierīces",
   "str_invalid_qr_code": "Nederīgs QR Kods",
   "str_error": "Kļūda",
   "str_user_not_found": "Lietotājs nav atrasts",

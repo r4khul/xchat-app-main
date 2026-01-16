@@ -37,6 +37,7 @@
   "str_scan": "Pindai",
   "str_my_idcard": "Kartu Identitas Saya",
   "str_album": "Album",
+  "str_scan_contact_qr_hint": "Silakan pindai kode QR di perangkat kontak Anda",
   "str_invalid_qr_code": "Kode QR Tidak Valid",
   "str_error": "Kesalahan",
   "str_user_not_found": "Pengguna tidak ditemukan",
