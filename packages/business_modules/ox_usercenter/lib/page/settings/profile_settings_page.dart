@@ -6,7 +6,6 @@ import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/utils/widget_tool.dart';
 import 'package:ox_common/utils/profile_refresh_utils.dart';
-import 'package:ox_common/utils/circle_join_utils.dart';
 import 'package:ox_common/widgets/avatar.dart';
 import 'package:ox_common/widgets/common_loading.dart';
 import 'package:ox_common/widgets/common_toast.dart';
@@ -15,7 +14,6 @@ import 'avatar_display_page.dart';
 import 'bio_settings_page.dart';
 import 'nickname_settings_page.dart';
 import 'keys_page.dart';
-import 'qr_code_display_page.dart';
 
 class ProfileSettingsPage extends StatefulWidget {
   const ProfileSettingsPage({
@@ -85,11 +83,6 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                 icon: ListViewIcon(iconName: 'icon_setting_security.png', package: 'ox_usercenter'),
                 title: Localized.text('ox_usercenter.keys'),
                 onTap: keysItemOnTap,
-              ),
-              LabelItemModel(
-                icon: ListViewIcon.data(Icons.share),
-                title: Localized.text('ox_usercenter.invite'),
-                onTap: inviteItemOnTap,
               ),
             ],
           ),
@@ -181,19 +174,6 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
 
   void keysItemOnTap() {
     OXNavigator.pushPage(context, (_) => KeysPage(previousPageTitle: 'Profile',));
-  }
-
-  void inviteItemOnTap() {
-    final circle = LoginManager.instance.currentCircle;
-    if (circle == null) {
-      CircleJoinUtils.showJoinCircleGuideDialog(context: OXNavigator.rootContext);
-      return;
-    }
-    
-    OXNavigator.pushPage(
-      context, 
-      (context) => QRCodeDisplayPage(previousPageTitle: 'Profile'),
-    );
   }
 
   void logoutItemOnTap() async {
