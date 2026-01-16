@@ -29,10 +29,7 @@ class _FindPeoplePageState extends State<FindPeoplePage> {
   }
 
   bool get _isUsernameValid {
-    final text = _userIdController.text.trim();
-    // Username format: username followed by a dot and its set of numbers
-    // Example: username.12345
-    return text.isNotEmpty && text.contains('.') && text.split('.').length == 2;
+    return _userIdController.text.trim().isNotEmpty;
   }
 
   void _onUsernameChanged(String value) {
@@ -64,8 +61,6 @@ class _FindPeoplePageState extends State<FindPeoplePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              SizedBox(height: 32.px),
-              
               // Username input field
               CLTextField(
                 controller: _userIdController,
@@ -83,7 +78,7 @@ class _FindPeoplePageState extends State<FindPeoplePage> {
                 colorToken: ColorToken.onSurfaceVariant,
               ),
               
-              SizedBox(height: 48.px),
+              SizedBox(height: 32.px),
               
               // Scan QR Code button
               _buildScanQRCodeButton(context),
@@ -119,7 +114,7 @@ class _FindPeoplePageState extends State<FindPeoplePage> {
             ),
             SizedBox(width: 12.px),
             CLText.bodyMedium(
-              Localized.text('ox_chat.scan_qr_code'),
+              Localized.text('ox_common.scan_qr_code'),
               colorToken: ColorToken.onSurface,
             ),
           ],
@@ -136,7 +131,7 @@ class _FindPeoplePageState extends State<FindPeoplePage> {
         context,
         (context) => CLScaffold(
           appBar: CLAppBar(
-            title: Localized.text('ox_chat.scan_qr_code'),
+            title: Localized.text('ox_common.scan_qr_code'),
           ),
           body: CommonScanPage(),
         ),
