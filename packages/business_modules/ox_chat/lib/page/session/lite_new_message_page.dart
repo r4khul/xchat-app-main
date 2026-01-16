@@ -17,6 +17,11 @@ import 'select_group_members_page.dart';
 import 'find_people_page.dart';
 import 'package:ox_usercenter/page/settings/qr_code_display_page.dart';
 import '../contacts/contact_user_info_page.dart';
+import 'package:ox_common/widgets/common_loading.dart';
+import 'package:ox_common/widgets/common_toast.dart';
+import 'package:ox_common/utils/session_helper.dart';
+import '../../utils/chat_session_utils.dart';
+import 'chat_message_page.dart';
 
 class CLNewMessagePage extends StatefulWidget {
   const CLNewMessagePage({super.key});
@@ -508,13 +513,37 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
   }
 
   void _onUserTap(ValueNotifier<UserDBISAR> user$) async {
-    // Navigate to user detail page instead of directly creating chat
-    await OXNavigator.pushPage(
-      context,
-      (context) => ContactUserInfoPage(
-        user: user$.value,
-      ),
-    );
+    final currentPubkey = LoginManager.instance.currentPubkey;
+    final isSelf = user$.value.pubKey == currentPubkey;
+    
+    if (isSelf) {
+      // For self (Note to Self), show confirmation dialog and create self chat directly
+      final bool? confirmed = await CLAlertDialog.show<bool>(
+        context: context,
+        title: Localized.text('ox_chat.file_transfer_assistant'),
+        content: Localized.text('ox_chat.create_self_chat_confirm_content'),
+        actions: [
+          CLAlertAction.cancel(),
+          CLAlertAction<bool>(
+            label: Localized.text('ox_common.confirm'),
+            value: true,
+            isDefaultAction: true,
+          ),
+        ],
+      );
+      
+      if (confirmed == true) {
+        _createSelfChat(user$);
+      }
+    } else {
+      // Navigate to user detail page for other users
+      await OXNavigator.pushPage(
+        context,
+        (context) => ContactUserInfoPage(
+          user: user$.value,
+        ),
+      );
+    }
   }
 
   void _onSubmittedHandler(String text) async {
@@ -523,5 +552,63 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
 
     // Use immediate search for submit action
     await _userSearchManager.searchImmediate(text);
+  }
+
+  void _createSelfChat(ValueNotifier<UserDBISAR> user$) async {
+    final myPubkey = LoginManager.instance.currentPubkey;
+    if (myPubkey.isEmpty) {
+      CommonToast.instance.show(context, 'Current account is null');
+      return;
+    }
+
+    final circle = LoginManager.instance.currentCircle;
+    if (circle == null) {
+      CommonToast.instance.show(context, 'Current circle is null');
+      return;
+    }
+
+    OXLoading.show();
+
+    try {
+      // Create group name for self chat
+      String groupName = Localized.text('ox_chat.file_transfer_assistant');
+      
+      // Create MLS group with only current user (self chat)
+      GroupDBISAR? groupDB = await Groups.sharedInstance.createMLSGroup(
+        groupName,
+        '',
+        [myPubkey], // Only current user
+        [myPubkey],
+        [circle.relayUrl],
+        onKeyPackageSelection: (pubkey, availableKeyPackages) =>
+            ChatSessionUtils.onKeyPackageSelection(
+              context: context,
+              pubkey: pubkey,
+              availableKeyPackages: availableKeyPackages,
+            ),
+      );
+
+      if (groupDB == null) {
+        await OXLoading.dismiss();
+        CommonToast.instance.show(context, 'Failed to create memo');
+        return;
+      }
+
+      await OXLoading.dismiss();
+
+      // Create session model using SessionHelper
+      final params = SessionCreateParams.fromGroup(groupDB, user$.value);
+      final sessionModel = await SessionHelper.createSessionModel(params);
+
+      // Navigate to chat page
+      ChatMessagePage.open(
+        context: null,
+        communityItem: sessionModel,
+        isPushWithReplace: true,
+      );
+    } catch (e) {
+      await OXLoading.dismiss();
+      CommonToast.instance.show(context, e.toString());
+    }
   }
 }

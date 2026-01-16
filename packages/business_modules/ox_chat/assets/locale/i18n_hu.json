@@ -60,7 +60,7 @@
   "no_keypackages_available": "Nincsenek elérhető kulcscsomagok",
   "group_info": "Csoport Információ",
   "group_name": "Csoport Neve",
-  "delete_and_leave_item": "Törlés és kilépés",
+  "delete_and_leave_item": "Kilépés és törlés",
   "group_mute_no_member_toast": "Nem csoporttagok nem működhetnek",
   "group_mute_operate_success_toast": "Művelet sikeres",
   "leave_group_success_toast": "Csoport elhagyása sikeres",
@@ -104,6 +104,7 @@
   "no_bio": "Nincs bio",
   "create_secret_chat_confirm_title": "Titkos Csevegés Indítása",
   "create_secret_chat_confirm_content": "Biztosan el szeretne indítani egy új titkos csevegést és meghívót küldeni a másik személynek?",
+  "create_self_chat_confirm_content": "Biztosan létre szeretne hozni egy új csevegést? Itt jegyzeteket adhat hozzá magának.",
   "delete_group_confirm_title": "Csoport Törlése",
   "delete_group_confirm_content": "Ez a művelet véglegesen törli a csoportot és nem vonható vissza. Minden csoportadat elveszik.",
   "leave_group_confirm_title": "Csoport Elhagyása",
@@ -221,5 +222,9 @@
   "call_speaker": "Hangszóró",
   "call_speaker_off": "Hangszóró ki",
   "call_camera_on": "Kamera be",
-  "call_camera_off": "Kamera ki"
+  "call_camera_off": "Kamera ki",
+  "see_all": "Összes megjelenítése",
+  "you": "Te",
+  "view_profile": "Profil megtekintése",
+  "remove_from_group": "Eltávolítás a csoportból"
 }

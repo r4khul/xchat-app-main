@@ -60,7 +60,7 @@
   "no_keypackages_available": "Ühtegi võtme paketti pole saadaval",
   "group_info": "Rühma info",
   "group_name": "Rühma nimi",
-  "delete_and_leave_item": "Kustuta ja lahku",
+  "delete_and_leave_item": "Lahku ja kustuta",
   "group_mute_no_member_toast": "Mitte-rühma liikmed ei saa toimingut teha",
   "group_mute_operate_success_toast": "Toiming õnnestus",
   "leave_group_success_toast": "Rühmast lahkumine õnnestus",
@@ -104,6 +104,7 @@
   "no_bio": "Bio puudub",
   "create_secret_chat_confirm_title": "Alusta Privaatvestlust",
   "create_secret_chat_confirm_content": "Kas olete kindel, et soovite alustada uut privaatvestlust ja saata kutse teisele inimesele?",
+  "create_self_chat_confirm_content": "Kas olete kindel, et soovite luua uue vestluse? Siin saate endale märkmeid lisada.",
   "delete_group_confirm_title": "Kustuta Rühm",
   "delete_group_confirm_content": "See tegevus kustutab rühma jäädavalt ja seda ei saa tagasi pöörata. Kõik rühma andmed kaovad.",
   "leave_group_confirm_title": "Lahku Rühmast",
@@ -221,5 +222,9 @@
   "call_speaker": "Kõlar",
   "call_speaker_off": "Kõlar välja",
   "call_camera_on": "Kaamera sisse",
-  "call_camera_off": "Kaamera välja"
+  "call_camera_off": "Kaamera välja",
+  "see_all": "Kuva kõik",
+  "you": "Sina",
+  "view_profile": "Vaata profiili",
+  "remove_from_group": "Eemalda grupist"
 }

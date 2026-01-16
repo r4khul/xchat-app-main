@@ -60,7 +60,7 @@
   "no_keypackages_available": "Kullanılabilir anahtar paketi yok",
   "group_info": "Grup Bilgisi",
   "group_name": "Grup Adı",
-  "delete_and_leave_item": "Sil ve ayrıl",
+  "delete_and_leave_item": "Ayrıl ve sil",
   "group_mute_no_member_toast": "Grup üyesi olmayanlar işlem yapamaz",
   "group_mute_operate_success_toast": "İşlem başarılı",
   "leave_group_success_toast": "Gruptan ayrılma başarılı",
@@ -104,6 +104,7 @@
   "no_bio": "Biyografi yok",
   "create_secret_chat_confirm_title": "Gizli Sohbet Başlat",
   "create_secret_chat_confirm_content": "Yeni bir gizli sohbet başlatmak ve diğer kişiye davet göndermek istediğinizden emin misiniz?",
+  "create_self_chat_confirm_content": "Yeni bir sohbet oluşturmak istediğinizden emin misiniz? Burada kendiniz için notlar ekleyebilirsiniz.",
   "delete_group_confirm_title": "Grubu Sil",
   "delete_group_confirm_content": "Bu işlem grubu kalıcı olarak silecek ve geri alınamaz. Tüm grup verileri kaybolacak.",
   "leave_group_confirm_title": "Gruptan Ayrıl",
@@ -221,5 +222,9 @@
   "call_speaker": "Hoparlör",
   "call_speaker_off": "Hoparlör Kapalı",
   "call_camera_on": "Kamera Açık",
-  "call_camera_off": "Kamera Kapalı"
+  "call_camera_off": "Kamera Kapalı",
+  "see_all": "Tümünü Gör",
+  "you": "Sen",
+  "view_profile": "Profili Görüntüle",
+  "remove_from_group": "Gruptan Kaldır"
 }

@@ -60,7 +60,7 @@
   "no_keypackages_available": "Heç bir açar paketi mövcud deyil",
   "group_info": "Qrup məlumatı",
   "group_name": "Qrup adı",
-  "delete_and_leave_item": "Sil və tərk et",
+  "delete_and_leave_item": "Tərk et və sil",
   "group_mute_no_member_toast": "Qrup üzvləri əməliyyat edə bilməz",
   "group_mute_operate_success_toast": "Əməliyyat uğurla başa çatdı",
   "leave_group_success_toast": "Qrupdan uğurla çıxdı",
@@ -104,6 +104,7 @@
   "no_bio": "Bio yoxdur",
   "create_secret_chat_confirm_title": "Gizli Söhbət Başlat",
   "create_secret_chat_confirm_content": "Yeni gizli söhbət başlatmaq və digər şəxsə dəvət göndərmək istədiyinizə əminsinizmi?",
+  "create_self_chat_confirm_content": "Yeni bir söhbət yaratmaq istədiyinizə əminsinizmi? Burada özünüz üçün qeydlər əlavə edə bilərsiniz.",
   "delete_group_confirm_title": "Qrupu Sil",
   "delete_group_confirm_content": "Bu hərəkət qrupu əbədi olaraq siləcək və geri alına bilməz. Bütün qrup məlumatları itiriləcək.",
   "leave_group_confirm_title": "Qrupu Tərk Et",
@@ -221,5 +222,9 @@
   "call_speaker": "Səsucaldıcı",
   "call_speaker_off": "Səsucaldıcı bağlı",
   "call_camera_on": "Kamera açıq",
-  "call_camera_off": "Kamera bağlı"
+  "call_camera_off": "Kamera bağlı",
+  "see_all": "Hamısını göstər",
+  "you": "Sən",
+  "view_profile": "Profilə bax",
+  "remove_from_group": "Qrupdan çıxar"
 }

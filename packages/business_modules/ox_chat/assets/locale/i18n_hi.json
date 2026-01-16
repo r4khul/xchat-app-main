@@ -60,7 +60,7 @@
   "no_keypackages_available": "कोई की पैकेज उपलब्ध नहीं",
   "group_info": "समूह की जानकारी",
   "group_name": "समूह का नाम",
-  "delete_and_leave_item": "हटाएं और छोड़ें",
+  "delete_and_leave_item": "छोड़ें और हटाएं",
   "group_mute_no_member_toast": "समूह के सदस्य नहीं होने के कारण काम नहीं कर सकते",
   "group_mute_operate_success_toast": "कार्य सफल",
   "leave_group_success_toast": "समूह सफलतापूर्वक छोड़ा गया",
@@ -104,6 +104,7 @@
   "no_bio": "कोई जीवनी नहीं",
   "create_secret_chat_confirm_title": "एक निजी चैट शुरू करें",
   "create_secret_chat_confirm_content": "क्या आप वाकई एक नई निजी चैट शुरू करना चाहते हैं और दूसरे व्यक्ति को आमंत्रण भेजना चाहते हैं?",
+  "create_self_chat_confirm_content": "क्या आप वाकई एक नया चैट बनाना चाहते हैं? आप यहां अपने लिए नोट्स जोड़ सकते हैं।",
   "delete_group_confirm_title": "समूह हटाएं",
   "delete_group_confirm_content": "यह कार्य समूह को स्थायी रूप से हटा देगा और इसे पूर्ववत नहीं किया जा सकता। सभी समूह डेटा खो जाएंगे।",
   "leave_group_confirm_title": "समूह छोड़ें",
@@ -221,5 +222,9 @@
   "call_speaker": "स्पीकर",
   "call_speaker_off": "स्पीकर बंद",
   "call_camera_on": "कैमरा चालू",
-  "call_camera_off": "कैमरा बंद"
+  "call_camera_off": "कैमरा बंद",
+  "see_all": "सभी देखें",
+  "you": "आप",
+  "view_profile": "प्रोफ़ाइल देखें",
+  "remove_from_group": "समूह से हटाएं"
 }

@@ -60,7 +60,7 @@
   "no_keypackages_available": "Δεν υπάρχουν διαθέσιμα πακέτα κλειδιών",
   "group_info": "Πληροφορίες Ομάδας",
   "group_name": "Όνομα Ομάδας",
-  "delete_and_leave_item": "Διαγραφή και αποχώρηση",
+  "delete_and_leave_item": "Αποχώρηση και διαγραφή",
   "group_mute_no_member_toast": "Τα μη μέλη δεν μπορούν να λειτουργήσουν",
   "group_mute_operate_success_toast": "Επιτυχής λειτουργία",
   "leave_group_success_toast": "Επιτυχία αποχώρησης από την ομάδα",
@@ -104,6 +104,7 @@
   "no_bio": "Δεν υπάρχει βιογραφία",
   "create_secret_chat_confirm_title": "Ξεκινήστε μια Ιδιωτική Συνομιλία",
   "create_secret_chat_confirm_content": "Είστε σίγουροι ότι θέλετε να ξεκινήσετε μια νέα ιδιωτική συνομιλία και να στείλετε μια πρόσκληση στην άλλη άτομο;",
+  "create_self_chat_confirm_content": "Είστε σίγουροι ότι θέλετε να δημιουργήσετε μια νέα συνομιλία; Μπορείτε να προσθέσετε σημειώσεις για τον εαυτό σας εδώ.",
   "delete_group_confirm_title": "Διαγραφή Ομάδας",
   "delete_group_confirm_content": "Αυτή η ενέργεια θα διαγράψει μόνιμα την ομάδα και δεν μπορεί να αναιρεθεί. Όλα τα δεδομένα της ομάδας θα χαθούν.",
   "leave_group_confirm_title": "Αποχώρηση από την Ομάδα",
@@ -221,5 +222,9 @@
   "call_speaker": "Ηχείο",
   "call_speaker_off": "Ηχείο απενεργοποιημένο",
   "call_camera_on": "Κάμερα ενεργή",
-  "call_camera_off": "Κάμερα απενεργοποιημένη"
+  "call_camera_off": "Κάμερα απενεργοποιημένη",
+  "see_all": "Προβολή όλων",
+  "you": "Εσείς",
+  "view_profile": "Προβολή προφίλ",
+  "remove_from_group": "Αφαίρεση από την ομάδα"
 }

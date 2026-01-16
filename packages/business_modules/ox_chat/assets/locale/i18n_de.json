@@ -60,7 +60,7 @@
   "no_keypackages_available": "Keine Schlüsselpakete verfügbar",
   "group_info": "Gruppeninformationen",
   "group_name": "Gruppenname",
-  "delete_and_leave_item": "Löschen und verlassen",
+  "delete_and_leave_item": "Verlassen und löschen",
   "group_mute_no_member_toast": "Nicht-Gruppenmitglieder können nicht operieren",
   "group_mute_operate_success_toast": "Operation erfolgreich",
   "leave_group_success_toast": "Gruppe erfolgreich verlassen",
@@ -104,6 +104,7 @@
   "no_bio": "Keine Bio",
   "create_secret_chat_confirm_title": "Einen privaten Chat starten",
   "create_secret_chat_confirm_content": "Sind Sie sicher, dass Sie einen neuen privaten Chat starten und eine Einladung an die andere Person senden möchten?",
+  "create_self_chat_confirm_content": "Sind Sie sicher, dass Sie einen neuen Chat erstellen möchten? Hier können Sie Notizen für sich selbst hinzufügen.",
   "delete_group_confirm_title": "Gruppe löschen",
   "delete_group_confirm_content": "Diese Aktion wird die Gruppe dauerhaft löschen und kann nicht rückgängig gemacht werden. Alle Gruppendaten gehen verloren.",
   "leave_group_confirm_title": "Gruppe verlassen",
@@ -221,5 +222,9 @@
   "call_speaker": "Lautsprecher",
   "call_speaker_off": "Lautsprecher aus",
   "call_camera_on": "Kamera an",
-  "call_camera_off": "Kamera aus"
+  "call_camera_off": "Kamera aus",
+  "see_all": "Alle anzeigen",
+  "you": "Sie",
+  "view_profile": "Profil anzeigen",
+  "remove_from_group": "Aus Gruppe entfernen"
 }

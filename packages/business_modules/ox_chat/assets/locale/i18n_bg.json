@@ -60,7 +60,7 @@
   "no_keypackages_available": "Няма налични пакети с ключове",
   "group_info": "Информация за групата",
   "group_name": "Име на групата",
-  "delete_and_leave_item": "Изтрийте и напуснете",
+  "delete_and_leave_item": "Напуснете и изтрийте",
   "group_mute_no_member_toast": "Членовете на групата не могат да работят",
   "group_mute_operate_success_toast": "Операцията беше успешна",
   "leave_group_success_toast": "Успешно напуснахте групата",
@@ -104,6 +104,7 @@
   "no_bio": "Няма био",
   "create_secret_chat_confirm_title": "Започни Тайен Чат",
   "create_secret_chat_confirm_content": "Сигурни ли сте, че искате да започнете нов таен чат и да изпратите покана на другия човек?",
+  "create_self_chat_confirm_content": "Сигурни ли сте, че искате да създадете нов чат? Тук можете да добавяте бележки за себе си.",
   "delete_group_confirm_title": "Изтрий Група",
   "delete_group_confirm_content": "Това действие ще изтрие групата завинаги и не може да бъде отменено. Всички данни на групата ще бъдат загубени.",
   "leave_group_confirm_title": "Напускане на Група",
@@ -221,5 +222,9 @@
   "call_speaker": "Високоговорител",
   "call_speaker_off": "Високоговорител изключен",
   "call_camera_on": "Камера включена",
-  "call_camera_off": "Камера изключена"
+  "call_camera_off": "Камера изключена",
+  "see_all": "Покажи всички",
+  "you": "Вие",
+  "view_profile": "Преглед на профил",
+  "remove_from_group": "Премахване от групата"
 }

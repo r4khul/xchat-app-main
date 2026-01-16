@@ -60,7 +60,7 @@
   "no_keypackages_available": "Нет доступных пакетов ключей",
   "group_info": "Информация о группе",
   "group_name": "Название группы",
-  "delete_and_leave_item": "Удалить и выйти",
+  "delete_and_leave_item": "Выйти и удалить",
   "group_mute_no_member_toast": "Не участники группы не могут работать",
   "group_mute_operate_success_toast": "Операция успешна",
   "leave_group_success_toast": "Успешно вышли из группы",
@@ -104,6 +104,7 @@
   "no_bio": "Нет био",
   "create_secret_chat_confirm_title": "Начать приватный чат",
   "create_secret_chat_confirm_content": "Вы уверены, что хотите начать новый приватный чат и отправить приглашение другому человеку?",
+  "create_self_chat_confirm_content": "Вы уверены, что хотите создать новый чат? Здесь вы можете добавлять заметки для себя.",
   "delete_group_confirm_title": "Удалить группу",
   "delete_group_confirm_content": "Это действие навсегда удалит группу и не может быть отменено. Все данные группы будут потеряны.",
   "leave_group_confirm_title": "Выйти из группы",
@@ -221,5 +222,9 @@
   "call_speaker": "Динамик",
   "call_speaker_off": "Динамик выключен",
   "call_camera_on": "Камера включена",
-  "call_camera_off": "Камера выключена"
+  "call_camera_off": "Камера выключена",
+  "see_all": "Показать все",
+  "you": "Вы",
+  "view_profile": "Просмотр профиля",
+  "remove_from_group": "Удалить из группы"
 }

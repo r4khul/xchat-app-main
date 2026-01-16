@@ -60,7 +60,7 @@
   "no_keypackages_available": "ไม่มีแพ็คเกจคีย์ที่ใช้ได้",
   "group_info": "ข้อมูลกลุ่ม",
   "group_name": "ชื่อกลุ่ม",
-  "delete_and_leave_item": "ลบและออก",
+  "delete_and_leave_item": "ออกและลบ",
   "group_mute_no_member_toast": "ไม่ใช่สมาชิกกลุ่ม ไม่สามารถดำเนินการได้",
   "group_mute_operate_success_toast": "ดำเนินการสำเร็จ",
   "leave_group_success_toast": "ออกจากกลุ่มสำเร็จ",
@@ -104,6 +104,7 @@
   "no_bio": "ไม่มีประวัติ",
   "create_secret_chat_confirm_title": "เริ่มแชทส่วนตัว",
   "create_secret_chat_confirm_content": "คุณแน่ใจหรือไม่ที่จะเริ่มแชทส่วนตัวใหม่และส่งคำเชิญให้อีกฝ่าย?",
+  "create_self_chat_confirm_content": "คุณแน่ใจหรือไม่ว่าต้องการสร้างแชทใหม่? คุณสามารถเพิ่มบันทึกย่อสำหรับตัวเองได้ที่นี่",
   "delete_group_confirm_title": "ลบกลุ่ม",
   "delete_group_confirm_content": "การกระทำนี้จะลบกลุ่มอย่างถาวรและไม่สามารถยกเลิกได้ ข้อมูลกลุ่มทั้งหมดจะสูญหาย",
   "leave_group_confirm_title": "ออกจากกลุ่ม",
@@ -221,5 +222,9 @@
   "call_speaker": "ลำโพง",
   "call_speaker_off": "ลำโพงปิด",
   "call_camera_on": "กล้องเปิด",
-  "call_camera_off": "กล้องปิด"
+  "call_camera_off": "กล้องปิด",
+  "see_all": "ดูทั้งหมด",
+  "you": "คุณ",
+  "view_profile": "ดูโปรไฟล์",
+  "remove_from_group": "ลบออกจากกลุ่ม"
 }

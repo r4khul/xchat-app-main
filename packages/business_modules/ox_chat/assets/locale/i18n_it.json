@@ -60,7 +60,7 @@
   "no_keypackages_available": "Nessun pacchetto chiave disponibile",
   "group_info": "Info Gruppo",
   "group_name": "Nome del Gruppo",
-  "delete_and_leave_item": "Elimina ed esci",
+  "delete_and_leave_item": "Esci ed elimina",
   "group_mute_no_member_toast": "I non membri non possono operare",
   "group_mute_operate_success_toast": "Operazione riuscita",
   "leave_group_success_toast": "Gruppo lasciato con successo",
@@ -104,6 +104,7 @@
   "no_bio": "Nessuna bio",
   "create_secret_chat_confirm_title": "Inizia una Chat Privata",
   "create_secret_chat_confirm_content": "Sei sicuro di voler iniziare una nuova chat privata e inviare un invito all'altra persona?",
+  "create_self_chat_confirm_content": "Sei sicuro di voler creare una nuova chat? Puoi aggiungere note per te stesso qui.",
   "delete_group_confirm_title": "Elimina Gruppo",
   "delete_group_confirm_content": "Questa azione eliminerà permanentemente il gruppo e non può essere annullata. Tutti i dati del gruppo andranno persi.",
   "leave_group_confirm_title": "Lascia Gruppo",
@@ -221,5 +222,9 @@
   "call_speaker": "Altoparlante",
   "call_speaker_off": "Altoparlante spento",
   "call_camera_on": "Fotocamera accesa",
-  "call_camera_off": "Fotocamera spenta"
+  "call_camera_off": "Fotocamera spenta",
+  "see_all": "Vedi tutto",
+  "you": "Tu",
+  "view_profile": "Visualizza profilo",
+  "remove_from_group": "Rimuovi dal gruppo"
 }

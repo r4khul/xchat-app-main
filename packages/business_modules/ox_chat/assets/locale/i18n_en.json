@@ -60,7 +60,7 @@
   "no_keypackages_available": "No key packages available",
   "group_info": "Group Info",
   "group_name": "Group Name",
-  "delete_and_leave_item": "Delete and leave",
+  "delete_and_leave_item": "Leave and delete",
   "group_mute_no_member_toast": "Not group members cannot operate",
   "group_mute_operate_success_toast": "Successful operation",
   "leave_group_success_toast": "Leave group success",
@@ -104,6 +104,7 @@
   "no_bio": "No bio",
   "create_secret_chat_confirm_title": "Start a Private Chat",
   "create_secret_chat_confirm_content": "Are you sure you want to start a new private chat and send an invitation to the other person?",
+  "create_self_chat_confirm_content": "Are you sure you want to create a new chat? You can add notes to yourself here.",
   "delete_group_confirm_title": "Delete Group",
   "delete_group_confirm_content": "This action will permanently delete the group and cannot be undone. All group data will be lost.",
   "leave_group_confirm_title": "Leave Group",
@@ -224,5 +225,9 @@
   "call_camera_off": "Camera Off",
   "find_by_username": "Find by Username",
   "username": "Username",
-  "scan_qr_code": "Scan QR Code"
+  "scan_qr_code": "Scan QR Code",
+  "see_all": "See All",
+  "you": "You",
+  "view_profile": "View Profile",
+  "remove_from_group": "Remove from Group"
 }

@@ -60,7 +60,7 @@
   "no_keypackages_available": "利用可能なキーパッケージがありません",
   "group_info": "グループ情報",
   "group_name": "グループ名",
-  "delete_and_leave_item": "削除して退出",
+  "delete_and_leave_item": "退出して削除",
   "group_mute_no_member_toast": "グループメンバーではないため操作できません",
   "group_mute_operate_success_toast": "操作が成功しました",
   "leave_group_success_toast": "グループを正常に退出しました",
@@ -104,6 +104,7 @@
   "no_bio": "自己紹介がありません",
   "create_secret_chat_confirm_title": "プライベートチャットを開始",
   "create_secret_chat_confirm_content": "新しいプライベートチャットを開始し、相手に招待状を送信してもよろしいですか？",
+  "create_self_chat_confirm_content": "新しいチャットを作成してもよろしいですか？ここで自分へのメモを追加できます。",
   "delete_group_confirm_title": "グループを削除",
   "delete_group_confirm_content": "この操作によりグループが永続的に削除され、元に戻すことはできません。すべてのグループデータが失われます。",
   "leave_group_confirm_title": "グループを退出",
@@ -221,5 +222,9 @@
   "call_speaker": "スピーカー",
   "call_speaker_off": "スピーカーオフ",
   "call_camera_on": "カメラオン",
-  "call_camera_off": "カメラオフ"
+  "call_camera_off": "カメラオフ",
+  "see_all": "すべて表示",
+  "you": "あなた",
+  "view_profile": "プロフィールを表示",
+  "remove_from_group": "グループから削除"
 }

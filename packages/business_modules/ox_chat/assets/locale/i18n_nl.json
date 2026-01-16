@@ -60,7 +60,7 @@
   "no_keypackages_available": "Geen beschikbare sleutelpakketten",
   "group_info": "Groepsinformatie",
   "group_name": "Groepsnaam",
-  "delete_and_leave_item": "Verwijderen en verlaten",
+  "delete_and_leave_item": "Verlaten en verwijderen",
   "group_mute_no_member_toast": "Niet-groepsleden kunnen niet opereren",
   "group_mute_operate_success_toast": "Operatie succesvol",
   "leave_group_success_toast": "Groep verlaten succesvol",
@@ -104,6 +104,7 @@
   "no_bio": "Geen bio",
   "create_secret_chat_confirm_title": "Geheime Chat Starten",
   "create_secret_chat_confirm_content": "Weet je zeker dat je een nieuwe geheime chat wilt starten en een uitnodiging naar de andere persoon wilt sturen?",
+  "create_self_chat_confirm_content": "Weet je zeker dat je een nieuwe chat wilt maken? Je kunt hier notities voor jezelf toevoegen.",
   "delete_group_confirm_title": "Groep Verwijderen",
   "delete_group_confirm_content": "Deze actie zal de groep permanent verwijderen en kan niet ongedaan worden gemaakt. Alle groepsgegevens gaan verloren.",
   "leave_group_confirm_title": "Groep Verlaten",
@@ -221,5 +222,9 @@
   "call_speaker": "Luidspreker",
   "call_speaker_off": "Luidspreker uit",
   "call_camera_on": "Camera aan",
-  "call_camera_off": "Camera uit"
+  "call_camera_off": "Camera uit",
+  "see_all": "Alles weergeven",
+  "you": "Jij",
+  "view_profile": "Profiel bekijken",
+  "remove_from_group": "Uit groep verwijderen"
 }

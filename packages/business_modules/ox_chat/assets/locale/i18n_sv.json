@@ -60,7 +60,7 @@
   "no_keypackages_available": "Inga tillgängliga nyckelpaket",
   "group_info": "Gruppinformation",
   "group_name": "Gruppnamn",
-  "delete_and_leave_item": "Ta bort och lämna",
+  "delete_and_leave_item": "Lämna och ta bort",
   "group_mute_no_member_toast": "Icke-gruppmedlemmar kan inte operera",
   "group_mute_operate_success_toast": "Operation lyckades",
   "leave_group_success_toast": "Lämna grupp lyckades",
@@ -104,6 +104,7 @@
   "no_bio": "Ingen bio",
   "create_secret_chat_confirm_title": "Starta Hemlig Chatt",
   "create_secret_chat_confirm_content": "Är du säker på att du vill starta en ny hemlig chatt och skicka en inbjudan till den andra personen?",
+  "create_self_chat_confirm_content": "Är du säker på att du vill skapa en ny chatt? Här kan du lägga till anteckningar för dig själv.",
   "delete_group_confirm_title": "Ta Bort Grupp",
   "delete_group_confirm_content": "Denna åtgärd kommer att permanent ta bort gruppen och kan inte ångras. Alla gruppdata kommer att gå förlorade.",
   "leave_group_confirm_title": "Lämna Grupp",
@@ -221,5 +222,9 @@
   "call_speaker": "Högtalare",
   "call_speaker_off": "Högtalare av",
   "call_camera_on": "Kamera på",
-  "call_camera_off": "Kamera av"
+  "call_camera_off": "Kamera av",
+  "see_all": "Visa alla",
+  "you": "Du",
+  "view_profile": "Visa profil",
+  "remove_from_group": "Ta bort från grupp"
 }

@@ -60,7 +60,7 @@
   "no_keypackages_available": "Немає доступних пакетів ключів",
   "group_info": "Інформація про Групу",
   "group_name": "Назва Групи",
-  "delete_and_leave_item": "Видалити та залишити",
+  "delete_and_leave_item": "Залишити та видалити",
   "group_mute_no_member_toast": "Не учасники групи не можуть виконувати операції",
   "group_mute_operate_success_toast": "Операція успішна",
   "leave_group_success_toast": "Успішно залишили групу",
@@ -104,6 +104,7 @@
   "no_bio": "Немає біографії",
   "create_secret_chat_confirm_title": "Почати Таємний Чат",
   "create_secret_chat_confirm_content": "Ви впевнені, що хочете почати новий таємний чат та надіслати запрошення іншій особі?",
+  "create_self_chat_confirm_content": "Ви впевнені, що хочете створити новий чат? Тут ви можете додавати нотатки для себе.",
   "delete_group_confirm_title": "Видалити Групу",
   "delete_group_confirm_content": "Ця дія назавжди видалить групу та не може бути скасована. Всі дані групи будуть втрачені.",
   "leave_group_confirm_title": "Залишити Групу",
@@ -221,5 +222,9 @@
   "call_speaker": "Динамік",
   "call_speaker_off": "Динамік вимкнено",
   "call_camera_on": "Камера увімкнена",
-  "call_camera_off": "Камера вимкнена"
+  "call_camera_off": "Камера вимкнена",
+  "see_all": "Показати все",
+  "you": "Ви",
+  "view_profile": "Переглянути профіль",
+  "remove_from_group": "Видалити з групи"
 }

@@ -60,7 +60,7 @@
   "no_keypackages_available": "Không có gói khóa khả dụng",
   "group_info": "Thông Tin Nhóm",
   "group_name": "Tên Nhóm",
-  "delete_and_leave_item": "Xóa và rời đi",
+  "delete_and_leave_item": "Rời đi và xóa",
   "group_mute_no_member_toast": "Không phải thành viên nhóm không thể thao tác",
   "group_mute_operate_success_toast": "Thao tác thành công",
   "leave_group_success_toast": "Rời nhóm thành công",
@@ -104,6 +104,7 @@
   "no_bio": "Không có tiểu sử",
   "create_secret_chat_confirm_title": "Bắt Đầu Trò Chuyện Bí Mật",
   "create_secret_chat_confirm_content": "Bạn có chắc muốn bắt đầu cuộc trò chuyện bí mật mới và gửi lời mời cho người khác?",
+  "create_self_chat_confirm_content": "Bạn có chắc muốn tạo một cuộc trò chuyện mới không? Bạn có thể thêm ghi chú cho chính mình ở đây.",
   "delete_group_confirm_title": "Xóa Nhóm",
   "delete_group_confirm_content": "Hành động này sẽ xóa nhóm vĩnh viễn và không thể hoàn tác. Tất cả dữ liệu nhóm sẽ bị mất.",
   "leave_group_confirm_title": "Rời Nhóm",
@@ -221,5 +222,9 @@
   "call_speaker": "Loa",
   "call_speaker_off": "Loa tắt",
   "call_camera_on": "Camera bật",
-  "call_camera_off": "Camera tắt"
+  "call_camera_off": "Camera tắt",
+  "see_all": "Xem tất cả",
+  "you": "Bạn",
+  "view_profile": "Xem hồ sơ",
+  "remove_from_group": "Xóa khỏi nhóm"
 }
