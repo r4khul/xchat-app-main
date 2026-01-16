@@ -285,6 +285,7 @@ class ChatMessageBuilder {
     final rich = CLText.labelSmall(
       '$messageText $learnMore',
       colorToken: ColorToken.onSurfaceVariant,
+      textAlign: TextAlign.center,
     ).highlighted(
       rules: [
         // CLHighlightRule(
