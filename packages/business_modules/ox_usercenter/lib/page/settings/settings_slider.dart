@@ -106,7 +106,7 @@ class SettingSliderState extends State<SettingSlider> {
       );
     }
     
-    // Add PREFERENCES section (Preferences, Notifications, Privacy)
+    // Add PREFERENCES section (Preferences, Notifications, Advanced)
     sections.add(
       SectionListViewItem(
         data: [
@@ -121,9 +121,9 @@ class SettingSliderState extends State<SettingSlider> {
             onTap: notificationItemOnTap,
           ),
           LabelItemModel(
-            icon: ListViewIcon.data(CupertinoIcons.lock),
-            title: Localized.text('ox_usercenter.privacy'),
-            onTap: privacyItemOnTap,
+            icon: ListViewIcon.data(CupertinoIcons.gear_alt),
+            title: Localized.text('ox_usercenter.advanced_settings'),
+            onTap: advancedItemOnTap,
           ),
         ],
       ),
@@ -503,7 +503,7 @@ class SettingSliderState extends State<SettingSlider> {
     OXNavigator.pushPage(context, (_) => NotificationSettingsPage(previousPageTitle: title,));
   }
 
-  void privacyItemOnTap() {
+  void advancedItemOnTap() {
     OXNavigator.pushPage(context, (_) => AdvancedSettingsPage(previousPageTitle: title,));
   }
 
