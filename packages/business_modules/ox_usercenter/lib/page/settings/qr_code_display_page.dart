@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
+import 'package:path_provider/path_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -469,14 +471,7 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
           _buildCircularActionButton(
             icon: Icons.share,
             label: Localized.text('ox_usercenter.share'),
-            onTap: () async {
-              if (currentInviteLink != null) {
-                await Share.share(
-                  currentInviteLink!,
-                  subject: Localized.text('ox_usercenter.invite_to_chat'),
-                );
-              }
-            },
+            onTap: _shareQRCodeImage,
           ),
           _buildCircularActionButton(
             icon: Icons.palette,
@@ -901,19 +896,10 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
     );
   }
 
-  Future<void> _saveQRCode() async {
+
+
+  Future<void> _shareQRCodeImage() async {
     try {
-      // Request appropriate permissions using existing utility method
-      bool permissionGranted = await PermissionUtils.getPhotosPermission(context, type: 1);
-
-      if (!permissionGranted) {
-        CommonToast.instance.show(
-          context,
-          Localized.text('ox_usercenter.storage_permission_denied'),
-        );
-        return;
-      }
-
       OXLoading.show();
 
       // Capture QR code widget as image
@@ -930,28 +916,30 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
 
       final pngBytes = byteData.buffer.asUint8List();
 
-      // Save to gallery
-      final result = await ImageGallerySaverPlus.saveImage(
-        pngBytes,
-        name: 'QRCode_${DateTime.now().millisecondsSinceEpoch}',
-        isReturnImagePathOfIOS: true,
-      );
+      // Create temporary file
+      final tempDir = await getTemporaryDirectory();
+      final tempFile = File('${tempDir.path}/QRCode_${DateTime.now().millisecondsSinceEpoch}.png');
+      await tempFile.writeAsBytes(pngBytes);
 
       await OXLoading.dismiss();
 
-      if (result['isSuccess'] == true) {
-        CommonToast.instance.show(
-          context,
-          Localized.text('ox_usercenter.qr_code_saved'),
-        );
-      } else {
-        throw Exception('Save failed');
-      }
+      // Share the image file
+      await Share.shareXFiles(
+        [XFile(tempFile.path)],
+        subject: Localized.text('ox_usercenter.invite_to_chat'),
+      );
+
+      // Clean up temporary file after a delay
+      Future.delayed(const Duration(seconds: 5), () {
+        if (tempFile.existsSync()) {
+          tempFile.deleteSync();
+        }
+      });
     } catch (e) {
       await OXLoading.dismiss();
       CommonToast.instance.show(
         context,
-        Localized.text('ox_usercenter.save_failed'),
+        '${Localized.text('ox_usercenter.share_failed')}: $e',
       );
     }
   }
