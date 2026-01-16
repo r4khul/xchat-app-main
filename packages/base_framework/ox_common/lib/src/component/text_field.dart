@@ -126,15 +126,16 @@ class _CLTextFieldState extends State<CLTextField> {
       prefix: widget.prefixIcon,
       suffix: widget.suffixIcon,
       readOnly: widget.readOnly,
-              decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12.px),
-          border: Border.all(
-            color: _hasFocus 
-                ? ColorToken.xChat.of(context)
-                : ColorToken.onSurfaceVariant.of(context),
-            width: 1,
-          ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12.px),
+        color: ColorToken.cardContainer.of(context),
+        border: Border.all(
+          color: _hasFocus
+              ? ColorToken.xChat.of(context)
+              : ColorToken.onSurfaceVariant.of(context),
+          width: 1,
         ),
+      ),
       padding: EdgeInsets.symmetric(horizontal: 16.px, vertical: 12.px),
     );
   }
