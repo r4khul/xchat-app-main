@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/ox_common.dart';
@@ -149,7 +150,7 @@ class CommonScanPageState extends State<CommonScanPage> {
 
           Expanded(
             child: buildOptionButton(
-              iconData: Icons.photo_library,
+              iconData: CupertinoIcons.photo,
               label: 'str_album'.commonLocalized(),
               onTap: _onPicTap,
             ),
