@@ -27,6 +27,9 @@ import 'package:ox_chat/utils/chat_session_utils.dart';
 import 'package:ox_common/widgets/common_scan_page.dart';
 import 'package:flutter/services.dart';
 
+import '../qr_code/user_qr_code_display.dart';
+import 'qr_code_color_picker_page.dart';
+
 enum QRCodeStyle {
   defaultStyle, // Default
   classic,      // Classic
@@ -62,21 +65,14 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
   late final UserDBISAR userNotifier;
   late final String userName;
   String? currentInviteLink;
-  String? currentQrCodeData;
+  String currentQrCodeData = '';
 
-  // QR Code style options
-  QRCodeStyle currentStyle = QRCodeStyle.gradient;
   final GlobalKey qrWidgetKey = GlobalKey();
-  
+
   // QR Code color
   Color selectedColor = const Color(0xFF2196F3); // Default blue
 
   double get horizontal => 32.px;
-
-  QrCode? qrCode;
-  QrImage? qrImage;
-  late PrettyQrDecoration previousDecoration;
-  late PrettyQrDecoration currentDecoration;
 
   // Invite link type
   InviteLinkType currentLinkType = InviteLinkType.oneTime;
@@ -92,9 +88,6 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
     super.initState();
     userNotifier = widget.otherUser ?? Account.sharedInstance.me!;
     userName = userNotifier.name ?? userNotifier.shortEncodedPubkey;
-
-    currentDecoration = createDecoration(currentStyle);
-    previousDecoration = currentDecoration;
 
     // Initialize discoverable by ID setting
     // Check both saved setting and actual keypackage events in database
@@ -210,23 +203,8 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
       }
 
       // Update QR code data and current link type
-      currentQrCodeData = currentInviteLink;
+      currentQrCodeData = currentInviteLink ?? '';
       currentLinkType = linkType;
-
-      // Initialize QR code and image with optimized settings for long URLs
-      try {
-        // Use lower error correction level for better readability with long URLs
-        qrCode = QrCode.fromData(
-          data: currentQrCodeData!,
-          errorCorrectLevel: QrErrorCorrectLevel.L, // Use lowest error correction level
-        );
-        qrImage = QrImage(qrCode!);
-      } catch (e) {
-        print('QR code generation failed: $e');
-        qrCode = null;
-        qrImage = null;
-        CommonToast.instance.show(context, Localized.text('ox_usercenter.qr_generation_failed'));
-      }
 
       await OXLoading.dismiss();
       setState(() {});
@@ -255,21 +233,12 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (PlatformStyle.isUseMaterial) {
-      return Scaffold(
-        appBar: _buildMaterialAppBar(),
-        body: _buildBody(),
-        backgroundColor: ColorToken.surface.of(context),
-      );
-    } else {
-      return CupertinoPageScaffold(
-        navigationBar: _buildCupertinoAppBar(),
-        child: SafeArea(
-          bottom: false,
-          child: _buildBody(),
-        ),
-      );
-    }
+    return CLScaffold(
+      appBar: CLAppBar(
+        title: _buildSegmentControl(),
+      ),
+      body: _buildBody(),
+    );
   }
 
   PreferredSizeWidget _buildMaterialAppBar() {
@@ -404,51 +373,48 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
 
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
-      child: Column(
-        children: [
-          // QR Code Card - Blue background with QR code
-          RepaintBoundary(
-            key: qrWidgetKey,
-            child: Padding(
-              padding: EdgeInsets.only(
-                left: horizontal,
-                top: 20.px,
-                right: horizontal,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: horizontal),
+        child: Column(
+          children: [
+            SizedBox(height: 24.px),
+
+            // QR Code Card - Blue background with QR code
+            RepaintBoundary(
+              key: qrWidgetKey,
+              child: UserQrCodeDisplay(
+                qrcodeValue: currentQrCodeData,
+                tintColor: selectedColor,
+                userName: userName,
+                canCopyName: true,
               ),
-              child: _buildQRCodeCard(),
             ),
-          ),
 
-          // Action buttons (Link, Share, Color)
-          SizedBox(height: 24.px),
-          _buildActionButtons(),
+            // Action buttons (Link, Share, Color)
+            SizedBox(height: 32.px),
+            _buildActionButtons(),
 
-          // Warning text
-          SizedBox(height: 24.px),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: horizontal),
-            child: CLText.bodySmall(
+            // Warning text
+            SizedBox(height: 32.px),
+            CLText.bodySmall(
               Localized.text('ox_usercenter.qr_code_share_warning'),
               textAlign: TextAlign.center,
               colorToken: ColorToken.onSurfaceVariant,
             ),
-          ),
 
-          // Reset button
-          SizedBox(height: 24.px),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: horizontal),
-            child: CLButton.outlined(
+            // Reset button
+            SizedBox(height: 32.px),
+            CLButton.outlined(
               text: Localized.text('ox_usercenter.reset'),
               onTap: widget.otherUser == null && currentInviteLink != null
                   ? _showRegenerateConfirmDialog
                   : null,
               expanded: true,
             ),
-          ),
 
-          SafeArea(child: SizedBox(height: 12.px))
-        ],
+            SafeArea(child: SizedBox(height: 12.px))
+          ],
+        ),
       ),
     );
   }
@@ -458,28 +424,25 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
   }
 
   Widget _buildActionButtons() {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: horizontal),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildCircularActionButton(
-            icon: Icons.link,
-            label: Localized.text('ox_usercenter.link'),
-            onTap: _copyLink,
-          ),
-          _buildCircularActionButton(
-            icon: Icons.share,
-            label: Localized.text('ox_usercenter.share'),
-            onTap: _shareQRCodeImage,
-          ),
-          _buildCircularActionButton(
-            icon: Icons.palette,
-            label: Localized.text('ox_usercenter.color'),
-            onTap: _showColorPicker,
-          ),
-        ],
-      ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        _buildCircularActionButton(
+          icon: Icons.link,
+          label: Localized.text('ox_usercenter.link'),
+          onTap: _copyLink,
+        ),
+        _buildCircularActionButton(
+          icon: Icons.share,
+          label: Localized.text('ox_usercenter.share'),
+          onTap: _shareQRCodeImage,
+        ),
+        _buildCircularActionButton(
+          icon: Icons.palette,
+          label: Localized.text('ox_usercenter.color'),
+          onTap: _showColorPicker,
+        ),
+      ],
     );
   }
 
@@ -492,13 +455,13 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
       children: [
         GestureDetector(
           onTap: onTap,
-        child: Container(
-          width: 56.px,
-          height: 56.px,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: ColorToken.surfaceContainerHigh.of(context),
-          ),
+          child: Container(
+            width: 56.px,
+            height: 56.px,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: ColorToken.cardContainer.of(context),
+            ),
             child: Icon(
               icon,
               size: 24.px,
@@ -514,327 +477,10 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
       ],
     );
   }
-
-  Widget _buildUserHeader() {
-    return Row(
-      children: [
-        OXUserAvatar(
-          imageUrl: userNotifier.picture ?? '',
-          size: 56.px,
-        ),
-        SizedBox(width: 16.px),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CLText.titleMedium(
-                userName,
-                maxLines: 1,
-                colorToken: ColorToken.onSurface,
-                overflow: TextOverflow.ellipsis,
-              ),
-              SizedBox(height: 4.px),
-              CLText.bodySmall(
-                userNotifier.shortEncodedPubkey,
-                colorToken: ColorToken.onSurfaceVariant,
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQRCodeCard() {
-    return Container(
-      padding: EdgeInsets.fromLTRB(20.px, 40.px, 20.px, 20.px),
-      decoration: BoxDecoration(
-        color: selectedColor, // Selected color background
-        borderRadius: BorderRadius.circular(16.px),
-      ),
-      child: Column(
-        children: [
-          // QR Code with center icon
-          _buildQRCodeWithCenterIcon(),
-
-          SizedBox(height: 16.px),
-
-          // Username with icon
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.description_outlined,
-                size: 16.px,
-                color: Colors.white,
-              ),
-              SizedBox(width: 8.px),
-              CLText.bodyMedium(
-                userName,
-                textAlign: TextAlign.center,
-                colorToken: ColorToken.onPrimary,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDiscoverableByIDOption() {
-    return Container(
-      padding: EdgeInsets.all(16.px),
-      decoration: BoxDecoration(
-        color: ColorToken.cardContainer.of(context),
-        borderRadius: BorderRadius.circular(12.px),
-      ),
-      child: Row(
-        children: [
-          // Icon
-          ValueListenableBuilder<bool>(
-            valueListenable: discoverableByID$,
-            builder: (context, isDiscoverable, _) {
-              return Container(
-                width: 40.px,
-                height: 40.px,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isDiscoverable
-                      ? const Color(0xFFE8F5E9) // Light green background
-                      : ColorToken.surfaceContainer.of(context),
-                ),
-                child: Icon(
-                  isDiscoverable
-                      ? (PlatformStyle.isUseMaterial
-                          ? Icons.public
-                          : CupertinoIcons.globe)
-                      : (PlatformStyle.isUseMaterial
-                          ? Icons.lock_outline
-                          : CupertinoIcons.lock),
-                  size: 20.px,
-                  color: isDiscoverable
-                      ? const Color(0xFF2E7D32) // Dark green color for globe icon
-                      : ColorToken.onSurfaceVariant.of(context),
-                ),
-              );
-            },
-          ),
-          SizedBox(width: 12.px),
-          // Title and description
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CLText.titleMedium(
-                  Localized.text('ox_usercenter.discoverable_by_id'),
-                  colorToken: ColorToken.onSurface,
-                ),
-                SizedBox(height: 4.px),
-                ValueListenableBuilder<bool>(
-                  valueListenable: discoverableByID$,
-                  builder: (context, isDiscoverable, _) {
-                    return CLText.bodySmall(
-                      Localized.text(isDiscoverable
-                          ? 'ox_usercenter.discoverable_by_id_description_on'
-                          : 'ox_usercenter.discoverable_by_id_description_off'),
-                      colorToken: ColorToken.onSurfaceVariant,
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-          SizedBox(width: 12.px),
-          // Switch
-          ValueListenableBuilder<bool>(
-            valueListenable: discoverableByID$,
-            builder: (context, value, _) {
-              return CLSwitch(
-                value: value,
-                onChanged: (newValue) async {
-                  // Only allow toggle for current user
-                  if (widget.otherUser != null) return;
-                  
-                  discoverableByID$.value = newValue;
-                  await UserConfigTool.saveSetting('discoverable_by_id', newValue);
-                  
-                  // Show loading
-                  OXLoading.show();
-                  
-                  try {
-                    bool success = false;
-                    
-                    if (newValue) {
-                      // Switch ON: Enable discoverable by ID
-                      success = await Groups.sharedInstance.enableDiscoverableByID();
-                      if (success) {
-                        CommonToast.instance.show(context, Localized.text('ox_usercenter.discoverable_by_id_enabled'));
-                      } else {
-                        // Failed to enable, revert switch
-                        discoverableByID$.value = false;
-                        await UserConfigTool.saveSetting('discoverable_by_id', false);
-                        CommonToast.instance.show(context, Localized.text('ox_usercenter.failed_to_enable_discoverable'));
-                      }
-                    } else {
-                      // Switch OFF: Disable discoverable by ID
-                      success = await Groups.sharedInstance.disableDiscoverableByID();
-                      if (success) {
-                        CommonToast.instance.show(context, Localized.text('ox_usercenter.discoverable_by_id_disabled'));
-                      } else {
-                        // Failed to disable, revert switch
-                        discoverableByID$.value = true;
-                        await UserConfigTool.saveSetting('discoverable_by_id', true);
-                        CommonToast.instance.show(context, Localized.text('ox_usercenter.failed_to_toggle_discoverable'));
-                      }
-                    }
-                  } catch (e) {
-                    print('Failed to toggle discoverable by ID: $e');
-                    // Revert switch on error
-                    discoverableByID$.value = !newValue;
-                    await UserConfigTool.saveSetting('discoverable_by_id', !newValue);
-                    CommonToast.instance.show(context, Localized.text('ox_usercenter.failed_to_toggle_discoverable'));
-                  } finally {
-                    OXLoading.dismiss();
-                  }
-                },
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQRCodeWithCenterIcon() {
-    final double containerPadding = 16.px;
-    final double innerDefaultExtent = 220.px;
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final double maxWidth = constraints.maxWidth.isFinite
-            ? constraints.maxWidth
-            : MediaQuery.of(context).size.width - (horizontal * 2);
-        final double targetContainerSize =
-            innerDefaultExtent + (containerPadding * 2);
-        final double containerSize = math.max(
-          0,
-          math.min(maxWidth, targetContainerSize),
-        );
-        final double qrCanvasSize = math.max(
-          0,
-          containerSize - (containerPadding * 2),
-        );
-
-        return Align(
-          alignment: Alignment.center,
-          child: Container(
-            padding: EdgeInsets.all(containerPadding),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16.px),
-            ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                _buildStyledQRCode(qrCanvasSize),
-                // Center icon overlay
-                Container(
-                  width: 48.px,
-                  height: 48.px,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white,
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.all(4.px),
-                    child: ClipOval(
-                      child: Image.asset(
-                        'assets/images/icon_chat_settings_left.png',
-                        package: 'ox_usercenter',
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildStyledQRCode(double size) {
-    final double qrPadding = 6.px;
-    final double qrSide = math.max(0, size - (qrPadding * 2));
-
-    if (size <= 0 || size.isNaN) {
-      return const SizedBox.shrink();
-    }
-
-    if (qrImage == null) {
-      return SizedBox(
-        width: size,
-        height: size,
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.qr_code_2,
-                size: 64.px,
-                color: ColorToken.onSurfaceVariant.of(context),
-              ),
-              SizedBox(height: 16.px),
-              CLText.bodyMedium(
-                currentInviteLink == null
-                    ? Localized.text('ox_usercenter.empty_invite_link')
-                    : Localized.text('ox_usercenter.qr_generation_failed'),
-                colorToken: ColorToken.onSurfaceVariant,
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return Padding(
-      padding: EdgeInsets.all(qrPadding),
-      child: SizedBox(
-        width: qrSide,
-        height: qrSide,
-        child: TweenAnimationBuilder<PrettyQrDecoration>(
-          tween: PrettyQrDecorationTween(
-            begin: previousDecoration,
-            end: currentDecoration,
-          ),
-          curve: Curves.ease,
-          duration: const Duration(milliseconds: 300),
-          builder: (context, decoration, child) {
-            return PrettyQrView(
-              qrImage: qrImage!,
-              decoration: decoration,
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  void changeQrStyle(QRCodeStyle style) {
-    setState(() {
-      currentStyle = style;
-      previousDecoration = currentDecoration;
-      currentDecoration = createDecoration(style);
-    });
-  }
   
   void changeQrColor(Color color) {
     setState(() {
       selectedColor = color;
-      previousDecoration = currentDecoration;
-      currentDecoration = createDecoration(currentStyle);
     });
   }
 
@@ -895,8 +541,6 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
       shape: shape,
     );
   }
-
-
 
   Future<void> _shareQRCodeImage() async {
     try {
@@ -1103,285 +747,21 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
     }
   }
 
-  void _showColorPicker() {
-    // Define color palette
-    final List<Color> colors = [
-      const Color(0xFF2196F3), // Blue
-      Colors.white,
-      const Color(0xFF424242), // Dark gray
-      const Color(0xFFA1887F), // Light brown
-      const Color(0xFF8B9A5B), // Olive green
-      const Color(0xFFFF9800), // Orange
-      const Color(0xFFE91E63), // Pink
-      const Color(0xFFBA68C8), // Light purple
-    ];
-    
-    Color tempSelectedColor = selectedColor;
-    
-    if (PlatformStyle.isUseMaterial) {
-      showDialog(
-        context: context,
-        builder: (context) => StatefulBuilder(
-          builder: (context, setDialogState) => Dialog(
-            insetPadding: EdgeInsets.symmetric(horizontal: 16.px, vertical: 24.px),
-            child: Container(
-              width: MediaQuery.of(context).size.width,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Header
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16.px, vertical: 12.px),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(16.px),
-                        topRight: Radius.circular(16.px),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.close),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                        Expanded(
-                          child: Center(
-                            child: CLText.titleMedium(
-                              Localized.text('ox_usercenter.color'),
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.check, color: ColorToken.primary.of(context)),
-                          onPressed: () {
-                            changeQrColor(tempSelectedColor);
-                            Navigator.pop(context);
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  // QR Code Preview
-                  Container(
-                    margin: EdgeInsets.all(16.px),
-                    padding: EdgeInsets.all(20.px),
-                    decoration: BoxDecoration(
-                      color: tempSelectedColor,
-                      borderRadius: BorderRadius.circular(16.px),
-                    ),
-                    child: Column(
-                      children: [
-                        _buildQRCodePreview(tempSelectedColor),
-                        SizedBox(height: 16.px),
-                        CLText.bodyMedium(
-                          userName,
-                          colorToken: ColorToken.onPrimary,
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Color Palette
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.px, vertical: 8.px),
-                    child: Wrap(
-                      spacing: 16.px,
-                      runSpacing: 16.px,
-                      alignment: WrapAlignment.center,
-                      children: colors.map((color) {
-                        final bool isSelected = color == tempSelectedColor;
-                        return GestureDetector(
-                          onTap: () {
-                            setDialogState(() {
-                              tempSelectedColor = color;
-                            });
-                          },
-                          child: Container(
-                            width: 48.px,
-                            height: 48.px,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: color,
-                              border: Border.all(
-                                color: isSelected ? Colors.black : Colors.transparent,
-                                width: isSelected ? 3.px : 0,
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                  SizedBox(height: 16.px),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    } else {
-      showCupertinoDialog(
-        context: context,
-        builder: (context) => StatefulBuilder(
-          builder: (context, setDialogState) => Dialog(
-            insetPadding: EdgeInsets.symmetric(horizontal: 16.px, vertical: 24.px),
-            child: Container(
-              width: MediaQuery.of(context).size.width,
-              decoration: BoxDecoration(
-                color: ColorToken.surface.of(context),
-                borderRadius: BorderRadius.circular(16.px),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Header
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16.px, vertical: 12.px),
-                    child: Row(
-                      children: [
-                        CupertinoButton(
-                          padding: EdgeInsets.zero,
-                          child: Icon(CupertinoIcons.xmark),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                        Expanded(
-                          child: Center(
-                            child: CLText.titleMedium(
-                              Localized.text('ox_usercenter.color'),
-                            ),
-                          ),
-                        ),
-                        CupertinoButton(
-                          padding: EdgeInsets.zero,
-                          child: Icon(CupertinoIcons.check_mark, color: ColorToken.primary.of(context)),
-                          onPressed: () {
-                            changeQrColor(tempSelectedColor);
-                            Navigator.pop(context);
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  // QR Code Preview
-                  Container(
-                    margin: EdgeInsets.all(16.px),
-                    padding: EdgeInsets.all(20.px),
-                    decoration: BoxDecoration(
-                      color: tempSelectedColor,
-                      borderRadius: BorderRadius.circular(16.px),
-                    ),
-                    child: Column(
-                      children: [
-                        _buildQRCodePreview(tempSelectedColor),
-                        SizedBox(height: 16.px),
-                        CLText.bodyMedium(
-                          userName,
-                          colorToken: ColorToken.onPrimary,
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Color Palette
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.px, vertical: 8.px),
-                    child: Wrap(
-                      spacing: 16.px,
-                      runSpacing: 16.px,
-                      alignment: WrapAlignment.center,
-                      children: colors.map((color) {
-                        final bool isSelected = color == tempSelectedColor;
-                        return GestureDetector(
-                          onTap: () {
-                            setDialogState(() {
-                              tempSelectedColor = color;
-                            });
-                          },
-                          child: Container(
-                            width: 48.px,
-                            height: 48.px,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: color,
-                              border: Border.all(
-                                color: isSelected ? Colors.black : Colors.transparent,
-                                width: isSelected ? 3.px : 0,
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                  SizedBox(height: 16.px),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
+  Future<void> _showColorPicker() async {
+    final Color? selectedColorResult = await OXNavigator.pushPage<Color>(
+      context,
+      (context) => QRCodeColorPickerPage(
+        initialColor: selectedColor,
+        qrcodeValue: currentQrCodeData,
+        userName: userName,
+      ),
+      type: OXPushPageType.present,
+    );
+
+    if (selectedColorResult != null) {
+      changeQrColor(selectedColorResult);
     }
   }
-  
-  Widget _buildQRCodePreview(Color color) {
-    if (qrImage == null) return SizedBox.shrink();
-    
-    final double containerPadding = 16.px;
-    final decoration = createDecoration(currentStyle, customColor: color);
-    
-    return Container(
-      padding: EdgeInsets.all(containerPadding),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.px),
-      ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          SizedBox(
-            width: 200.px,
-            height: 200.px,
-            child: TweenAnimationBuilder<PrettyQrDecoration>(
-              tween: PrettyQrDecorationTween(
-                begin: currentDecoration,
-                end: decoration,
-              ),
-              curve: Curves.ease,
-              duration: const Duration(milliseconds: 200),
-              builder: (context, animatedDecoration, child) {
-                return PrettyQrView(
-                  qrImage: qrImage!,
-                  decoration: animatedDecoration,
-                );
-              },
-            ),
-          ),
-          // Center icon overlay
-          Container(
-            width: 48.px,
-            height: 48.px,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white,
-            ),
-            child: Padding(
-              padding: EdgeInsets.all(4.px),
-              child: ClipOval(
-                child: Image.asset(
-                  'assets/images/icon_chat_settings_left.png',
-                  package: 'ox_usercenter',
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-
 
 
   Future<void> _regenerateInviteLink() async {
@@ -1407,22 +787,7 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
       currentInviteLink = '${AppConfig.inviteBaseUrl}?eventid=${Uri.encodeComponent(keyPackageEvent.eventId)}&relay=${Uri.encodeComponent(relayUrl)}';
 
       // Update QR code data
-      currentQrCodeData = currentInviteLink;
-
-      // Initialize QR code and image with optimized settings for long URLs
-      try {
-        // Use lower error correction level for better readability with long URLs
-        qrCode = QrCode.fromData(
-          data: currentQrCodeData!,
-          errorCorrectLevel: QrErrorCorrectLevel.L, // Use lowest error correction level
-        );
-        qrImage = QrImage(qrCode!);
-      } catch (e) {
-        print('QR code generation failed: $e');
-        qrCode = null;
-        qrImage = null;
-        CommonToast.instance.show(context, Localized.text('ox_usercenter.qr_generation_failed'));
-      }
+      currentQrCodeData = currentInviteLink ?? '';
 
       await OXLoading.dismiss();
       setState(() {});

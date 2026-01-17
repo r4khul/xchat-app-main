@@ -186,6 +186,6 @@
   "share": "Share",
   "color": "Color",
   "reset": "Reset",
-  "qr_code_share_warning": "Only share your QR code and link with people you trust.\nWhen shared others will be able to see your username and\nstart a chat with you.",
+  "qr_code_share_warning": "Only share your QR code and link with people you trust.When shared others will be able to see your username and start a chat with you.",
   "invite_link_description": "Anyone who receives this link can initiate a chat with you. Please only share it with people you trust."
 }
