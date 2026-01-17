@@ -257,7 +257,7 @@ class MainState extends State<MainApp>
     if (!LoginManager.instance.isLoginCircle) return;
 
     await ThreadPoolManager.sharedInstance.initialize();
-    Connect.sharedInstance.startHeartBeat();
+    Connect.sharedInstance.checkAndReconnectIfNeeded();
     Account.sharedInstance.startHeartBeat();
   }
 
