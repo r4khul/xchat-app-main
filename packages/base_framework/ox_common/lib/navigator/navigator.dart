@@ -112,9 +112,10 @@ class OXNavigator extends Navigator {
 
   @optionalTypeArgs
   static Future<T?> _push<T extends Object?>(
-      BuildContext context, Route<T> route) {
+      BuildContext context, Route<T> route, [bool rootNavigator = false]) {
     _pushPreHandle(context);
-    return Navigator.push<T>(context, route);
+
+    return Navigator.of(context, rootNavigator: rootNavigator).push(route);
   }
 
   static void _pushPreHandle(BuildContext context) {
@@ -167,6 +168,7 @@ class OXNavigator extends Navigator {
     );
     TransitionRoute<T> route;
 
+    bool rootNavigator = false;
     switch (type) {
       case OXPushPageType.slideToLeft:
         route = SlideLeftToRightRoute<T>(
@@ -199,6 +201,7 @@ class OXNavigator extends Navigator {
             fullscreenDialog: true,
           );
         } else {
+          rootNavigator = true;
           route = OXCupertinoSheetRoute<T>(
             builder: builder,
             settings: routeSettings,
@@ -209,6 +212,7 @@ class OXNavigator extends Navigator {
     return OXNavigator._push(
       context,
       route,
+      rootNavigator,
     );
   }
 
