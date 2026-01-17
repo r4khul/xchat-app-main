@@ -36,7 +36,7 @@ class CLText extends StatelessWidget {
   Widget build(BuildContext context) {
     var style = _resolver?.call(context) ?? TextStyle();
     if (isBold) {
-      style = style.merge(const TextStyle(fontWeight: FontWeight.bold));
+      style = style.merge(const TextStyle(fontWeight: FontWeight.w600));
     }
     return Text(
       text,
