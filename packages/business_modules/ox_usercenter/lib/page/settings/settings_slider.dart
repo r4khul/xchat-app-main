@@ -467,8 +467,6 @@ class SettingSliderState extends State<SettingSlider> {
     OXNavigator.pushPage(
       context,
       (context) => const CircleSelectionPage(controller: null),
-      type: OXPushPageType.present,
-      fullscreenDialog: true,
     );
   }
 
