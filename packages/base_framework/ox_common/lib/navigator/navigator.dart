@@ -45,7 +45,7 @@ class OXNavigator extends Navigator {
       Navigator.pop(context, result);
     } else {
       if (CupertinoSheetRoute.hasParentSheet(context)) {
-        CupertinoSheetRoute.popSheet(context);
+        Navigator.of(context, rootNavigator: true).pop(result);
         return ;
       }
       SystemNavigator.pop();
