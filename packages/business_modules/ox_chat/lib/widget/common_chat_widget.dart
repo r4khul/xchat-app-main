@@ -30,6 +30,7 @@ import 'package:ox_common/widgets/avatar.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 
 import '../utils/general_handler/chat_highlight_message_handler.dart';
+import 'chat_icons.dart';
 
 class CommonChatWidget extends StatefulWidget {
   CommonChatWidget({
@@ -203,6 +204,11 @@ class CommonChatWidgetState extends State<CommonChatWidget> with OXChatObserver 
             buildAppBarAvatar(),
             SizedBox(width: 8.px),
             CLText.labelLarge(widget.title ?? ''),
+            if (session.isSelfChat)
+              Padding(
+                padding: EdgeInsetsDirectional.only(start: 8.px),
+                child: ChatIconWidget.selfAuthIcon(context),
+              )
           ],
         ),
       ),

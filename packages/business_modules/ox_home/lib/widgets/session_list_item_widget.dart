@@ -4,6 +4,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:chatcore/chat-core.dart';
 import 'package:ox_chat/page/session/chat_message_page.dart';
 import 'package:ox_chat/utils/chat_session_utils.dart';
+import 'package:ox_chat/widget/chat_icons.dart';
 import 'package:ox_common/business_interface/ox_chat/utils.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/login/login_manager.dart';
@@ -111,11 +112,7 @@ class SessionListItemWidget extends StatelessWidget {
                           ),
                           if (item.sessionModel.isSelfChat) ...[
                             SizedBox(width: 6.px),
-                            Icon(
-                              CupertinoIcons.checkmark_seal_fill,
-                              size: 16.px,
-                              color: ColorToken.primary.of(context),
-                            ),
+                            ChatIconWidget.selfAuthIcon(context),
                           ],
                         ],
                       ),
