@@ -79,7 +79,7 @@ class _QRCodeColorPickerPageState extends State<QRCodeColorPickerPage> {
               child: Icon(
                 Icons.check,
                 size: 20.px,
-                color: ColorToken.primary.of(context).asBackgroundTint(),
+                color: Color.lerp(ColorToken.primary.of(context), const Color(0xFFFFFFFF), 0.9),
               ),
             ),
           ),
