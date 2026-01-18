@@ -91,12 +91,12 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
             onTap: logoutItemOnTap,
             type: ButtonType.destructive,
           ),
-          SectionListViewItem.button(
-            text: Localized.text('ox_usercenter.delete_account'),
-            onTap: deleteAccountItemOnTap,
-            type: ButtonType.destructive,
-          ),
         ],
+        footer: CLButton.text(
+          text: Localized.text('ox_usercenter.delete_account'),
+          color: ColorToken.error.of(context),
+          onTap: deleteAccountItemOnTap,
+        ),
       ),
     );
   }

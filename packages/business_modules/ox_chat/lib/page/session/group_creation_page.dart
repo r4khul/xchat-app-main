@@ -85,7 +85,7 @@ class _GroupCreationPageState extends State<GroupCreationPage> {
     return Container(
       padding: EdgeInsets.all(16.px),
       decoration: BoxDecoration(
-        color: ColorToken.surfaceContainer.of(context),
+        color: ColorToken.cardContainer.of(context),
         borderRadius: BorderRadius.circular(12.px),
       ),
       child: Row(
@@ -152,7 +152,7 @@ class _GroupCreationPageState extends State<GroupCreationPage> {
         SizedBox(height: 12.px),
         Container(
           decoration: BoxDecoration(
-            color: ColorToken.surfaceContainer.of(context),
+            color: ColorToken.cardContainer.of(context),
             borderRadius: BorderRadius.circular(12.px),
           ),
           child: Column(

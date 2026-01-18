@@ -117,7 +117,7 @@ class _SessionListWidgetState extends State<SessionListWidget> {
   }
 
   Widget buildSeparator(BuildContext context, int index, List<SessionListViewModel> sessionList) {
-    if (PlatformStyle.isUseMaterial) return const SizedBox.shrink();
+    return const SizedBox.shrink();
 
     final currentItem = sessionList[index];
 

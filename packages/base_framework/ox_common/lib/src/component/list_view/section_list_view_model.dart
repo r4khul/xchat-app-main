@@ -11,6 +11,7 @@ class SectionListViewItem {
   /// [footer] - Optional string description for the section footer (will be styled automatically)
   /// [footerWidget] - Optional custom widget for the section footer (overrides [footer] if provided)
   /// [margin] - Optional margin around the entire section
+  /// [additionalDividerMargin] - Optional additional margin for dividers in CupertinoListSection.insetGrouped
   /// [isEditing] - Whether the list is in editing mode
   /// [onDelete] - Callback when an item is deleted in editing mode
   SectionListViewItem({
@@ -20,6 +21,7 @@ class SectionListViewItem {
     String? footer,
     Widget? footerWidget,
     this.margin,
+    this.additionalDividerMargin,
     this.isEditing = false,
     this.onDelete,
   }) : headerWidget = headerWidget
@@ -46,7 +48,8 @@ class SectionListViewItem {
        _buttonOnTap = onTap,
        _buttonType = type,
        _buttonText = text,
-       margin = null;
+       margin = null,
+       additionalDividerMargin = null;
 
   /// List of items to display in this section
   final List<ListViewItem> data;
@@ -59,6 +62,9 @@ class SectionListViewItem {
   
   /// Optional margin around the entire section
   final EdgeInsetsGeometry? margin;
+
+  /// Optional additional margin for dividers in CupertinoListSection.insetGrouped
+  final double? additionalDividerMargin;
 
   /// Whether the CLListView inside this section is in editing mode.
   final bool isEditing;

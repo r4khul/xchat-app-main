@@ -143,6 +143,7 @@ class _CLSearchState extends State<CLSearch> {
       padding: widget.padding,
       child: CupertinoSearchTextField(
         controller: widget.controller,
+        backgroundColor: ColorToken.cardContainer.of(context),
         prefixIcon: widget.prefixIcon,
         prefixInsets: EdgeInsets.only(left: 12),
         focusNode: _focusNode,

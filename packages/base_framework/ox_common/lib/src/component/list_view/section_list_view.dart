@@ -110,6 +110,7 @@ class CLSectionListView extends StatelessWidget {
         footer: alignedFooter,
         hasLeading: listView.hasLeading,
         margin: model.margin,
+        additionalDividerMargin: model.additionalDividerMargin,
         separatorColor: kSystemSeparator.resolveFrom(context),
         children: listView.asCupertinoSectionChildren(false),
       );
@@ -192,6 +193,7 @@ class CLSectionListView extends StatelessWidget {
       }
       
       return CupertinoListSection.insetGrouped(
+        additionalDividerMargin: model.additionalDividerMargin,
         children: [
           CLButton.text(
             text: buttonText,

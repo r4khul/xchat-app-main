@@ -31,6 +31,7 @@ class SettingSlider extends StatefulWidget {
 class SettingSliderState extends State<SettingSlider> {
 
   String get title => Localized.text('ox_usercenter.str_settings');
+  double get circleIconRadius => 20.px;
 
   late LoginUserNotifier userNotifier;
   late List<SectionListViewItem> pageData;
@@ -89,6 +90,7 @@ class SettingSliderState extends State<SettingSlider> {
       sections.add(
         SectionListViewItem(
           headerWidget: _buildCirclesSectionHeader(),
+          additionalDividerMargin: circleIconRadius * 2 + CLLayout.horizontalPadding - 2,
           data: circleItems,
         ),
       );
@@ -210,7 +212,7 @@ class SettingSliderState extends State<SettingSlider> {
           children: [
             // Circle avatar
             CircleAvatar(
-              radius: 20.px,
+              radius: circleIconRadius,
               backgroundColor: isSelected 
                 ? ColorToken.primaryContainer.of(context)
                 : ColorToken.surfaceContainer.of(context),
