@@ -89,7 +89,7 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
         SizedBox(height: 24.px),
         _buildSeparator(),
         // SizedBox(height: 24.px),
-        // _buildPrivateCloudOption(),
+        _buildPrivateCloudOption(),
         SizedBox(height: 16.px),
         _buildCustomRelayOption(),
       ],

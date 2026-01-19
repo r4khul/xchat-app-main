@@ -1,15 +1,13 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
-import 'package:http/http.dart' as http;
 import 'package:ox_common/component.dart';
-import 'package:ox_common/const/common_constant.dart';
 import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/login/login_models.dart';
+import 'package:ox_common/login/circle_api.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/utils/color_extension.dart';
@@ -309,17 +307,24 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
         receipt = purchaseDetails.verificationData.source;
       }
 
-      // Call backend API to create subscription and get relay URL
-      final String? relayUrl = await _createSubscriptionAndGetRelayUrl(
-        productId: purchaseDetails.productID,
-        receipt: receipt,
-        level: _selectedPlan!.getLevel(),
-        levelPeriod: _selectedPlan!.getLevelPeriod(_selectedPeriod),
-        amount: _selectedPlan!.getAmountInCents(_selectedPeriod),
-        platform: Platform.isIOS ? 'ios' : 'android',
-      );
+      // Verify payment and get relay URL using CircleApi
+      final PaymentVerificationResult result;
+      if (Platform.isIOS) {
+        // Apple App Store
+        result = await CircleApi.verifyApplePayment(
+          productId: purchaseDetails.productID,
+          receiptData: receipt,
+        );
+      } else {
+        // Google Play - need to get purchase token
+        // For Google Play, the receipt should be the purchase token
+        result = await CircleApi.verifyGooglePayment(
+          productId: purchaseDetails.productID,
+          purchaseToken: receipt,
+        );
+      }
 
-      if (relayUrl == null || relayUrl.isEmpty) {
+      if (result.relayUrl.isEmpty) {
         throw Exception('Failed to get relay URL from server');
       }
 
@@ -330,7 +335,7 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
 
       // Create and join Circle with the relay URL
       final failure = await LoginManager.instance.joinCircle(
-        relayUrl,
+        result.relayUrl,
         type: CircleType.relay,
       );
 
@@ -372,48 +377,6 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
     }
   }
 
-  /// Create subscription via backend API and get relay URL
-  Future<String?> _createSubscriptionAndGetRelayUrl({
-    required String productId,
-    required String receipt,
-    required int level,
-    required String levelPeriod,
-    required int amount,
-    required String platform,
-  }) async {
-    try {
-      final String baseApiUrl = CommonConstant.baseUrl;
-      final String type = platform == 'ios' ? 'app_store' : 'google_play';
-      final url = Uri.parse('$baseApiUrl/api/createSubscription');
-
-      final body = {
-        'product_id': productId,
-        'type': type,
-        'level': level,
-        'level_period': levelPeriod,
-        'amount': amount,
-        'receipt': receipt,
-      };
-
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(body),
-      );
-
-      if (response.statusCode == 200) {
-        final jsonResponse = jsonDecode(response.body);
-        // API should return relay_url in the response
-        return jsonResponse['relay_url'] as String?;
-      } else {
-        throw Exception('Failed to create subscription: ${response.body}');
-      }
-    } catch (e) {
-      throw Exception('Failed to create subscription: $e');
-    }
-  }
 
   void _handleError(dynamic error) {
     if (mounted) {
