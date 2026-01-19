@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:ox_chat/utils/chat_session_utils.dart';
 import 'package:ox_common/business_interface/ox_chat/utils.dart';
@@ -37,6 +39,9 @@ class _GroupInfoPageState extends State<GroupInfoPage> {
   List<UserDBISAR> groupMember = [];
   late ValueNotifier<GroupDBISAR> _groupNotifier;
   static const int _maxDisplayMembers = 5; // Maximum number of members to display before "See All"
+
+  double get userAvatarSize => 40.px;
+  double get userAvatarMargin => 12.px;
 
   @override
   void initState() {
@@ -124,9 +129,6 @@ class _GroupInfoPageState extends State<GroupInfoPage> {
     );
   }
 
-
-
-
   SectionListViewItem _buildGroupNameSection() {
     return SectionListViewItem(
       data: [
@@ -140,15 +142,17 @@ class _GroupInfoPageState extends State<GroupInfoPage> {
   }
 
   SectionListViewItem _buildMembersSectionItem() {
+    final memberCount = groupMember.length;
+    final hasMoreMembers = memberCount > _maxDisplayMembers;
+    final members = groupMember.sublist(0, min(memberCount, _maxDisplayMembers));
     return SectionListViewItem(
       headerWidget: FutureBuilder<List<UserDBISAR>>(
         future: Groups.sharedInstance.getAllGroupMembers(_groupNotifier.value.privateGroupId),
         builder: (context, snapshot) {
           final memberCount = snapshot.data?.length ?? groupMember.length;
           return Padding(
-            padding: EdgeInsets.only(
-              left: 20.px,
-              top: 16.px,
+            padding: EdgeInsetsDirectional.only(
+              start: 2.px,
             ),
             child: CLText.titleSmall(
               '$memberCount ${Localized.text('ox_chat.group_member')}',
@@ -156,66 +160,23 @@ class _GroupInfoPageState extends State<GroupInfoPage> {
           );
         },
       ),
+      additionalDividerMargin: userAvatarSize + userAvatarMargin,
       data: [
-        CustomItemModel(
-          customWidgetBuilder: (context) => _buildMembersSection(),
-        ),
-      ],
-    );
-  }
+        if (_isGroupOwner)
+          CustomItemModel(
+            customWidgetBuilder: (context) => _buildAddMemberButton(),
+          ),
 
-  Widget _buildMembersSection() {
-    return FutureBuilder<List<UserDBISAR>>(
-      future: Groups.sharedInstance.getAllGroupMembers(_groupNotifier.value.privateGroupId),
-      builder: (context, snapshot) {
-        final members = snapshot.data ?? groupMember;
-        final memberCount = members.length;
-        final displayMembers = members.take(_maxDisplayMembers).toList();
-        final hasMoreMembers = memberCount > _maxDisplayMembers;
-        
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12.px),
+        ...members.map((member) => CustomItemModel(
+          customWidgetBuilder: (context) => _buildMemberItem(member),
+        )).toList(),
+
+        // See All button
+        if (hasMoreMembers)
+          CustomItemModel(
+            customWidgetBuilder: (context) => _buildSeeAllButton(),
           ),
-          child: Column(
-            children: [
-              // Add Members button (if group owner)
-              if (_isGroupOwner) ...[
-                _buildAddMemberButton(),
-                if (displayMembers.isNotEmpty)
-                  Divider(
-                    height: 1,
-                    color: ColorToken.onSurfaceVariant.of(context).withOpacity(0.2),
-                  ),
-              ],
-              // Member list
-              ...displayMembers.asMap().entries.map((entry) {
-                final index = entry.key;
-                final member = entry.value;
-                final isLast = index == displayMembers.length - 1 && !hasMoreMembers;
-                return Column(
-                  children: [
-                    _buildMemberItem(member),
-                    if (!isLast)
-                      Divider(
-                        height: 1,
-                        color: ColorToken.onSurfaceVariant.of(context).withOpacity(0.2),
-                      ),
-                  ],
-                );
-              }),
-              // See All button
-              if (hasMoreMembers) ...[
-                Divider(
-                  height: 1,
-                  color: ColorToken.onSurfaceVariant.of(context).withOpacity(0.2),
-                ),
-                _buildSeeAllButton(),
-              ],
-            ],
-          ),
-        );
-      },
+      ],
     );
   }
 
@@ -227,8 +188,8 @@ class _GroupInfoPageState extends State<GroupInfoPage> {
         child: Row(
           children: [
             Container(
-              width: 40.px,
-              height: 40.px,
+              width: userAvatarSize,
+              height: userAvatarSize,
               decoration: BoxDecoration(
                 color: ColorToken.surface.of(context),
                 borderRadius: BorderRadius.circular(20.px),
@@ -243,7 +204,7 @@ class _GroupInfoPageState extends State<GroupInfoPage> {
                 color: ColorToken.onSurface.of(context),
               ),
             ),
-            SizedBox(width: 12.px),
+            SizedBox(width: userAvatarMargin),
             Expanded(
               child: CLText.bodyMedium(
                 Localized.text('ox_chat.add_member_title'),
@@ -270,9 +231,9 @@ class _GroupInfoPageState extends State<GroupInfoPage> {
           children: [
             OXUserAvatar(
               user: user,
-              size: 40.px,
+              size: userAvatarSize,
             ),
-            SizedBox(width: 12.px),
+            SizedBox(width: userAvatarMargin),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -349,35 +310,18 @@ class _GroupInfoPageState extends State<GroupInfoPage> {
     String buttonText = _isGroupOwner 
         ? Localized.text('ox_chat.delete_and_leave_item')
         : Localized.text('ox_chat.str_leave_group');
-    
-    return SectionListViewItem(
-      data: [
-        CustomItemModel(
-          customWidgetBuilder: (context) => GestureDetector(
-            onTap: () {
-              ChatSessionUtils.leaveConfirmWidget(
-                context, 
-                ChatType.chatGroup, 
-                widget.privateGroupId,
-                isGroupOwner: _isGroupOwner,
-              );
-            },
-            child: Container(
-              width: double.infinity,
-              height: 48.px,
-              decoration: BoxDecoration(
-                color: ColorToken.surface.of(context),
-                borderRadius: BorderRadius.circular(12.px),
-              ),
-              alignment: Alignment.center,
-              child: CLText.bodyLarge(
-                buttonText,
-                colorToken: ColorToken.error,
-              ),
-            ),
-          ),
-        ),
-      ],
+
+    return SectionListViewItem.button(
+      text: buttonText,
+      onTap: () {
+        ChatSessionUtils.leaveConfirmWidget(
+          context,
+          ChatType.chatGroup,
+          widget.privateGroupId,
+          isGroupOwner: _isGroupOwner,
+        );
+      },
+      type: ButtonType.destructive,
     );
   }
 
