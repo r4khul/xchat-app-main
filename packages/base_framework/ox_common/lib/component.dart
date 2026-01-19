@@ -25,6 +25,7 @@ export 'src/component/progress_indicators.dart';
 export 'src/component/radio.dart';
 export 'src/component/search.dart';
 export 'src/component/scaffold.dart';
+export 'src/component/selector.dart';
 
 export 'utils/search_manager.dart';
 export 'src/component/switch.dart';

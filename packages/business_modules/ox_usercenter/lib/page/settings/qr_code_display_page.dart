@@ -82,7 +82,7 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
   late final ValueNotifier<bool> discoverableByID$;
 
   // Page mode (Code or Scan)
-  QRCodePageMode currentMode = QRCodePageMode.code;
+  late final ValueNotifier<QRCodePageMode?> currentMode$;
 
   @override
   void initState() {
@@ -94,6 +94,9 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
     // Check both saved setting and actual keypackage events in database
     discoverableByID$ = ValueNotifier<bool>(false);
     _initializeDiscoverableByID();
+
+    // Initialize page mode
+    currentMode$ = ValueNotifier<QRCodePageMode?>(QRCodePageMode.code);
 
     // Auto-generate permanent invite link when page loads (only for current user)
     if (widget.otherUser == null) {
@@ -129,6 +132,7 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
   @override
   void dispose() {
     discoverableByID$.dispose();
+    currentMode$.dispose();
     super.dispose();
   }
 
@@ -277,146 +281,82 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
   }
 
   Widget _buildSegmentControl() {
-    if (PlatformStyle.isUseMaterial) {
-      // Material style segment control
-      return Container(
-        constraints: BoxConstraints(
-          minWidth: 150.px,
-          maxWidth: 200.px,
-        ),
-        decoration: BoxDecoration(
-          color: ColorToken.surfaceContainerHigh.of(context),
-          borderRadius: BorderRadius.circular(20.px),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Expanded(
-              child: _buildSegmentButton(
-                mode: QRCodePageMode.code,
-                label: Localized.text('ox_usercenter.code'),
-              ),
-            ),
-            Expanded(
-              child: _buildSegmentButton(
-                mode: QRCodePageMode.scan,
-                label: Localized.text('ox_usercenter.scan'),
-              ),
-            ),
-          ],
-        ),
-      );
-    } else {
-      // Cupertino style segment control - use Center and IntrinsicWidth
-      // to properly size the control in CupertinoNavigationBar's middle slot
-      return Center(
-        child: IntrinsicWidth(
-          child: CupertinoSlidingSegmentedControl<QRCodePageMode>(
-            children: {
-              QRCodePageMode.code: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8.px),
-                child: Text(Localized.text('ox_usercenter.code')),
-              ),
-              QRCodePageMode.scan: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8.px),
-                child: Text(Localized.text('ox_usercenter.scan')),
-              ),
-            },
-            groupValue: currentMode,
-            onValueChanged: (QRCodePageMode? value) {
-              if (value != null) {
-                setState(() {
-                  currentMode = value;
-                });
-              }
-            },
+    return CLSelector<QRCodePageMode>(
+      items: [
+        CLSelectorItem<QRCodePageMode>(
+          value: QRCodePageMode.code,
+          label: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8.px),
+            child: Text(Localized.text('ox_usercenter.code')),
           ),
         ),
-      );
-    }
-  }
-
-  Widget _buildSegmentButton({
-    required QRCodePageMode mode,
-    required String label,
-  }) {
-    final isSelected = currentMode == mode;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          currentMode = mode;
-        });
-      },
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 8.px),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? ColorToken.surface.of(context)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(16.px),
-        ),
-        child: Center(
-          child: CLText.bodyMedium(
-            label,
-            colorToken: isSelected
-                ? ColorToken.onSurface
-                : ColorToken.onSurfaceVariant,
+        CLSelectorItem<QRCodePageMode>(
+          value: QRCodePageMode.scan,
+          label: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8.px),
+            child: Text(Localized.text('ox_usercenter.scan')),
           ),
         ),
-      ),
+      ],
+      selectedValue$: currentMode$,
     );
   }
 
   Widget _buildBody() {
-    if (currentMode == QRCodePageMode.scan) {
-      return _buildScanPage();
-    }
+    return ValueListenableBuilder<QRCodePageMode?>(
+      valueListenable: currentMode$,
+      builder: (context, currentMode, _) {
+        if (currentMode == QRCodePageMode.scan) {
+          return _buildScanPage();
+        }
 
-    return SingleChildScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: horizontal),
-        child: Column(
-          children: [
-            SizedBox(height: 24.px),
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: horizontal),
+            child: Column(
+              children: [
+                SizedBox(height: 24.px),
 
-            // QR Code Card - Blue background with QR code
-            RepaintBoundary(
-              key: qrWidgetKey,
-              child: UserQrCodeDisplay(
-                qrcodeValue: currentQrCodeData,
-                tintColor: selectedColor,
-                userName: userName,
-                canCopyName: true,
-              ),
+                // QR Code Card - Blue background with QR code
+                RepaintBoundary(
+                  key: qrWidgetKey,
+                  child: UserQrCodeDisplay(
+                    qrcodeValue: currentQrCodeData,
+                    tintColor: selectedColor,
+                    userName: userName,
+                    canCopyName: true,
+                  ),
+                ),
+
+                // Action buttons (Link, Share, Color)
+                SizedBox(height: 32.px),
+                _buildActionButtons(),
+
+                // Warning text
+                SizedBox(height: 32.px),
+                CLText.bodySmall(
+                  Localized.text('ox_usercenter.qr_code_share_warning'),
+                  textAlign: TextAlign.center,
+                  colorToken: ColorToken.onSurfaceVariant,
+                ),
+
+                // Reset button
+                SizedBox(height: 32.px),
+                CLButton.outlined(
+                  text: Localized.text('ox_usercenter.reset'),
+                  onTap: widget.otherUser == null && currentInviteLink != null
+                      ? _showRegenerateConfirmDialog
+                      : null,
+                  expanded: true,
+                ),
+
+                SafeArea(child: SizedBox(height: 12.px))
+              ],
             ),
-
-            // Action buttons (Link, Share, Color)
-            SizedBox(height: 32.px),
-            _buildActionButtons(),
-
-            // Warning text
-            SizedBox(height: 32.px),
-            CLText.bodySmall(
-              Localized.text('ox_usercenter.qr_code_share_warning'),
-              textAlign: TextAlign.center,
-              colorToken: ColorToken.onSurfaceVariant,
-            ),
-
-            // Reset button
-            SizedBox(height: 32.px),
-            CLButton.outlined(
-              text: Localized.text('ox_usercenter.reset'),
-              onTap: widget.otherUser == null && currentInviteLink != null
-                  ? _showRegenerateConfirmDialog
-                  : null,
-              expanded: true,
-            ),
-
-            SafeArea(child: SizedBox(height: 12.px))
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
