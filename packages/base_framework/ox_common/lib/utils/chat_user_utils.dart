@@ -29,14 +29,6 @@ class ChatUserUtils {
         .toList();
     users.addAll(cachedUsers);
 
-    // Add following list users
-    try {
-      final followingUsers = await Account.sharedInstance.syncFollowingListFromDB(myPubkey);
-      users.addAll(followingUsers);
-    } catch (e) {
-      print('Error syncing following list from DB: $e');
-    }
-
     // Remove duplicates by pubKey and filter out current user
     final seenPubkeys = <String>{};
     final uniqueUsers = <UserDBISAR>[];
