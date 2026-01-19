@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
+import 'package:ox_common/login/account_path_manager.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'package:flutter/material.dart';
@@ -561,8 +562,9 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
       final pngBytes = byteData.buffer.asUint8List();
 
       // Create temporary file
-      final tempDir = await getTemporaryDirectory();
-      final tempFile = File('${tempDir.path}/QRCode_${DateTime.now().millisecondsSinceEpoch}.png');
+      final tempFile =  await AccountPathManager.createTempFile(
+        fileExt: 'png',
+      );
       await tempFile.writeAsBytes(pngBytes);
 
       await OXLoading.dismiss();
@@ -573,8 +575,7 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
         subject: Localized.text('ox_usercenter.invite_to_chat'),
       );
 
-      // Clean up temporary file after a delay
-      Future.delayed(const Duration(seconds: 5), () {
+      Future.delayed(const Duration(seconds: 1), () {
         if (tempFile.existsSync()) {
           tempFile.deleteSync();
         }
