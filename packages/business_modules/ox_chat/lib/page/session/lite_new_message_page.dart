@@ -77,7 +77,18 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
   void _loadData() async {
     try {
       await _userSearchManager.initialize();
-      _allUsers = _userSearchManager.allUsers;
+      final allUsers = _userSearchManager.allUsers;
+      
+      // Filter users: only show users who have available keypackage in local database
+      _allUsers = [];
+      for (final user$ in allUsers) {
+        final keyPackages = await KeyPackageManager.getAvailableLocalKeyPackages(
+            user$.value.pubKey);
+        if (keyPackages.isNotEmpty) {
+          _allUsers.add(user$);
+        }
+      }
+      
       _groupUsers();
     } catch (e) {
       print('Error loading users: $e');
@@ -459,13 +470,19 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
     _userSearchManager.search(query);
   }
 
-  void _onSearchResultChanged() {
+  void _onSearchResultChanged() async {
     if (mounted) {
       // Update local users list with any new users from remote search
       final searchResults = _userSearchManager.results;
       bool hasNewUsers = false;
       
       for (final searchUser$ in searchResults) {
+        // Check if user has available keypackage in local database
+        final keyPackages = await KeyPackageManager.getAvailableLocalKeyPackages(
+            searchUser$.value.pubKey);
+        if (keyPackages.isEmpty) {
+          continue; // Skip users without available keypackage
+        }
         // Check if this user is not in our local list
         if (!_allUsers.any((user$) => user$.value.pubKey == searchUser$.value.pubKey)) {
           _allUsers.add(searchUser$);
