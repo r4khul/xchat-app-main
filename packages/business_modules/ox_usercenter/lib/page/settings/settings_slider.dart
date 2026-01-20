@@ -31,7 +31,7 @@ class SettingSlider extends StatefulWidget {
 class SettingSliderState extends State<SettingSlider> {
 
   String get title => Localized.text('ox_usercenter.str_settings');
-  double get circleIconRadius => 20.px;
+  double get circleIconRadius => 12.px; // Match ListViewIcon size (24.px diameter)
 
   late LoginUserNotifier userNotifier;
   late List<SectionListViewItem> pageData;
@@ -258,14 +258,15 @@ class SettingSliderState extends State<SettingSlider> {
                       size: 24.px,
                     ),
                   ),
-                GestureDetector(
-                  onTap: () => _onCircleSettingsTap(circle),
-                  child: Icon(
-                    CupertinoIcons.gear,
-                    color: ColorToken.onSurfaceVariant.of(context),
-                    size: 20.px,
+                if (isSelected)
+                  GestureDetector(
+                    onTap: () => _onCircleSettingsTap(circle),
+                    child: Icon(
+                      CupertinoIcons.gear,
+                      color: ColorToken.onSurfaceVariant.of(context),
+                      size: 20.px,
+                    ),
                   ),
-                ),
               ],
             ),
           ],
@@ -286,16 +287,16 @@ class SettingSliderState extends State<SettingSlider> {
         child: Row(
           children: [
             Container(
-              width: 40.px,
-              height: 40.px,
+              width: 24.px,
+              height: 24.px,
               decoration: BoxDecoration(
-                color: ColorToken.primaryContainer.of(context),
+                // color: ColorToken.primaryContainer.of(context),
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                CupertinoIcons.add,
+                CupertinoIcons.add_circled,
                 color: ColorToken.onPrimaryContainer.of(context),
-                size: 20.px,
+                size: 24.px,
               ),
             ),
             SizedBox(width: 12.px),

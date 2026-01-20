@@ -8,7 +8,7 @@ import 'package:ox_common/widgets/common_loading.dart';
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import '../controller/onboarding_controller.dart';
-import 'private_relay_upgrade_page.dart';
+import 'private_cloud_overview_page.dart';
 
 enum CircleType { invite, private, custom }
 
@@ -88,7 +88,7 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
         _buildInviteOption(),
         SizedBox(height: 24.px),
         _buildSeparator(),
-        // SizedBox(height: 24.px),
+        SizedBox(height: 24.px),
         _buildPrivateCloudOption(),
         SizedBox(height: 16.px),
         _buildCustomRelayOption(),
@@ -99,7 +99,7 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
   Widget _buildInviteOption() {
     return _buildOptionCard(
       icon: Icons.link_rounded,
-      iconColor: ColorToken.xChat.of(context),
+      iconColor: ColorToken.primary.of(context),
       title: Localized.text('ox_login.i_have_an_invite'),
       subtitle: Localized.text('ox_login.enter_invitation_code'),
       showArrow: true,
@@ -138,7 +138,7 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
       children: [
         _buildOptionCard(
           icon: Icons.diamond_rounded,
-          iconColor: Colors.purple,
+      iconColor: ColorToken.primary.of(context),
           title: Localized.text('ox_login.private_cloud'),
           subtitle: Localized.text('ox_login.private_cloud_desc'),
           showArrow: false,
@@ -171,7 +171,7 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
   Widget _buildCustomRelayOption() {
     return _buildOptionCard(
       icon: Icons.dns_rounded,
-      iconColor: ColorToken.xChat.of(context),
+      iconColor: ColorToken.primary.of(context),
       title: Localized.text('ox_login.custom_relay'),
       subtitle: Localized.text('ox_login.custom_relay_desc'),
       showArrow: true,
@@ -212,10 +212,9 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
                     Row(
                       children: [
                         Container(
-                          width: 56.px,
-                          height: 56.px,
+                          width: 30.px,
+                          height: 30.px,
                           decoration: BoxDecoration(
-                            color: Color.lerp(iconColor, Colors.white, 0.7),
                             borderRadius: BorderRadius.circular(12.px),
                           ),
                           child: Icon(
@@ -270,7 +269,7 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
                   borderRadius: borderRadius,
                   border: Border.all(
                     color: isSelected
-                        ? ColorToken.xChat.of(context)
+                        ? ColorToken.primary.of(context)
                         : ColorToken.onSurfaceVariant.of(context).withValues(alpha: 0.2),
                     width: isSelected ? 2 : 1,
                   ),
@@ -416,12 +415,12 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
   }
 
   Future<void> _onUsePrivateCircle() async {
-    // Navigate to payment/upgrade page as modal
+    // Navigate to private cloud overview page first
     OXNavigator.pushPage(
       context,
-      (context) => PrivateRelayUpgradePage(
-        groupId: null, // Will be set after payment
-      ),
+      (context) => const PrivateCloudOverviewPage(),
+      type: OXPushPageType.present,
+      fullscreenDialog: true,
     );
   }
 

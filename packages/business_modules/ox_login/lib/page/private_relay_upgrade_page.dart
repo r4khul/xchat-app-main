@@ -166,7 +166,7 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
   static const List<SubscriptionPlan> plans = [
     SubscriptionPlan(
       id: 'lovers',
-      name: 'Lovers & Friends',
+      name: '2 Members',
       description: 'Perfect for couples or best friends',
       maxUsers: 2,
       fileSizeLimitMB: -1, // -1 means unlimited
@@ -178,7 +178,7 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
     ),
     SubscriptionPlan(
       id: 'family',
-      name: 'Family & Team',
+      name: '6 Members',
       description: 'Great for small groups and families',
       maxUsers: 6,
       fileSizeLimitMB: -1, // -1 means unlimited
@@ -191,7 +191,7 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
     ),
     SubscriptionPlan(
       id: 'community',
-      name: 'Community',
+      name: '20 Members',
       description: 'For larger groups and communities',
       maxUsers: 20,
       fileSizeLimitMB: -1, // -1 means unlimited
@@ -664,11 +664,11 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
                             plan.name,
                             colorToken: ColorToken.onSurface,
                           ),
-                          SizedBox(height: 4.px),
-                          CLText.bodySmall(
-                            plan.description,
-                            colorToken: ColorToken.onSurfaceVariant,
-                          ),
+                          // SizedBox(height: 4.px),
+                          // CLText.bodySmall(
+                          //   plan.description,
+                          //   colorToken: ColorToken.onSurfaceVariant,
+                          // ),
                         ],
                       ),
                     ),
