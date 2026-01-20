@@ -287,7 +287,7 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
       TextSpan(
         children: [
           TextSpan(
-            text: Localized.text('ox_login.add_circle_description'),
+            text: Localized.text('ox_login.add_relay_description'),
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
               color: ColorToken.onSurfaceVariant.of(context),
             ),
@@ -298,7 +298,7 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
             child: GestureDetector(
               onTap: _showLearnMore,
               child: Text(
-                Localized.text('ox_login.what_is_circle'),
+                Localized.text('ox_login.what_is_relay'),
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
                   color: ColorToken.xChat.of(context),
                 ),
@@ -499,16 +499,16 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
   Future<String?> _showAddCircleDialog() async {
     return await CLDialog.showInputDialog(
       context: context,
-      title: Localized.text('ox_login.add_circle_title'),
+      title: Localized.text('ox_login.add_relay_title'),
       description: null,
       descriptionWidget: _buildCircleDialogDescription(),
-      inputLabel: Localized.text('ox_login.circle_url_placeholder'),
+      inputLabel: Localized.text('ox_login.relay_url_placeholder'),
       initialValue: 'damus',
       confirmText: Localized.text('ox_login.join'),
       onConfirm: (input) async {
         final trimmedInput = input.trim();
         if (trimmedInput.isEmpty) {
-          CommonToast.instance.show(context, Localized.text('ox_login.circle_url_empty'));
+          CommonToast.instance.show(context, Localized.text('ox_login.relay_url_empty'));
           return false;
         }
         return true;

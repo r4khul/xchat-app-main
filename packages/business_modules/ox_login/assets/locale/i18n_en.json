@@ -58,9 +58,14 @@
   "circle_url_placeholder": "Enter circle URL or name",
   "circle_url_hint": "You can enter a full URL (e.g., wss://relay.example.com) or use a shortcut like 0xchat or damus.",
   "circle_url_empty": "Please enter a circle address",
+  "add_relay_title": "Add Custom Relay",
+  "add_relay_description": "Enter the relay address to join.",
+  "relay_url_placeholder": "Enter relay URL or name",
+  "relay_url_empty": "Please enter a relay address",
   "join": "Join",
   "what_is_circle": "What is a Circle?",
-  
+  "what_is_relay": "What is a Relay?",
+
   "relay_intro_title": "What is a Circle?",
   "relay_intro_subtitle": "Your private communication hub",
   "relay_intro_description": "A Circle is like your own private mailroom that handles all your encrypted messages. It helps you chat with friends while keeping everything secure and private.",
