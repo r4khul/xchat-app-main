@@ -67,7 +67,7 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
     return Column(
       children: [
         CLText.titleLarge(
-          Localized.text('ox_login.join_circle'),
+          Localized.text('ox_login.add_circle_title'),
           colorToken: ColorToken.onSurface,
           textAlign: TextAlign.center,
         ),

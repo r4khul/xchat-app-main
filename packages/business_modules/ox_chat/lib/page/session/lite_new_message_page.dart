@@ -76,19 +76,20 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
 
   void _loadData() async {
     try {
-      await _userSearchManager.initialize();
-      final allUsers = _userSearchManager.allUsers;
+      // Get all users who have local keypackages
+      final pubkeysWithKeyPackages = await KeyPackageManager.getAllUsersWithLocalKeyPackages();
       
-      // Filter users: only show users who have available keypackage in local database
-      _allUsers = [];
-      for (final user$ in allUsers) {
-        final keyPackages = await KeyPackageManager.getAvailableLocalKeyPackages(
-            user$.value.pubKey);
-        if (keyPackages.isNotEmpty) {
-          _allUsers.add(user$);
-        }
-      }
+      // Convert pubkeys to ValueNotifier<UserDBISAR>
+      final usersWithKeyPackages = pubkeysWithKeyPackages
+          .map((pubkey) => Account.sharedInstance.getUserNotifier(pubkey))
+          .toList();
       
+      // Initialize UserSearchManager with users who have keypackages
+      await _userSearchManager.initialize(
+        externalUsers: usersWithKeyPackages,
+      );
+      
+      _allUsers = _userSearchManager.allUsers;
       _groupUsers();
     } catch (e) {
       print('Error loading users: $e');
@@ -476,12 +477,14 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
       final searchResults = _userSearchManager.results;
       bool hasNewUsers = false;
       
+      // Get all users who have local keypackages
+      final pubkeysWithKeyPackages = await KeyPackageManager.getAllUsersWithLocalKeyPackages();
+      final pubkeysSet = pubkeysWithKeyPackages.toSet();
+      
       for (final searchUser$ in searchResults) {
-        // Check if user has available keypackage in local database
-        final keyPackages = await KeyPackageManager.getAvailableLocalKeyPackages(
-            searchUser$.value.pubKey);
-        if (keyPackages.isEmpty) {
-          continue; // Skip users without available keypackage
+        // Only add users who have local keypackage
+        if (!pubkeysSet.contains(searchUser$.value.pubKey)) {
+          continue; // Skip users without local keypackage
         }
         // Check if this user is not in our local list
         if (!_allUsers.any((user$) => user$.value.pubKey == searchUser$.value.pubKey)) {
