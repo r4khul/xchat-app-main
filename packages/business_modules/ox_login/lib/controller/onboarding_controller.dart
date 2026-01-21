@@ -39,6 +39,26 @@ class OnboardingController with LoginManagerObserver {
   Future<bool> Function()? loginAction;
   Completer<bool> updateProfileCmp = Completer<bool>();
 
+  Future<OnboardingResult> invokeLoginAction() async {
+    if (LoginManager.instance.currentState.account != null) return OnboardingResult.success();
+    final action = loginAction ?? () {
+      return LoginManager.instance.loginWithPrivateKey(
+        keychain.private,
+      );
+    };
+
+    final success = await action();
+    if (!success) {
+      return OnboardingResult.failure(
+          isCreateNewAccount
+              ? 'Failed to create account'
+              : 'Failed to login account'
+      );
+    }
+
+    return OnboardingResult.success();
+  }
+
   @override
   void onCircleConnected(bool isConnected) {
     if (updateProfileCmp.isCompleted) return;
@@ -95,15 +115,6 @@ extension _NewAccountEx on OnboardingController {
     required bool forceJoin,
     BuildContext? context,
   }) async {
-    final success = await _invokeLoginAction();
-    if (!success) {
-      return OnboardingResult.failure(
-        isCreateNewAccount
-            ? 'Failed to create account'
-            : 'Failed to login account'
-      );
-    }
-
     try {
       await CircleJoinUtils.processJoinCircle(
         input: relayUrl,
@@ -120,17 +131,6 @@ extension _NewAccountEx on OnboardingController {
     }
 
     return OnboardingResult.success();
-  }
-
-  Future<bool> _invokeLoginAction() {
-    if (LoginManager.instance.currentState.account != null) return Future.value(true);
-    final action = loginAction ?? () {
-      return LoginManager.instance.loginWithPrivateKey(
-        keychain.private,
-      );
-    };
-
-    return action();
   }
 
   Future<void> _updateProfile() async {

@@ -12,6 +12,7 @@ import 'package:ox_common/utils/platform_utils.dart';
 import 'package:ox_common/utils/file_utils.dart';
 import 'package:ox_common/utils/string_utils.dart';
 import 'package:ox_common/widgets/avatar.dart';
+import 'package:ox_common/widgets/common_loading.dart';
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -301,7 +302,15 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
     );
   }
 
-  void _onNextTap() {
+  void _onNextTap() async {
+    OXLoading.show();
+    final result = await _onboardingController.invokeLoginAction();
+    final errorMessage = result.errorMessage;
+    OXLoading.dismiss();
+    if (errorMessage != null && errorMessage.isNotEmpty) {
+      CommonToast.instance.show(context, errorMessage);
+      return;
+    }
     // Navigate to circle selection page with controller
     OXNavigator.pushPage(
       context,
