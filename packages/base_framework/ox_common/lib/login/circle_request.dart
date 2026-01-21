@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:nostr_core_dart/nostr.dart';
 import 'package:chatcore/chat-core.dart';
 import 'package:ox_common/log_util.dart';
+import 'account_models.dart';
 import 'login_manager.dart';
 
 /// Base error response model for Circle API
@@ -51,7 +52,7 @@ class CircleRequest {
     }
 
     final pubkey = account.pubkey;
-    final privkey = Account.sharedInstance.currentPrivkey;
+    final privkey = await account.getEncodedPrivkey();
     
     if (privkey.isEmpty) {
       throw Exception('Private key not available');

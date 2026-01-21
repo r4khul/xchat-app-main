@@ -93,6 +93,9 @@ class LoginManager {
   Circle? get currentCircle => currentState.currentCircle;
   bool get isLoginCircle => currentCircle != null;
 
+  ValueNotifier<bool> accountUpdated$ = ValueNotifier(false);
+  ValueNotifier<bool> circleUpdated$ = ValueNotifier(false);
+
   bool isMe(String id) {
     return currentPubkey == id;
   }
@@ -408,9 +411,7 @@ extension LoginManagerAccount on LoginManager {
       AccountModel? account = (await AccountHelper.fromAccountDataList(
         accountDb,
         pubkey,
-      ))?.copyWith(
-        lastLoginAt: now,
-      );
+      ))?..lastLoginAt = now;
 
       Future<String>? encryptedPrivKey;
       if (account == null) {
@@ -438,8 +439,8 @@ extension LoginManagerAccount on LoginManager {
           db: accountDb,
         );
       } else {
-        if(account.nostrConnectUri.isNotEmpty && account.nostrConnectClientPrivkey == null){
-          account = account.copyWith(nostrConnectClientPrivkey: _generateClientPrivkey());
+        if (account.nostrConnectUri.isNotEmpty && account.nostrConnectClientPrivkey == null) {
+          account.nostrConnectClientPrivkey = _generateClientPrivkey();
         }
       }
 
@@ -770,9 +771,7 @@ extension LoginManagerCircle on LoginManager {
       // Update state
       if (!isSwitch) {
         LoginUserNotifier.instance.updateUserSource(null);
-        _state$.value = currentState.copyWith(
-          currentCircle: null,
-        );
+        updateStateCircle(null);
       }
 
       return true;
@@ -854,7 +853,7 @@ extension LoginManagerCircle on LoginManager {
         return false;
       }
 
-      await updateLastLoginCircle(circle);
+      updateStateCircle(circle);
 
       _loginCircleSuccessHandler(account, circle);
 
@@ -909,8 +908,8 @@ extension LoginManagerCircle on LoginManager {
       }
 
       return null;
-    } catch (e) {
-      debugPrint('Circle login failed: $e');
+    } catch (e, s) {
+      debugPrint('Circle login failed: $e, $s');
       return null;
     }
   }
@@ -1183,16 +1182,25 @@ extension LoginManagerDatabase on LoginManager {
 }
 
 extension AccountUpdateMethod on LoginManager {
+  void updateStateAccount(AccountModel? account) {
+    currentState.account = account;
+    _state$.value = currentState.copy();
+  }
+
+  void updateStateCircle(Circle? circle) {
+    currentState.currentCircle = circle;
+    _state$.value = currentState.copy();
+
+    updateLastLoginCircle(circle);
+  }
+
   Future<bool> updateEncryptedPrivKey(String encryptedPrivKey) async {
     final account = currentState.account;
     if (account == null) return false;
 
-    final newAccount = account.copyWith(encryptedPrivKey: encryptedPrivKey);
-    await _saveAccount(newAccount);
+    account.encryptedPrivKey = encryptedPrivKey;
+    await _saveAccount(account);
 
-    _state$.value = currentState.copyWith(
-      account: newAccount,
-    );
     return true;
   }
 
@@ -1215,12 +1223,9 @@ extension AccountUpdateMethod on LoginManager {
       await CircleService.createCircle(accountDb, circleWithPubkey);
     }
 
-    final newAccount = account.copyWith(circles: circles);
-    await _saveAccount(newAccount);
+    account.circles = circles;
+    await _saveAccount(account);
 
-    _state$.value = currentState.copyWith(
-      account: newAccount,
-    );
     return true;
   }
 
@@ -1228,12 +1233,9 @@ extension AccountUpdateMethod on LoginManager {
     final account = currentState.account;
     if (account == null) return false;
 
-    final newAccount = account.copyWith(nostrConnectClientPrivkey: privkey);
-    await _saveAccount(newAccount);
+    account.nostrConnectClientPrivkey = privkey;
+    await _saveAccount(account);
 
-    _state$.value = currentState.copyWith(
-      account: newAccount,
-    );
     return true;
   }
 
@@ -1241,26 +1243,19 @@ extension AccountUpdateMethod on LoginManager {
     final account = currentState.account;
     if (account == null) return false;
 
-    final newAccount = account.copyWith(pushToken: token);
-    await _saveAccount(newAccount);
+    account.pushToken = token;
+    await _saveAccount(account);
 
-    _state$.value = currentState.copyWith(
-      account: newAccount,
-    );
     return true;
   }
 
-  Future<bool> updateLastLoginCircle(Circle circle) async {
+  Future<bool> updateLastLoginCircle(Circle? circle) async {
     final account = currentState.account;
     if (account == null) return false;
 
-    final newAccount = account.copyWith(lastLoginCircleId: circle.id);
-    await _saveAccount(newAccount);
+    account.lastLoginCircleId = circle?.id;
+    await _saveAccount(account);
 
-    _state$.value = currentState.copyWith(
-      account: newAccount,
-      currentCircle: circle,
-    );
     return true;
   }
 
@@ -1271,6 +1266,8 @@ extension AccountUpdateMethod on LoginManager {
     await db.writeAsync((accountDb) {
       accountDb.accountDataISARs.putAll(accountDataList);
     });
+
+    accountUpdated$.value = !accountUpdated$.value;
   }
 }
 

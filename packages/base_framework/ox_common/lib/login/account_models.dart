@@ -165,46 +165,14 @@ class AccountModel {
 
   final String defaultPassword;      // Used to decrypt private key
   final String nostrConnectUri;     // Only has value for remoteSigner login type
-  final String? nostrConnectClientPrivkey; // Only has value for remoteSigner login type
-  final List<Circle> circles;
+  String? nostrConnectClientPrivkey; // Only has value for remoteSigner login type
+  List<Circle> circles;
   final int createdAt;
-  final int lastLoginAt;
+  int lastLoginAt;
   String? lastLoginCircleId;   // Last logged in circle ID
   String? pushToken;           // Push notification token
   
   late Isar db;
-
-  AccountModel copyWith({
-    String? pubkey,
-    LoginType? loginType,
-    String? encryptedPrivKey,
-    String? defaultPassword,
-    String? nostrConnectUri,
-    String? nostrConnectClientPrivkey,
-    List<Circle>? circles,
-    int? createdAt,
-    int? lastLoginAt,
-    String? lastLoginCircleId,
-    String? pushToken,
-    bool? hasUpload,
-  }) {
-    return AccountModel(
-      pubkey: pubkey ?? this.pubkey,
-      loginType: loginType ?? this.loginType,
-      privateKey: this.privateKey,
-      encryptedPrivKey: encryptedPrivKey ?? this.encryptedPrivKey,
-      encryptedPrivKeyFuture: this.encryptedPrivKeyFuture,
-      defaultPassword: defaultPassword ?? this.defaultPassword,
-      nostrConnectUri: nostrConnectUri ?? this.nostrConnectUri,
-      nostrConnectClientPrivkey: nostrConnectClientPrivkey ?? this.nostrConnectClientPrivkey,
-      circles: circles ?? this.circles,
-      createdAt: createdAt ?? this.createdAt,
-      lastLoginAt: lastLoginAt ?? this.lastLoginAt,
-      lastLoginCircleId: lastLoginCircleId ?? this.lastLoginCircleId,
-      pushToken: pushToken ?? this.pushToken,
-      db: db,
-    );
-  }
 }
 
 /// Helper class for AccountDataISAR conversion
@@ -262,7 +230,7 @@ class AccountHelper {
     String pubkey,
   ) async {
     try {
-      final accountData = await accountDb.accountDataISARs.where()
+      final accountData = accountDb.accountDataISARs.where()
         .anyOf([keyPubkey, keyLoginType, keyEncryptedPrivKey, keyDefaultPassword, 
                keyNostrConnectUri, keyNostrConnectClientPrivkey, keyCircles, keyCreatedAt, keyLastLoginAt, keyLastLoginCircleId, keyPushToken, keyHasUpload],
                (q, String key) => q.keyNameEqualTo(key))

@@ -203,18 +203,15 @@ class LoginState {
     this.currentCircle,
   });
 
-  final AccountModel? account;
-  final Circle? currentCircle;
+  AccountModel? account;
+  Circle? currentCircle;
 
   bool get isLoggedIn => account != null;
   bool get hasCircle => currentCircle != null;
 
-  LoginState copyWith({
-    dynamic account = _noSet,
-    dynamic currentCircle = _noSet,
-  }) => LoginState(
-    account: account != _noSet ? account : this.account,
-    currentCircle: currentCircle != _noSet ? currentCircle : this.currentCircle,
+  LoginState copy() => LoginState(
+    account: account,
+    currentCircle: currentCircle,
   );
 
   @override
