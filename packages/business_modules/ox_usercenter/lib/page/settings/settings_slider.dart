@@ -32,9 +32,9 @@ class SettingSliderState extends State<SettingSlider> {
 
   String get title => Localized.text('ox_usercenter.str_settings');
   double get circleIconRadius => 12.px; // Match ListViewIcon size (24.px diameter)
+  bool get _hasCircle => LoginManager.instance.currentCircle != null;
 
   late LoginUserNotifier userNotifier;
-  late List<SectionListViewItem> pageData;
 
   @override
   void initState() {
@@ -44,11 +44,10 @@ class SettingSliderState extends State<SettingSlider> {
   }
 
   void prepareData() {
-    prepareLiteData();
     userNotifier = LoginUserNotifier.instance;
   }
 
-  void prepareLiteData() {
+  List<SectionListViewItem> pageData() {
     // Build first section items
     List<ListViewItem> firstSectionItems = [
       CustomItemModel(
@@ -144,7 +143,17 @@ class SettingSliderState extends State<SettingSlider> {
       ),
     );
     
-    pageData = sections;
+    if (!_hasCircle) {
+      sections.add(
+        SectionListViewItem.button(
+          text: Localized.text('ox_usercenter.Logout'),
+          onTap: _confirmLogout,
+          type: ButtonType.destructive,
+        ),
+      );
+    }
+
+    return sections;
   }
 
   @override
@@ -166,9 +175,13 @@ class SettingSliderState extends State<SettingSlider> {
       valueListenable: LoginManager.instance.state$,
       builder: (context, loginState, _) {
         // Rebuild data when circle state changes
-        prepareLiteData();
         return CLSectionListView(
-          items: pageData,
+          items: pageData(),
+          footer: _hasCircle ? null : CLButton.text(
+            text: Localized.text('ox_usercenter.delete_account'),
+            color: ColorToken.error.of(context),
+            onTap: _confirmDeleteAccount,
+          ),
         );
       },
     );
@@ -512,4 +525,61 @@ class SettingSliderState extends State<SettingSlider> {
     OXNavigator.pushPage(context, (_) => AboutXChatPage(previousPageTitle: title,));
   }
 
+  Future<void> _confirmLogout() async {
+    final shouldLogout = await CLAlertDialog.show<bool>(
+      context: context,
+      title: Localized.text('ox_usercenter.warn_title'),
+      content: Localized.text('ox_usercenter.sign_out_dialog_content'),
+      actions: [
+        CLAlertAction.cancel(),
+        CLAlertAction<bool>(
+          label: Localized.text('ox_usercenter.Logout'),
+          value: true,
+          isDestructiveAction: true,
+        ),
+      ],
+    );
+
+    if (mounted && shouldLogout == true) {
+      try {
+        await LoginManager.instance.logoutAccount();
+        OXNavigator.popToRoot(context);
+      } catch (e) {
+        CommonToast.instance.show(context, e.toString());
+      }
+    }
+  }
+
+  Future<void> _confirmDeleteAccount() async {
+    final shouldDelete = await CLAlertDialog.show<bool>(
+      context: context,
+      title: Localized.text('ox_usercenter.delete_account_confirm_title'),
+      content: Localized.text('ox_usercenter.delete_account_confirm_content'),
+      actions: [
+        CLAlertAction.cancel(),
+        CLAlertAction<bool>(
+          label: Localized.text('ox_usercenter.delete_account_confirm'),
+          value: true,
+          isDestructiveAction: true,
+        ),
+      ],
+    );
+
+    if (shouldDelete == true) {
+      OXLoading.show();
+      try {
+        final success = await LoginManager.instance.deleteAccount();
+        OXLoading.dismiss();
+
+        if (success) {
+          OXNavigator.popToRoot(context);
+        } else {
+          CommonToast.instance.show(context, Localized.text('ox_usercenter.delete_account_failed'));
+        }
+      } catch (e) {
+        OXLoading.dismiss();
+        CommonToast.instance.show(context, '${Localized.text('ox_usercenter.delete_account_failed')}: $e');
+      }
+    }
+  }
 }
