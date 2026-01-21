@@ -1,4 +1,5 @@
 import 'package:isar/isar.dart';
+import 'package:uuid/uuid.dart';
 
 import 'account_models.dart';
 import 'circle_config_models.dart';
@@ -40,9 +41,6 @@ extension CircleTypeExtension on CircleType {
   }
 }
 
-class _NoSet { const _NoSet(); }
-const _noSet = _NoSet();
-
 /// Login failure information
 class LoginFailure {
   const LoginFailure({
@@ -62,16 +60,16 @@ class LoginFailure {
 /// Circle data model
 class Circle {
   Circle({
-    required this.id,
+    String? id,
     required this.name,
     required this.relayUrl,
     this.type = CircleType.relay,
     this.pubkey,
-  });
+  }) : id = id ?? Uuid().v4();
 
   final String id;
   String name;
-  final String relayUrl;
+  String relayUrl;
   final CircleType type;
   String? pubkey; // Account pubkey this circle belongs to
 

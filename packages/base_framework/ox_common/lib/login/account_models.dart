@@ -269,7 +269,7 @@ class AccountHelper {
       // If not found, try to load from deprecated keyCircles (for migration)
       List<Circle> circles = [];
       try {
-        circles = await CircleService.getAllCircles(accountDb, pubkey);
+        circles = await CircleService.getAllCircles(accountDb);
       } catch (e) {
         debugPrint('Failed to load circles from CircleISAR: $e');
       }
@@ -280,14 +280,12 @@ class AccountHelper {
           final circlesJson = jsonDecode(dataMap[keyCircles] as String) as List;
           circles = circlesJson
               .map((json) {
-                final circle = Circle.fromJson(json as Map<String, dynamic>);
-                circle.pubkey = pubkey; // Set pubkey for migration
-                return circle;
+                return Circle.fromJson(json as Map<String, dynamic>);
               })
               .toList();
           
           // Trigger migration asynchronously (don't wait for it)
-          _migrateCirclesFromAccountData(accountDb, pubkey, circles).catchError((e) {
+          _migrateCirclesFromAccountData(accountDb, circles).catchError((e) {
             debugPrint('Failed to migrate circles: $e');
           });
         } catch (e) {
@@ -321,14 +319,13 @@ class AccountHelper {
   /// in the old storage format.
   static Future<void> _migrateCirclesFromAccountData(
     Isar accountDb,
-    String pubkey,
     List<Circle> circles,
   ) async {
     try {
       // Check if migration already happened (if CircleISAR has any circles for this pubkey)
-      final existingCircles = await CircleService.getAllCircles(accountDb, pubkey);
+      final existingCircles = await CircleService.getAllCircles(accountDb);
       if (existingCircles.isNotEmpty) {
-        debugPrint('Circles already migrated for pubkey $pubkey');
+        debugPrint('Circles already migrated');
         return;
       }
 
@@ -339,12 +336,11 @@ class AccountHelper {
           name: circle.name,
           relayUrl: circle.relayUrl,
           type: circle.type,
-          pubkey: pubkey,
         );
         await CircleService.createCircle(accountDb, circleWithPubkey);
       }
 
-      debugPrint('Successfully migrated ${circles.length} circles for pubkey $pubkey');
+      debugPrint('Successfully migrated ${circles.length} circles');
     } catch (e) {
       debugPrint('Failed to migrate circles from AccountDataISAR: $e');
     }

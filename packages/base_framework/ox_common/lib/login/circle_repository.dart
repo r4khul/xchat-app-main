@@ -9,15 +9,11 @@ class CircleRepository {
   static Future<CircleISAR?> create(Isar accountDb, Circle circle) async {
     try {
       final isar = circle.toISAR();
-      if (isar.pubkey.isEmpty) {
-        LogUtil.w(() => 'Circle pubkey is required for storage');
-        return null;
-      }
 
-      // Check if circle with same ID already exists for this pubkey
-      final existing = await getById(accountDb, circle.id, pubkey: isar.pubkey);
+      // Check if circle with same ID already exists
+      final existing = await getById(accountDb, circle.id);
       if (existing != null) {
-        LogUtil.w(() => 'Circle with id ${circle.id} already exists for pubkey ${isar.pubkey}');
+        LogUtil.w(() => 'Circle with id ${circle.id} already exists');
         return null;
       }
 
@@ -30,7 +26,7 @@ class CircleRepository {
         accountDb.circleISARs.put(isar);
       });
 
-      LogUtil.v(() => 'Circle created: ${circle.id} for pubkey ${isar.pubkey}');
+      LogUtil.v(() => 'Circle created: ${circle.id}');
       return isar;
     } catch (e) {
       LogUtil.e(() => 'Failed to create circle: $e');
@@ -38,20 +34,13 @@ class CircleRepository {
     }
   }
 
-  static Future<CircleISAR?> getById(Isar accountDb, String circleId, {String? pubkey}) async {
+  static Future<CircleISAR?> getById(Isar accountDb, String circleId) async {
     try {
       // Since circleId has unique index, we can query directly
-      final circle = await accountDb.circleISARs
+      final circle = accountDb.circleISARs
           .where()
           .circleIdEqualTo(circleId)
           .findFirst();
-      
-      // If pubkey is provided, verify it matches
-      if (circle != null && pubkey != null && pubkey.isNotEmpty) {
-        if (circle.pubkey != pubkey) {
-          return null;
-        }
-      }
       
       return circle;
     } catch (e) {
@@ -60,34 +49,10 @@ class CircleRepository {
     }
   }
 
-  static Future<CircleISAR?> getByName(Isar accountDb, String name, String pubkey) async {
+  static Future<List<CircleISAR>> getAll(Isar accountDb) async {
     try {
-      if (pubkey.isEmpty) {
-        return null;
-      }
-
-      // Get all circles for this pubkey and filter by name
-      final circles = await accountDb.circleISARs
+      return accountDb.circleISARs
           .where()
-          .pubkeyEqualTo(pubkey)
-          .findAll();
-      
-      return circles.where((c) => c.name == name).firstOrNull;
-    } catch (e) {
-      LogUtil.e(() => 'Failed to get circle by name: $e');
-      return null;
-    }
-  }
-
-  static Future<List<CircleISAR>> getAll(Isar accountDb, String pubkey) async {
-    try {
-      if (pubkey.isEmpty) {
-        return [];
-      }
-
-      return await accountDb.circleISARs
-          .where()
-          .pubkeyEqualTo(pubkey)
           .findAll();
     } catch (e) {
       LogUtil.e(() => 'Failed to get all circles: $e');
@@ -97,24 +62,10 @@ class CircleRepository {
 
   static Future<bool> update(Isar accountDb, Circle circle) async {
     try {
-      if (circle.pubkey == null || circle.pubkey!.isEmpty) {
-        LogUtil.w(() => 'Circle pubkey is required for update');
-        return false;
-      }
-
-      final existing = await getById(accountDb, circle.id, pubkey: circle.pubkey);
+      final existing = await getById(accountDb, circle.id);
       if (existing == null) {
-        LogUtil.w(() => 'Circle with id ${circle.id} not found for pubkey ${circle.pubkey}');
+        LogUtil.w(() => 'Circle with id ${circle.id} not found');
         return false;
-      }
-
-      // Check name uniqueness if name changed
-      if (existing.name != circle.name) {
-        final nameConflict = await getByName(accountDb, circle.name, circle.pubkey!);
-        if (nameConflict != null && nameConflict.circleId != circle.id) {
-          LogUtil.w(() => 'Circle with name "${circle.name}" already exists');
-          return false;
-        }
       }
 
       // Update fields
@@ -134,15 +85,11 @@ class CircleRepository {
     }
   }
 
-  static Future<bool> delete(Isar accountDb, String circleId, String pubkey) async {
+  static Future<bool> delete(Isar accountDb, String circleId) async {
     try {
-      if (pubkey.isEmpty) {
-        return false;
-      }
-
-      final existing = await getById(accountDb, circleId, pubkey: pubkey);
+      final existing = await getById(accountDb, circleId);
       if (existing == null) {
-        LogUtil.w(() => 'Circle with id $circleId not found for pubkey $pubkey');
+        LogUtil.w(() => 'Circle with id $circleId not found');
         return false;
       }
 
@@ -158,13 +105,9 @@ class CircleRepository {
     }
   }
 
-  static Future<int> deleteAll(Isar accountDb, String pubkey) async {
+  static Future<int> deleteAll(Isar accountDb) async {
     try {
-      if (pubkey.isEmpty) {
-        return 0;
-      }
-
-      final circles = await getAll(accountDb, pubkey);
+      final circles = await getAll(accountDb);
       if (circles.isEmpty) {
         return 0;
       }
@@ -175,7 +118,7 @@ class CircleRepository {
         accountDb.circleISARs.deleteAll(ids);
       });
 
-      LogUtil.v(() => 'Deleted ${ids.length} circles for pubkey $pubkey');
+      LogUtil.v(() => 'Deleted ${ids.length} circles');
       return ids.length;
     } catch (e) {
       LogUtil.e(() => 'Failed to delete all circles: $e');

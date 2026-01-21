@@ -12,7 +12,6 @@ import 'package:ox_common/network/tor_network_helper.dart';
 import 'package:ox_common/push/push_integration.dart';
 import 'package:ox_common/push/push_notification_manager.dart';
 import 'package:ox_common/utils/extension.dart';
-import 'package:uuid/uuid.dart';
 import '../utils/ox_chat_binding.dart';
 import 'database_manager.dart';
 import 'login_models.dart';
@@ -595,6 +594,16 @@ extension LoginManagerCircle on LoginManager {
     return null;
   }
 
+  Future<(bool isSuccess, List<Circle> originCircles)> addCircle(List<Circle> newCircles) async {
+    final account = currentState.account;
+    if (account == null) return (false, <Circle>[]);
+
+    // Add circle to account's circle list
+    final originCircles = [...account.circles];
+    final success = await updatedCircles([...originCircles, ...newCircles]);
+    return (success, originCircles);
+  }
+
   /// Join circle
   ///
   /// [relayUrl] Circle's relay address
@@ -611,27 +620,18 @@ extension LoginManagerCircle on LoginManager {
         );
       }
 
-      // Generate circle ID from relay URL (simplified for now)
-      final circleId = _generateCircleId(relayUrl);
-
-      // Check if circle already exists in account
-      final existingCircle = account.circles.where((c) => c.id == circleId).firstOrNull;
-      if (existingCircle != null) {
-        // Circle already exists, just switch to it
-        return switchToCircle(existingCircle);
-      }
-
-      // Create new circle
       final newCircle = Circle(
-        id: circleId,
         name: _extractCircleName(relayUrl, type),
         relayUrl: relayUrl,
-        type: type,
       );
 
-      // Add circle to account's circle list
-      final originCircles = [...account.circles];
-      await updatedCircles([...originCircles, newCircle]);
+      final (isSuccess, originCircles) = await addCircle([newCircle]);
+      if (!isSuccess) {
+        return const LoginFailure(
+          type: LoginFailureType.errorEnvironment,
+          message: 'Add circle fail',
+        );
+      }
 
       final switchResult = await switchToCircle(newCircle);
       if (switchResult != null) {
@@ -1211,16 +1211,7 @@ extension AccountUpdateMethod on LoginManager {
     // Save circles to CircleISAR collection using CircleService
     final accountDb = account.db;
     for (final circle in circles) {
-      final circleWithPubkey = circle.pubkey == null || circle.pubkey!.isEmpty
-          ? Circle(
-              id: circle.id,
-              name: circle.name,
-              relayUrl: circle.relayUrl,
-              type: circle.type,
-              pubkey: account.pubkey,
-            )
-          : circle;
-      await CircleService.createCircle(accountDb, circleWithPubkey);
+      await CircleService.createCircle(accountDb, circle);
     }
 
     account.circles = circles;
@@ -1273,12 +1264,6 @@ extension AccountUpdateMethod on LoginManager {
 
 /// Utility methods for LoginManager
 extension LoginManagerUtils on LoginManager {
-  /// Generate circle ID from relay URL
-  String _generateCircleId(String relayUrl) {
-    // Simple hash of the relay URL to create a unique ID
-    return Uuid().v4();
-  }
-
   /// Extract circle name from relay URL
   String _extractCircleName(String relayUrl, CircleType type) {
     switch (type) {
