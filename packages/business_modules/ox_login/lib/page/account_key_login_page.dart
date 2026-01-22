@@ -7,6 +7,7 @@ import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_common/utils/nip46_status_notifier.dart';
 import 'package:ox_common/login/login_manager.dart';
+import 'package:ox_common/utils/account_credentials_utils.dart';
 import 'package:ox_common/component.dart';
 
 // plugin
@@ -16,6 +17,7 @@ import 'package:chatcore/chat-core.dart';
 // local
 import '../controller/onboarding_controller.dart';
 import 'circle_selection_page.dart';
+import 'circle_restore_page.dart';
 import 'nostr_introduction_page.dart';
 
 class AccountKeyLoginPage extends StatefulWidget {
@@ -184,13 +186,51 @@ class _AccountKeyLoginPageState extends State<AccountKeyLoginPage> with LoginMan
     }
 
     _onboardingController.loginAction = _loginWithKey;
+    
+    // Check if user has existing circles to restore
+    try {
+      // Get credentials from account
+      final credentials = await AccountCredentialsUtils.getCredentials();
+      if (credentials == null) {
+        // If we can't get credentials, continue to circle selection
+        OXNavigator.pushPage(
+          context,
+          (_) => CircleSelectionPage(
+            controller: _onboardingController,
+          ),
+        );
+        return;
+      }
+
+      final circles = await CircleApi.getRelayAddresses(
+        pubkey: credentials['pubkey'] as String,
+        privkey: credentials['privkey'] as String,
+      );
+      if (circles.isNotEmpty) {
+        // Show restore page
+        OXNavigator.pushPage(
+          context,
+          (_) => CircleRestorePage(
+            circles: circles,
+            controller: _onboardingController,
+          ),
+        );
+        return;
+      }
+    } catch (e) {
+      // If failed to get circles, continue to circle selection
+      debugPrint('Failed to get relay addresses: $e');
+    }
+    
+    // No circles to restore, go to circle selection
     OXNavigator.pushPage(
       context,
-          (_) => CircleSelectionPage(
+      (_) => CircleSelectionPage(
         controller: _onboardingController,
       ),
     );
   }
+
 
   Future<bool> _loginWithKey() async {
     if (_accountKeyInput.startsWith('bunker://')) {

@@ -6,7 +6,8 @@ import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/login/login_models.dart';
-import 'package:ox_common/login/circle_api.dart';
+import 'package:ox_common/utils/account_credentials_utils.dart';
+import 'package:chatcore/chat-core.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/widgets/common_loading.dart';
@@ -100,11 +101,19 @@ class _CheckoutPageState extends State<CheckoutPage> {
         receipt = purchaseDetails.verificationData.source;
       }
 
+      // Get credentials for API call
+      final credentials = await AccountCredentialsUtils.getCredentials();
+      if (credentials == null) {
+        throw Exception('Failed to get account credentials');
+      }
+
       // Verify payment and get relay URL using CircleApi
       final PaymentVerificationResult result;
       if (Platform.isIOS) {
         // Apple App Store
         result = await CircleApi.verifyApplePayment(
+          pubkey: credentials['pubkey'] as String,
+          privkey: credentials['privkey'] as String,
           productId: purchaseDetails.productID,
           receiptData: receipt,
         );
@@ -112,6 +121,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
         // Google Play - need to get purchase token
         // For Google Play, the receipt should be the purchase token
         result = await CircleApi.verifyGooglePayment(
+          pubkey: credentials['pubkey'] as String,
+          privkey: credentials['privkey'] as String,
           productId: purchaseDetails.productID,
           purchaseToken: receipt,
         );
@@ -168,6 +179,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
       }
     }
   }
+
 
   void _handleError(dynamic error) {
     if (mounted) {

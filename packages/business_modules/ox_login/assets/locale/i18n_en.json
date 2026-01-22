@@ -160,5 +160,13 @@
   "tb_storage": "Unlimited",
   "overview": "OVERVIEW",
   "private_cloud_overview_desc": "Own your data with a dedicated relay and file server. Starts at just $1.99/mo.",
-  "configure_plan": "CONFIGURE PLAN"
+  "configure_plan": "CONFIGURE PLAN",
+  
+  "welcome_back": "Welcome Back",
+  "found_circles_description": "We found {count} circles linked to your account. Select the ones you want to restore to this device.",
+  "set_up_as_new_device": "Set up as a new device instead",
+  "restore_circles": "Restore {count} Circles",
+  "restore_circle": "Restore Circle",
+  "admin": "Admin",
+  "member": "Member"
 }

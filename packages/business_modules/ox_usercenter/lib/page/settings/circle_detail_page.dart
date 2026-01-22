@@ -1,17 +1,19 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/login/login_models.dart';
 import 'package:ox_common/login/circle_service.dart';
+import 'package:chatcore/chat-core.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/widgets/common_loading.dart' as Loading;
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_localizable/ox_localizable.dart';
-import 'package:chatcore/chat-core.dart';
 import 'package:ox_common/utils/file_server_helper.dart';
 import 'package:ox_common/repository/file_server_repository.dart';
+import 'package:ox_common/log_util.dart';
 
 import 'file_server_page.dart';
 import 'profile_settings_page.dart';
@@ -64,7 +66,6 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
     _checkIfOwner();
     _loadSubscriptionInfo();
     _loadFileServerInfo();
-    _loadMembers();
   }
 
   @override
@@ -77,20 +78,95 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
   }
 
   void _checkIfOwner() {
-    _isOwner = false; return;
     final currentPubkey = LoginManager.instance.currentPubkey;
     _isOwner = widget.circle.pubkey == currentPubkey;
   }
 
   Future<void> _loadSubscriptionInfo() async {
-    // TODO: Load actual subscription info from backend
-    // For now, use default values
-    setState(() {
-      _planName$.value = 'Family';
-      _currentMembers = 1;
-      _maxMembers = 6;
-      _storageUsed$.value = '45.2 GB';
-    });
+    try {
+      // Load tenant info to get member count, limits, and members list
+      final tenantInfo = await CircleMemberService.sharedInstance.getTenantInfo();
+      
+      // Extract member count and limits
+      final currentMembers = tenantInfo['current_members'] as int? ?? 0;
+      final maxMembers = tenantInfo['max_members'] as int? ?? 100;
+      
+      // Extract and convert members list
+      final membersList = <UserDBISAR>[];
+      final membersData = tenantInfo['members'] as List<dynamic>?;
+      if (membersData != null) {
+        for (final memberData in membersData) {
+          final memberMap = memberData as Map<String, dynamic>;
+          final pubkey = memberMap['pubkey'] as String?;
+          if (pubkey != null && pubkey.isNotEmpty) {
+            final user = await Account.sharedInstance.getUserInfo(pubkey);
+            if (user != null) {
+              // Update display name if provided
+              final displayName = memberMap['display_name'] as String?;
+              if (displayName != null && displayName.isNotEmpty) {
+                user.name = displayName;
+              }
+              membersList.add(user);
+            }
+          }
+        }
+      }
+      
+      // Extract expires_at and format renew date
+      String renewDateText = 'Dec 31, 2025'; // Default
+      final expiresAt = tenantInfo['expires_at'] as int?;
+      if (expiresAt != null && expiresAt > 0) {
+        try {
+          // expires_at is in seconds, convert to milliseconds
+          final date = DateTime.fromMillisecondsSinceEpoch(expiresAt * 1000);
+          renewDateText = DateFormat('MMM d, yyyy').format(date);
+        } catch (e) {
+          LogUtil.w(() => 'Failed to format expires_at: $e');
+        }
+      }
+      
+      // Extract tenant name if available
+      final tenantName = tenantInfo['name'] as String?;
+      if (tenantName != null && tenantName.isNotEmpty && tenantName != _circleName) {
+        // Optionally update circle name if different
+        // _circleName = tenantName;
+      }
+      
+      setState(() {
+        _currentMembers = currentMembers;
+        _maxMembers = maxMembers;
+        _members = membersList;
+        _renewDate$.value = renewDateText;
+        _planName$.value = 'Family'; // TODO: Load actual plan name from API if available
+        _storageUsed$.value = '45.2 GB'; // TODO: Load actual storage from API if available
+      });
+    } catch (e) {
+      // If not a member or error, use defaults
+      LogUtil.w(() => 'Failed to load subscription info: $e');
+      setState(() {
+        _currentMembers = _members.length;
+        _maxMembers = 100;
+        // Try to load at least current user as fallback
+        _loadCurrentUserFallback();
+      });
+    }
+  }
+  
+  Future<void> _loadCurrentUserFallback() async {
+    try {
+      final currentPubkey = LoginManager.instance.currentPubkey;
+      if (currentPubkey.isNotEmpty) {
+        final currentUser = await Account.sharedInstance.getUserInfo(currentPubkey);
+        if (currentUser != null && _members.isEmpty) {
+          setState(() {
+            _members = [currentUser];
+            _currentMembers = 1;
+          });
+        }
+      }
+    } catch (e) {
+      LogUtil.e(() => 'Failed to load current user: $e');
+    }
   }
 
   Future<void> _loadFileServerInfo() async {
@@ -113,23 +189,6 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
     _fileServerName$.value = displayName;
   }
 
-  Future<void> _loadMembers() async {
-    // TODO: Load actual members from circle/group
-    // For now, use current user as owner
-    try {
-      final currentPubkey = LoginManager.instance.currentPubkey;
-      if (currentPubkey.isNotEmpty) {
-        final currentUser = await Account.sharedInstance.getUserInfo(currentPubkey);
-        if (currentUser != null) {
-          setState(() {
-            _members = [currentUser];
-          });
-        }
-      }
-    } catch (e) {
-      // Handle error
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -483,15 +542,75 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
     );
 
     if (confirmed == true) {
-      // TODO: Implement remove member logic
-      CommonToast.instance.show(context, Localized.text('ox_common.operation_success'));
-      _loadMembers();
+      Loading.OXLoading.show();
+      try {
+        await CircleMemberService.sharedInstance.removeMember(
+          memberPubkey: member.pubKey,
+        );
+        
+        if (mounted) {
+          CommonToast.instance.show(context, Localized.text('ox_common.operation_success'));
+          await _loadSubscriptionInfo();
+        }
+      } catch (e) {
+        if (mounted) {
+          CommonToast.instance.show(context, e.toString());
+        }
+      } finally {
+        Loading.OXLoading.dismiss();
+      }
     }
   }
 
   Future<void> _addMember() async {
-    // TODO: Navigate to add member page or show dialog
-    CommonToast.instance.show(context, 'Add member feature coming soon');
+    // Check if member limit is reached
+    if (_currentMembers >= _maxMembers) {
+      CommonToast.instance.show(
+        context,
+        Localized.text('ox_usercenter.member_limit_reached'),
+      );
+      return;
+    }
+
+    // Show dialog to enter pubkey
+    final pubkey = await CLDialog.showInputDialog(
+      context: context,
+      title: Localized.text('ox_usercenter.add_member'),
+      description: Localized.text('ox_usercenter.enter_pubkey_description'),
+      inputLabel: Localized.text('ox_usercenter.pubkey_or_npub'),
+      confirmText: Localized.text('ox_common.confirm'),
+      onConfirm: (input) async {
+        final trimmedInput = input.trim();
+        if (trimmedInput.isEmpty) {
+          CommonToast.instance.show(
+            context,
+            Localized.text('ox_common.input_cannot_be_empty'),
+          );
+          return false;
+        }
+        return true;
+      },
+    );
+
+    if (pubkey == null || pubkey.trim().isEmpty) return;
+
+    Loading.OXLoading.show();
+    try {
+      await CircleMemberService.sharedInstance.addMember(
+        memberPubkey: pubkey.trim(),
+      );
+      
+      if (mounted) {
+        CommonToast.instance.show(context, Localized.text('ox_common.operation_success'));
+        await _loadSubscriptionInfo();
+      }
+    } catch (e) {
+      if (mounted) {
+        CommonToast.instance.show(context, e.toString());
+      }
+    } finally {
+      Loading.OXLoading.dismiss();
+    }
   }
 
 
