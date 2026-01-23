@@ -41,6 +41,15 @@ const CircleISARSchema = IsarGeneratedSchema(
         type: IsarType.long,
       ),
       IsarPropertySchema(
+        name: 'invitationCode',
+        type: IsarType.string,
+      ),
+      IsarPropertySchema(
+        name: 'category',
+        type: IsarType.byte,
+        enumMap: {"custom": 0, "paid": 1},
+      ),
+      IsarPropertySchema(
         name: 'type',
         type: IsarType.byte,
         enumMap: {"relay": 0, "bitchat": 1},
@@ -80,7 +89,16 @@ int serializeCircleISAR(IsarWriter writer, CircleISAR object) {
   IsarCore.writeString(writer, 3, object.name);
   IsarCore.writeString(writer, 4, object.relayUrl);
   IsarCore.writeLong(writer, 5, object.typeValue);
-  IsarCore.writeByte(writer, 6, object.type.index);
+  {
+    final value = object.invitationCode;
+    if (value == null) {
+      IsarCore.writeNull(writer, 6);
+    } else {
+      IsarCore.writeString(writer, 6, value);
+    }
+  }
+  IsarCore.writeByte(writer, 7, object.category.index);
+  IsarCore.writeByte(writer, 8, object.type.index);
   return object.id;
 }
 
@@ -94,12 +112,23 @@ CircleISAR deserializeCircleISAR(IsarReader reader) {
   _name = IsarCore.readString(reader, 3) ?? '';
   final String _relayUrl;
   _relayUrl = IsarCore.readString(reader, 4) ?? '';
+  final String? _invitationCode;
+  _invitationCode = IsarCore.readString(reader, 6);
+  final CircleCategory _category;
+  {
+    if (IsarCore.readNull(reader, 7)) {
+      _category = CircleCategory.custom;
+    } else {
+      _category = _circleISARCategory[IsarCore.readByte(reader, 7)] ??
+          CircleCategory.custom;
+    }
+  }
   final CircleType _type;
   {
-    if (IsarCore.readNull(reader, 6)) {
+    if (IsarCore.readNull(reader, 8)) {
       _type = CircleType.relay;
     } else {
-      _type = _circleISARType[IsarCore.readByte(reader, 6)] ?? CircleType.relay;
+      _type = _circleISARType[IsarCore.readByte(reader, 8)] ?? CircleType.relay;
     }
   }
   final object = CircleISAR(
@@ -107,6 +136,8 @@ CircleISAR deserializeCircleISAR(IsarReader reader) {
     circleId: _circleId,
     name: _name,
     relayUrl: _relayUrl,
+    invitationCode: _invitationCode,
+    category: _category,
     type: _type,
   );
   object.id = IsarCore.readId(reader);
@@ -130,11 +161,22 @@ dynamic deserializeCircleISARProp(IsarReader reader, int property) {
     case 5:
       return IsarCore.readLong(reader, 5);
     case 6:
+      return IsarCore.readString(reader, 6);
+    case 7:
       {
-        if (IsarCore.readNull(reader, 6)) {
+        if (IsarCore.readNull(reader, 7)) {
+          return CircleCategory.custom;
+        } else {
+          return _circleISARCategory[IsarCore.readByte(reader, 7)] ??
+              CircleCategory.custom;
+        }
+      }
+    case 8:
+      {
+        if (IsarCore.readNull(reader, 8)) {
           return CircleType.relay;
         } else {
-          return _circleISARType[IsarCore.readByte(reader, 6)] ??
+          return _circleISARType[IsarCore.readByte(reader, 8)] ??
               CircleType.relay;
         }
       }
@@ -151,6 +193,8 @@ sealed class _CircleISARUpdate {
     String? name,
     String? relayUrl,
     int? typeValue,
+    String? invitationCode,
+    CircleCategory? category,
     CircleType? type,
   });
 }
@@ -168,6 +212,8 @@ class _CircleISARUpdateImpl implements _CircleISARUpdate {
     Object? name = ignore,
     Object? relayUrl = ignore,
     Object? typeValue = ignore,
+    Object? invitationCode = ignore,
+    Object? category = ignore,
     Object? type = ignore,
   }) {
     return collection.updateProperties([
@@ -178,7 +224,9 @@ class _CircleISARUpdateImpl implements _CircleISARUpdate {
           if (name != ignore) 3: name as String?,
           if (relayUrl != ignore) 4: relayUrl as String?,
           if (typeValue != ignore) 5: typeValue as int?,
-          if (type != ignore) 6: type as CircleType?,
+          if (invitationCode != ignore) 6: invitationCode as String?,
+          if (category != ignore) 7: category as CircleCategory?,
+          if (type != ignore) 8: type as CircleType?,
         }) >
         0;
   }
@@ -192,6 +240,8 @@ sealed class _CircleISARUpdateAll {
     String? name,
     String? relayUrl,
     int? typeValue,
+    String? invitationCode,
+    CircleCategory? category,
     CircleType? type,
   });
 }
@@ -209,6 +259,8 @@ class _CircleISARUpdateAllImpl implements _CircleISARUpdateAll {
     Object? name = ignore,
     Object? relayUrl = ignore,
     Object? typeValue = ignore,
+    Object? invitationCode = ignore,
+    Object? category = ignore,
     Object? type = ignore,
   }) {
     return collection.updateProperties(id, {
@@ -217,7 +269,9 @@ class _CircleISARUpdateAllImpl implements _CircleISARUpdateAll {
       if (name != ignore) 3: name as String?,
       if (relayUrl != ignore) 4: relayUrl as String?,
       if (typeValue != ignore) 5: typeValue as int?,
-      if (type != ignore) 6: type as CircleType?,
+      if (invitationCode != ignore) 6: invitationCode as String?,
+      if (category != ignore) 7: category as CircleCategory?,
+      if (type != ignore) 8: type as CircleType?,
     });
   }
 }
@@ -235,6 +289,8 @@ sealed class _CircleISARQueryUpdate {
     String? name,
     String? relayUrl,
     int? typeValue,
+    String? invitationCode,
+    CircleCategory? category,
     CircleType? type,
   });
 }
@@ -252,6 +308,8 @@ class _CircleISARQueryUpdateImpl implements _CircleISARQueryUpdate {
     Object? name = ignore,
     Object? relayUrl = ignore,
     Object? typeValue = ignore,
+    Object? invitationCode = ignore,
+    Object? category = ignore,
     Object? type = ignore,
   }) {
     return query.updateProperties(limit: limit, {
@@ -260,7 +318,9 @@ class _CircleISARQueryUpdateImpl implements _CircleISARQueryUpdate {
       if (name != ignore) 3: name as String?,
       if (relayUrl != ignore) 4: relayUrl as String?,
       if (typeValue != ignore) 5: typeValue as int?,
-      if (type != ignore) 6: type as CircleType?,
+      if (invitationCode != ignore) 6: invitationCode as String?,
+      if (category != ignore) 7: category as CircleCategory?,
+      if (type != ignore) 8: type as CircleType?,
     });
   }
 }
@@ -285,6 +345,8 @@ class _CircleISARQueryBuilderUpdateImpl implements _CircleISARQueryUpdate {
     Object? name = ignore,
     Object? relayUrl = ignore,
     Object? typeValue = ignore,
+    Object? invitationCode = ignore,
+    Object? category = ignore,
     Object? type = ignore,
   }) {
     final q = query.build();
@@ -295,7 +357,9 @@ class _CircleISARQueryBuilderUpdateImpl implements _CircleISARQueryUpdate {
         if (name != ignore) 3: name as String?,
         if (relayUrl != ignore) 4: relayUrl as String?,
         if (typeValue != ignore) 5: typeValue as int?,
-        if (type != ignore) 6: type as CircleType?,
+        if (invitationCode != ignore) 6: invitationCode as String?,
+        if (category != ignore) 7: category as CircleCategory?,
+        if (type != ignore) 8: type as CircleType?,
       });
     } finally {
       q.close();
@@ -312,6 +376,10 @@ extension CircleISARQueryBuilderUpdate
       _CircleISARQueryBuilderUpdateImpl(this);
 }
 
+const _circleISARCategory = {
+  0: CircleCategory.custom,
+  1: CircleCategory.paid,
+};
 const _circleISARType = {
   0: CircleType.relay,
   1: CircleType.bitchat,
@@ -1189,13 +1257,290 @@ extension CircleISARQueryFilter
     });
   }
 
+  QueryBuilder<CircleISAR, CircleISAR, QAfterFilterCondition>
+      invitationCodeIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 6));
+    });
+  }
+
+  QueryBuilder<CircleISAR, CircleISAR, QAfterFilterCondition>
+      invitationCodeIsNotNull() {
+    return QueryBuilder.apply(not(), (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 6));
+    });
+  }
+
+  QueryBuilder<CircleISAR, CircleISAR, QAfterFilterCondition>
+      invitationCodeEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 6,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CircleISAR, CircleISAR, QAfterFilterCondition>
+      invitationCodeGreaterThan(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 6,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CircleISAR, CircleISAR, QAfterFilterCondition>
+      invitationCodeGreaterThanOrEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 6,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CircleISAR, CircleISAR, QAfterFilterCondition>
+      invitationCodeLessThan(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 6,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CircleISAR, CircleISAR, QAfterFilterCondition>
+      invitationCodeLessThanOrEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 6,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CircleISAR, CircleISAR, QAfterFilterCondition>
+      invitationCodeBetween(
+    String? lower,
+    String? upper, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 6,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CircleISAR, CircleISAR, QAfterFilterCondition>
+      invitationCodeStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        StartsWithCondition(
+          property: 6,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CircleISAR, CircleISAR, QAfterFilterCondition>
+      invitationCodeEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EndsWithCondition(
+          property: 6,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CircleISAR, CircleISAR, QAfterFilterCondition>
+      invitationCodeContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        ContainsCondition(
+          property: 6,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CircleISAR, CircleISAR, QAfterFilterCondition>
+      invitationCodeMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        MatchesCondition(
+          property: 6,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CircleISAR, CircleISAR, QAfterFilterCondition>
+      invitationCodeIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const EqualCondition(
+          property: 6,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CircleISAR, CircleISAR, QAfterFilterCondition>
+      invitationCodeIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const GreaterCondition(
+          property: 6,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CircleISAR, CircleISAR, QAfterFilterCondition> categoryEqualTo(
+    CircleCategory value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 7,
+          value: value.index,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CircleISAR, CircleISAR, QAfterFilterCondition>
+      categoryGreaterThan(
+    CircleCategory value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 7,
+          value: value.index,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CircleISAR, CircleISAR, QAfterFilterCondition>
+      categoryGreaterThanOrEqualTo(
+    CircleCategory value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 7,
+          value: value.index,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CircleISAR, CircleISAR, QAfterFilterCondition> categoryLessThan(
+    CircleCategory value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 7,
+          value: value.index,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CircleISAR, CircleISAR, QAfterFilterCondition>
+      categoryLessThanOrEqualTo(
+    CircleCategory value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 7,
+          value: value.index,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CircleISAR, CircleISAR, QAfterFilterCondition> categoryBetween(
+    CircleCategory lower,
+    CircleCategory upper,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 7,
+          lower: lower.index,
+          upper: upper.index,
+        ),
+      );
+    });
+  }
+
   QueryBuilder<CircleISAR, CircleISAR, QAfterFilterCondition> typeEqualTo(
     CircleType value,
   ) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 6,
+          property: 8,
           value: value.index,
         ),
       );
@@ -1208,7 +1553,7 @@ extension CircleISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 6,
+          property: 8,
           value: value.index,
         ),
       );
@@ -1222,7 +1567,7 @@ extension CircleISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 6,
+          property: 8,
           value: value.index,
         ),
       );
@@ -1235,7 +1580,7 @@ extension CircleISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 6,
+          property: 8,
           value: value.index,
         ),
       );
@@ -1249,7 +1594,7 @@ extension CircleISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 6,
+          property: 8,
           value: value.index,
         ),
       );
@@ -1263,7 +1608,7 @@ extension CircleISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 6,
+          property: 8,
           lower: lower.index,
           upper: upper.index,
         ),
@@ -1385,15 +1730,48 @@ extension CircleISARQuerySortBy
     });
   }
 
+  QueryBuilder<CircleISAR, CircleISAR, QAfterSortBy> sortByInvitationCode(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(
+        6,
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
+  QueryBuilder<CircleISAR, CircleISAR, QAfterSortBy> sortByInvitationCodeDesc(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(
+        6,
+        sort: Sort.desc,
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
+  QueryBuilder<CircleISAR, CircleISAR, QAfterSortBy> sortByCategory() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(7);
+    });
+  }
+
+  QueryBuilder<CircleISAR, CircleISAR, QAfterSortBy> sortByCategoryDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(7, sort: Sort.desc);
+    });
+  }
+
   QueryBuilder<CircleISAR, CircleISAR, QAfterSortBy> sortByType() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(6);
+      return query.addSortBy(8);
     });
   }
 
   QueryBuilder<CircleISAR, CircleISAR, QAfterSortBy> sortByTypeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(6, sort: Sort.desc);
+      return query.addSortBy(8, sort: Sort.desc);
     });
   }
 }
@@ -1480,15 +1858,41 @@ extension CircleISARQuerySortThenBy
     });
   }
 
+  QueryBuilder<CircleISAR, CircleISAR, QAfterSortBy> thenByInvitationCode(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(6, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<CircleISAR, CircleISAR, QAfterSortBy> thenByInvitationCodeDesc(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(6, sort: Sort.desc, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<CircleISAR, CircleISAR, QAfterSortBy> thenByCategory() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(7);
+    });
+  }
+
+  QueryBuilder<CircleISAR, CircleISAR, QAfterSortBy> thenByCategoryDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(7, sort: Sort.desc);
+    });
+  }
+
   QueryBuilder<CircleISAR, CircleISAR, QAfterSortBy> thenByType() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(6);
+      return query.addSortBy(8);
     });
   }
 
   QueryBuilder<CircleISAR, CircleISAR, QAfterSortBy> thenByTypeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(6, sort: Sort.desc);
+      return query.addSortBy(8, sort: Sort.desc);
     });
   }
 }
@@ -1529,9 +1933,22 @@ extension CircleISARQueryWhereDistinct
     });
   }
 
+  QueryBuilder<CircleISAR, CircleISAR, QAfterDistinct> distinctByInvitationCode(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(6, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<CircleISAR, CircleISAR, QAfterDistinct> distinctByCategory() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(7);
+    });
+  }
+
   QueryBuilder<CircleISAR, CircleISAR, QAfterDistinct> distinctByType() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(6);
+      return query.addDistinctBy(8);
     });
   }
 }
@@ -1574,9 +1991,21 @@ extension CircleISARQueryProperty1
     });
   }
 
-  QueryBuilder<CircleISAR, CircleType, QAfterProperty> typeProperty() {
+  QueryBuilder<CircleISAR, String?, QAfterProperty> invitationCodeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(6);
+    });
+  }
+
+  QueryBuilder<CircleISAR, CircleCategory, QAfterProperty> categoryProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(7);
+    });
+  }
+
+  QueryBuilder<CircleISAR, CircleType, QAfterProperty> typeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(8);
     });
   }
 }
@@ -1619,9 +2048,23 @@ extension CircleISARQueryProperty2<R>
     });
   }
 
-  QueryBuilder<CircleISAR, (R, CircleType), QAfterProperty> typeProperty() {
+  QueryBuilder<CircleISAR, (R, String?), QAfterProperty>
+      invitationCodeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(6);
+    });
+  }
+
+  QueryBuilder<CircleISAR, (R, CircleCategory), QAfterProperty>
+      categoryProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(7);
+    });
+  }
+
+  QueryBuilder<CircleISAR, (R, CircleType), QAfterProperty> typeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(8);
     });
   }
 }
@@ -1664,9 +2107,23 @@ extension CircleISARQueryProperty3<R1, R2>
     });
   }
 
-  QueryBuilder<CircleISAR, (R1, R2, CircleType), QOperations> typeProperty() {
+  QueryBuilder<CircleISAR, (R1, R2, String?), QOperations>
+      invitationCodeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(6);
+    });
+  }
+
+  QueryBuilder<CircleISAR, (R1, R2, CircleCategory), QOperations>
+      categoryProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(7);
+    });
+  }
+
+  QueryBuilder<CircleISAR, (R1, R2, CircleType), QOperations> typeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(8);
     });
   }
 }

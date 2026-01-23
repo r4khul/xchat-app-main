@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/login/login_manager.dart';
@@ -18,6 +19,8 @@ import 'package:ox_common/log_util.dart';
 import 'file_server_page.dart';
 import 'profile_settings_page.dart';
 import 'subscription_detail_page.dart';
+import 'qr_code_display_page.dart';
+import '../../utils/invite_link_manager.dart';
 
 enum _MenuAction { edit, delete }
 enum _PlanAction { changePlan, cancelSubscription }
@@ -84,8 +87,18 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
 
   Future<void> _loadSubscriptionInfo() async {
     try {
-      // Load tenant info to get member count, limits, and members list
+      // Load tenant info to get all tenant information
       final tenantInfo = await CircleMemberService.sharedInstance.getTenantInfo();
+      
+      // Check if current user is tenant admin
+      final currentPubkey = LoginManager.instance.currentPubkey;
+      final tenantAdminPubkey = tenantInfo['tenant_admin_pubkey'] as String?;
+      if (tenantAdminPubkey != null && tenantAdminPubkey.isNotEmpty) {
+        _isOwner = tenantAdminPubkey.toLowerCase() == currentPubkey.toLowerCase();
+      } else {
+        // Fallback to circle pubkey check
+        _isOwner = widget.circle.pubkey == currentPubkey;
+      }
       
       // Extract member count and limits
       final currentMembers = tenantInfo['current_members'] as int? ?? 0;
@@ -385,7 +398,6 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
     final items = <SectionListViewItem>[
       // Relay Server
       SectionListViewItem(
-        header: Localized.text('ox_usercenter.subscription_and_usage'),
         footer: Localized.text('ox_usercenter.relay_server_description'),
         data: [
           LabelItemModel(
@@ -572,44 +584,15 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
       return;
     }
 
-    // Show dialog to enter pubkey
-    final pubkey = await CLDialog.showInputDialog(
-      context: context,
-      title: Localized.text('ox_usercenter.add_member'),
-      description: Localized.text('ox_usercenter.enter_pubkey_description'),
-      inputLabel: Localized.text('ox_usercenter.pubkey_or_npub'),
-      confirmText: Localized.text('ox_common.confirm'),
-      onConfirm: (input) async {
-        final trimmedInput = input.trim();
-        if (trimmedInput.isEmpty) {
-          CommonToast.instance.show(
-            context,
-            Localized.text('ox_common.input_cannot_be_empty'),
-          );
-          return false;
-        }
-        return true;
-      },
-    );
-
-    if (pubkey == null || pubkey.trim().isEmpty) return;
-
-    Loading.OXLoading.show();
-    try {
-      await CircleMemberService.sharedInstance.addMember(
-        memberPubkey: pubkey.trim(),
+    // Navigate to QR code display page for circle invite
+    if (mounted) {
+      await OXNavigator.pushPage(
+        context,
+        (context) => QRCodeDisplayPage(
+          inviteType: InviteType.circle,
+          circle: widget.circle,
+        ),
       );
-      
-      if (mounted) {
-        CommonToast.instance.show(context, Localized.text('ox_common.operation_success'));
-        await _loadSubscriptionInfo();
-      }
-    } catch (e) {
-      if (mounted) {
-        CommonToast.instance.show(context, e.toString());
-      }
-    } finally {
-      Loading.OXLoading.dismiss();
     }
   }
 

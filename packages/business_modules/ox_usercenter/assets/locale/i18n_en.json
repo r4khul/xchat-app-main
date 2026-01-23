@@ -79,6 +79,7 @@
   "regenerate_invite_link": "Regenerate Invite Link",
   "invite_link_regenerated": "Invite link regenerated successfully",
   "regenerate_confirm_content": "This will generate a new keypackage",
+  "reset_circle_invite_confirm": "Resetting will generate a new invitation code, and the old invite link will become invalid. Are you sure you want to continue?",
   "delete_account_confirm_title": "Delete Account",
   "delete_account_confirm_content": "This action will permanently delete your account and local data, including messages and media. This cannot be undone. Are you sure you want to continue?",
   "delete_account_failed": "Failed to delete account",
@@ -131,5 +132,9 @@
   "color": "Color",
   "reset": "Reset",
   "qr_code_share_warning": "Only share your QR code and link with people you trust.When shared others will be able to see your username and start a chat with you.",
-  "invite_link_description": "Anyone who receives this link can initiate a chat with you. Please only share it with people you trust."
+  "qr_code_share_warning_circle": "Only share your QR code and link with people you trust. When shared, others will be able to join this circle.",
+  "invite_link_description": "Anyone who receives this link can initiate a chat with you. Please only share it with people you trust.",
+  "invite_member": "Invite Member",
+  "share_qr_or_link_description": "Share this QR code or link to invite someone to this circle.",
+  "share_link": "Share Link"
 }

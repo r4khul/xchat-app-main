@@ -30,17 +30,14 @@ import 'package:flutter/services.dart';
 
 import '../qr_code/user_qr_code_display.dart';
 import 'qr_code_color_picker_page.dart';
+import '../../utils/invite_link_manager.dart';
+import 'package:ox_common/login/login_models.dart';
 
 enum QRCodeStyle {
   defaultStyle, // Default
   classic,      // Classic
   dots,         // Dots
   gradient,     // Gradient
-}
-
-enum InviteLinkType {
-  oneTime,    // One-time invite link
-  permanent,  // Permanent invite link
 }
 
 enum QRCodePageMode {
@@ -53,10 +50,14 @@ class QRCodeDisplayPage extends StatefulWidget {
     super.key,
     this.previousPageTitle,
     this.otherUser,
+    this.inviteType = InviteType.keypackage,
+    this.circle,
   });
 
   final String? previousPageTitle;
   final UserDBISAR? otherUser;
+  final InviteType inviteType;
+  final Circle? circle;
 
   @override
   State<QRCodeDisplayPage> createState() => _QRCodeDisplayPageState();
@@ -75,8 +76,8 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
 
   double get horizontal => 32.px;
 
-  // Invite link type
-  InviteLinkType currentLinkType = InviteLinkType.oneTime;
+  // Invite link type (for keypackage invites)
+  InviteLinkType? currentLinkType;
 
   // Discoverable by ID setting
   late final ValueNotifier<bool> discoverableByID$;
@@ -98,9 +99,9 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
     // Initialize page mode
     currentMode$ = ValueNotifier<QRCodePageMode?>(QRCodePageMode.code);
 
-    // Auto-generate permanent invite link when page loads (only for current user)
+    // Auto-generate invite link when page loads (only for current user)
     if (widget.otherUser == null) {
-      _generateInviteLink(InviteLinkType.permanent);
+      _generateInviteLink();
     }
   }
 
@@ -136,102 +137,43 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
     super.dispose();
   }
 
-  Future<void> _generateInviteLink(InviteLinkType linkType) async {
+  Future<void> _generateInviteLink() async {
     if (widget.otherUser != null) return; // Only for current user
 
     try {
-      OXLoading.show();
-
-      KeyPackageEvent? keyPackageEvent;
-
-      if (linkType == InviteLinkType.oneTime) {
-        keyPackageEvent = await Groups.sharedInstance.createOneTimeKeyPackage();
-      } else {
-        keyPackageEvent = await Groups.sharedInstance.createPermanentKeyPackage(
-          Account.sharedInstance.getCurrentCircleRelay(),
+      String inviteLink;
+      
+      if (widget.inviteType == InviteType.circle) {
+        // Generate circle invite link
+        if (widget.circle == null) {
+          CommonToast.instance.show(context, 'Circle is required for circle invite');
+          return;
+        }
+        
+        final result = await InviteLinkManager.generateCircleInviteLink(
+          circle: widget.circle!,
         );
-      }
-
-      if (keyPackageEvent == null) {
-        await OXLoading.dismiss();
-        // Check if it's a keypackage expiration issue
-        // Show dialog asking if user wants to refresh their keypackage
-        final shouldRefresh = await CLAlertDialog.show<bool>(
+        inviteLink = result['inviteLink'] as String;
+        currentLinkType = InviteLinkType.permanent; // Circle invites are permanent
+      } else {
+        // Generate keypackage invite link (default to permanent)
+        inviteLink = await InviteLinkManager.generateKeyPackageInviteLink(
+          linkType: InviteLinkType.permanent,
           context: context,
-          title: Localized.text('ox_chat.key_package_expired'),
-          content: Localized.text('ox_chat.key_package_may_expired'),
-          actions: [
-            CLAlertAction.cancel(),
-            CLAlertAction<bool>(
-              label: Localized.text('ox_chat.refresh'),
-              value: true,
-              isDefaultAction: true,
-            ),
-          ],
         );
-
-        if (shouldRefresh == true) {
-          // Refresh keypackage and retry
-          await _generateInviteLink(linkType);
-        }
-        return;
+        currentLinkType = InviteLinkType.permanent;
       }
 
-      // Get relay URL
-      List<String> relays = Account.sharedInstance.getCurrentCircleRelay();
-      String? relayUrl = relays.firstOrNull;
-      if (relayUrl == null || relayUrl.isEmpty) {
-        await OXLoading.dismiss();
-        CommonToast.instance.show(context, 'Error circle info');
-        OXNavigator.pop(context);
-        return;
-      }
+      // Update QR code data and invite link
+      currentInviteLink = inviteLink;
+      currentQrCodeData = inviteLink;
 
-      // Generate invite link with compression
-      if (linkType == InviteLinkType.oneTime || linkType == InviteLinkType.permanent) {
-        // For one-time invites, include sender's pubkey
-        final senderPubkey = Account.sharedInstance.currentPubkey;
-
-        // Try to compress the keypackage data
-        String? compressedKeyPackage = await CompressionUtils.compressWithPrefix(keyPackageEvent.encoded_key_package);
-        String keyPackageParam = compressedKeyPackage ?? keyPackageEvent.encoded_key_package;
-
-        currentInviteLink = '${AppConfig.inviteBaseUrl}?keypackage=$keyPackageParam&pubkey=${Uri.encodeComponent(senderPubkey)}&relay=${Uri.encodeComponent(relayUrl)}';
-
-        // Log compression results
-        if (compressedKeyPackage != null) {
-          double ratio = CompressionUtils.getCompressionRatio(keyPackageEvent.encoded_key_package, compressedKeyPackage);
-          print('Keypackage compressed: ${(ratio * 100).toStringAsFixed(1)}% of original size');
-        }
-      } else {
-        currentInviteLink = '${AppConfig.inviteBaseUrl}?eventid=${Uri.encodeComponent(keyPackageEvent.eventId)}&relay=${Uri.encodeComponent(relayUrl)}';
-      }
-
-      // Update QR code data and current link type
-      currentQrCodeData = currentInviteLink ?? '';
-      currentLinkType = linkType;
-
-      await OXLoading.dismiss();
       setState(() {});
     } catch (e) {
-      await OXLoading.dismiss();
-      
-      // Handle KeyPackageError
-      final handled = await ChatSessionUtils.handleKeyPackageError(
-        context: context,
-        error: e,
-        onRetry: () async {
-          // Retry generating invite link
-          await _generateInviteLink(linkType);
-        },
-        onOtherError: (message) {
-          CommonToast.instance.show(context, '${Localized.text('ox_usercenter.invite_link_generation_failed')}: $e');
-        },
-      );
-
-      if (!handled) {
-        // Other errors
-        CommonToast.instance.show(context, '${Localized.text('ox_usercenter.invite_link_generation_failed')}: $e');
+      CommonToast.instance.show(context, e.toString());
+      if (widget.inviteType == InviteType.circle) {
+        // For circle invites, pop back on error
+        OXNavigator.pop(context);
       }
     }
   }
@@ -324,7 +266,9 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
                   child: UserQrCodeDisplay(
                     qrcodeValue: currentQrCodeData,
                     tintColor: selectedColor,
-                    userName: userName,
+                    userName: widget.inviteType == InviteType.circle && widget.circle != null
+                        ? widget.circle!.name
+                        : userName,
                     canCopyName: true,
                   ),
                 ),
@@ -336,12 +280,14 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
                 // Warning text
                 SizedBox(height: 32.px),
                 CLText.bodySmall(
-                  Localized.text('ox_usercenter.qr_code_share_warning'),
+                  widget.inviteType == InviteType.circle
+                      ? Localized.text('ox_usercenter.qr_code_share_warning_circle')
+                      : Localized.text('ox_usercenter.qr_code_share_warning'),
                   textAlign: TextAlign.center,
                   colorToken: ColorToken.onSurfaceVariant,
                 ),
 
-                // Reset button
+                // Reset button (for both keypackage and circle invites)
                 SizedBox(height: 32.px),
                 CLButton.outlined(
                   text: Localized.text('ox_usercenter.reset'),
@@ -689,12 +635,16 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
   }
 
   Future<void> _showColorPicker() async {
+    final displayName = widget.inviteType == InviteType.circle && widget.circle != null
+        ? widget.circle!.name
+        : userName;
+    
     final Color? selectedColorResult = await OXNavigator.pushPage<Color>(
       context,
       (context) => QRCodeColorPickerPage(
         initialColor: selectedColor,
         qrcodeValue: currentQrCodeData,
-        userName: userName,
+        userName: displayName,
       ),
       type: OXPushPageType.present,
     );
@@ -707,44 +657,47 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
 
   Future<void> _regenerateInviteLink() async {
     try {
-      OXLoading.show();
-
-      // Recreate permanent keypackage
-      KeyPackageEvent? keyPackageEvent = await Groups.sharedInstance.recreatePermanentKeyPackage(
-        Account.sharedInstance.getCurrentCircleRelay(),
-      );
-
-      if (keyPackageEvent == null) {
-        await OXLoading.dismiss();
-        CommonToast.instance.show(context, Localized.text('ox_usercenter.invite_link_generation_failed'));
-        return;
+      String inviteLink;
+      
+      if (widget.inviteType == InviteType.circle) {
+        // Reset circle invitation code
+        if (widget.circle == null) {
+          CommonToast.instance.show(context, 'Circle is required for circle invite');
+          return;
+        }
+        
+        final result = await InviteLinkManager.regenerateCircleInviteLink(
+          circle: widget.circle!,
+        );
+        inviteLink = result['inviteLink'] as String;
+      } else {
+        // Regenerate keypackage invite link
+        inviteLink = await InviteLinkManager.regenerateKeyPackageInviteLink(
+          context: context,
+        );
       }
 
-      // Get relay URL
-      List<String> relays = Account.sharedInstance.getCurrentCircleRelay();
-      String relayUrl = relays.isNotEmpty ? relays.first : 'wss://relay.0xchat.com';
+      // Update QR code data and invite link
+      currentInviteLink = inviteLink;
+      currentQrCodeData = inviteLink;
 
-      // Generate new invite link
-      currentInviteLink = '${AppConfig.inviteBaseUrl}?eventid=${Uri.encodeComponent(keyPackageEvent.eventId)}&relay=${Uri.encodeComponent(relayUrl)}';
-
-      // Update QR code data
-      currentQrCodeData = currentInviteLink ?? '';
-
-      await OXLoading.dismiss();
       setState(() {});
 
       CommonToast.instance.show(context, Localized.text('ox_usercenter.invite_link_regenerated'));
     } catch (e) {
-      await OXLoading.dismiss();
-      CommonToast.instance.show(context, '${Localized.text('ox_usercenter.invite_link_generation_failed')}: $e');
+      CommonToast.instance.show(context, e.toString());
     }
   }
 
   void _showRegenerateConfirmDialog() {
+    final content = widget.inviteType == InviteType.circle
+        ? Localized.text('ox_usercenter.reset_circle_invite_confirm')
+        : Localized.text('ox_usercenter.regenerate_confirm_content');
+    
     CLAlertDialog.show<bool>(
       context: context,
       title: Localized.text('ox_usercenter.regenerate_invite_link'),
-      content: Localized.text('ox_usercenter.regenerate_confirm_content'),
+      content: content,
       actions: [
         CLAlertAction.cancel(),
         CLAlertAction<bool>(

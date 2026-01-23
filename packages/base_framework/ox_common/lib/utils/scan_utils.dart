@@ -101,6 +101,7 @@ extension ScanAnalysisHandlerEx on ScanUtils {
       final keypackage = uri.queryParameters['keypackage'];
       final pubkey = uri.queryParameters['pubkey'];
       final eventid = uri.queryParameters['eventid'];
+      final code = uri.queryParameters['code']; // Invitation code
       final relay = uri.queryParameters['relay'];
 
       // Check if relay is provided
@@ -125,6 +126,99 @@ extension ScanAnalysisHandlerEx on ScanUtils {
       final normalizedRelayUrl = relayUrl.replaceFirst(RegExp(r'/+$'), '');
       final normalizedCurrentRelayUrl = currentCircle?.relayUrl.replaceFirst(RegExp(r'/+$'), '') ?? '';
 
+      // Handle invitation code (new format)
+      if (code != null && code.isNotEmpty) {
+        // Ensure we're in the target circle before using invitation code
+        Circle? targetCircle;
+        
+        // Case 1: If it's the current circle, use it directly
+        if (currentCircle != null && normalizedCurrentRelayUrl == normalizedRelayUrl) {
+          targetCircle = currentCircle;
+        } else {
+          // Case 2: Check if target circle exists in account's circle list
+          for (final circle in account.circles) {
+            final normalizedCircleRelayUrl = circle.relayUrl.replaceFirst(RegExp(r'/+$'), '');
+            if (normalizedCircleRelayUrl == normalizedRelayUrl) {
+              targetCircle = circle;
+              break;
+            }
+          }
+          
+          // Case 3: Circle doesn't exist, need to join first
+          if (targetCircle == null) {
+            OXLoading.dismiss();
+            final agreeJoin = await _showJoinCircleDialogFromScan(context, [relayUrl], '');
+            if (agreeJoin != true) {
+              return;
+            }
+            
+            // Join the circle
+            OXLoading.show();
+            final failure = await LoginManager.instance.joinCircle(relayUrl);
+            if (failure != null) {
+              OXLoading.dismiss();
+              CommonToast.instance.show(context, failure.message);
+              return;
+            }
+            
+            // Find the newly joined circle
+            final updatedAccount = LoginManager.instance.currentState.account;
+            if (updatedAccount != null) {
+              for (final circle in updatedAccount.circles) {
+                final normalizedCircleRelayUrl = circle.relayUrl.replaceFirst(RegExp(r'/+$'), '');
+                if (normalizedCircleRelayUrl == normalizedRelayUrl) {
+                  targetCircle = circle;
+                  break;
+                }
+              }
+            }
+            
+            if (targetCircle == null) {
+              OXLoading.dismiss();
+              CommonToast.instance.show(context, Localized.text('ox_common.failed_to_join_circle'));
+              return;
+            }
+          } else if (targetCircle != currentCircle) {
+            // Need to switch to target circle
+            OXLoading.dismiss();
+            final agreeSwitch = await _showSwitchCircleDialogFromScan(context, targetCircle, '');
+            if (agreeSwitch != true) {
+              return;
+            }
+            
+            OXLoading.show();
+            final switchResult = await _switchToCircleFromScan(context, targetCircle);
+            if (!switchResult) {
+              return;
+            }
+            
+            // Update targetCircle to current circle after switch
+            targetCircle = LoginManager.instance.currentCircle;
+          }
+        }
+        
+        // Now use the invitation code to join
+        if (targetCircle != null) {
+          try {
+            await CircleMemberService.sharedInstance.joinWithInvitationCode(
+              invitationCode: code,
+            );
+            
+            OXLoading.dismiss();
+            CommonToast.instance.show(context, Localized.text('ox_common.operation_success'));
+            
+            // Refresh circle info
+            await Future.delayed(Duration(milliseconds: 500));
+            OXNavigator.popToRoot(context);
+          } catch (e) {
+            OXLoading.dismiss();
+            CommonToast.instance.show(context, e.toString());
+          }
+        }
+        return;
+      }
+
+      // Handle legacy keypackage/eventid invite links
       // Case 1: If it's the current circle, proceed directly
       if (currentCircle != null && normalizedCurrentRelayUrl == normalizedRelayUrl) {
         // Current circle matches, proceed with invite processing
@@ -235,7 +329,6 @@ extension ScanAnalysisHandlerEx on ScanUtils {
         // Navigate to sender's profile page
         if (senderPubkey != null) {
           // Navigate to user detail page
-          await Future.delayed(Duration(milliseconds: 300));
           OXNavigator.popToRoot(context);
           await Future.delayed(Duration(milliseconds: 300));
           await _navigateToUserDetailFromScan(context, senderPubkey);

@@ -72,6 +72,8 @@ class CircleRepository {
       existing.name = circle.name;
       existing.relayUrl = circle.relayUrl;
       existing.type = circle.type;
+      existing.invitationCode = circle.invitationCode;
+      existing.category = circle.category;
 
       await accountDb.writeAsync((accountDb) {
         accountDb.circleISARs.put(existing);
@@ -81,6 +83,29 @@ class CircleRepository {
       return true;
     } catch (e) {
       LogUtil.e(() => 'Failed to update circle: $e');
+      return false;
+    }
+  }
+
+  /// Update invitation code for a circle
+  static Future<bool> updateInvitationCode(Isar accountDb, String circleId, String invitationCode) async {
+    try {
+      final existing = await getById(accountDb, circleId);
+      if (existing == null) {
+        LogUtil.w(() => 'Circle with id $circleId not found');
+        return false;
+      }
+
+      existing.invitationCode = invitationCode;
+
+      await accountDb.writeAsync((accountDb) {
+        accountDb.circleISARs.put(existing);
+      });
+
+      LogUtil.v(() => 'Invitation code updated for circle: $circleId');
+      return true;
+    } catch (e) {
+      LogUtil.e(() => 'Failed to update invitation code: $e');
       return false;
     }
   }

@@ -25,13 +25,23 @@ class CircleISAR {
   /// Circle type (relay or bitchat)
   late int typeValue; // Store as int for Isar compatibility
 
+  /// Invitation code for this circle (optional)
+  String? invitationCode;
+
+  /// Circle category (custom or paid)
+  @enumValue
+  late CircleCategory category;
+
   CircleISAR({
     required this.pubkey,
     required this.circleId,
     required this.name,
     required this.relayUrl,
     CircleType type = CircleType.relay,
-  }) : typeValue = _typeToInt(type);
+    this.invitationCode,
+    CircleCategory category = CircleCategory.custom,
+  }) : typeValue = _typeToInt(type),
+       this.category = category;
 
   static int _typeToInt(CircleType type) {
     return type == CircleType.bitchat ? 1 : 0;

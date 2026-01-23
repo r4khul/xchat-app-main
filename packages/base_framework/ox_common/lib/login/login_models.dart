@@ -41,6 +41,34 @@ extension CircleTypeExtension on CircleType {
   }
 }
 
+/// Circle category enumeration
+enum CircleCategory {
+  custom,    
+  paid,      
+}
+
+extension CircleCategoryExtension on CircleCategory {
+  String get value {
+    switch (this) {
+      case CircleCategory.custom:
+        return 'custom';
+      case CircleCategory.paid:
+        return 'paid';
+    }
+  }
+
+  static CircleCategory fromString(String value) {
+    switch (value) {
+      case 'custom':
+        return CircleCategory.custom;
+      case 'paid':
+        return CircleCategory.paid;
+      default:
+        return CircleCategory.custom;
+    }
+  }
+}
+
 /// Login failure information
 class LoginFailure {
   const LoginFailure({
@@ -65,6 +93,8 @@ class Circle {
     required this.relayUrl,
     this.type = CircleType.relay,
     this.pubkey,
+    this.invitationCode,
+    this.category = CircleCategory.custom,
   }) : id = id ?? Uuid().v4();
 
   final String id;
@@ -72,6 +102,8 @@ class Circle {
   String relayUrl;
   final CircleType type;
   String? pubkey; // Account pubkey this circle belongs to
+  String? invitationCode; // Invitation code for this circle
+  CircleCategory category; // Circle category (custom or paid)
 
   /// Circle level configuration, loaded lazily after circle DB initialized.
   CircleConfigModel _config = CircleConfigModel();
@@ -86,6 +118,8 @@ class Circle {
       relayUrl: isar.relayUrl,
       type: isar.type,
       pubkey: isar.pubkey,
+      invitationCode: isar.invitationCode,
+      category: isar.category,
     );
   }
 
@@ -97,6 +131,8 @@ class Circle {
       name: name,
       relayUrl: relayUrl,
       type: type,
+      invitationCode: invitationCode,
+      category: category,
     );
   }
 
