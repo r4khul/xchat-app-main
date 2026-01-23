@@ -359,7 +359,7 @@ extension AccountHelperEx on AccountModel {
   }
 
   // Static method to run in isolate for private key decryption
-  static Future<String> _decodeAndEncodePrivkey(Map<String, String> params) async {
+  static Future<String> _decryptAndEncodePrivkey(Map<String, String> params) async {
     try {
       final encryptedPrivKey = params['encryptedPrivKey']!;
       final password = params['password']!;
@@ -381,6 +381,6 @@ extension AccountHelperEx on AccountModel {
       'encryptedPrivKey': encryptedPrivKey,
       'password': defaultPassword,
     };
-    return await compute(_decodeAndEncodePrivkey, params);
+    return await compute(_decryptAndEncodePrivkey, params);
   }
 }

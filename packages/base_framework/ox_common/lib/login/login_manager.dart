@@ -11,6 +11,7 @@ import 'package:nostr_core_dart/src/signer/signer_config.dart';
 import 'package:ox_common/network/tor_network_helper.dart';
 import 'package:ox_common/push/push_integration.dart';
 import 'package:ox_common/push/push_notification_manager.dart';
+import 'package:ox_common/purchase/purchase_manager.dart';
 import 'package:ox_common/utils/extension.dart';
 import '../utils/ox_chat_binding.dart';
 import 'database_manager.dart';
@@ -314,14 +315,22 @@ extension LoginManagerAccount on LoginManager {
       }
 
       // Update login state
-      final loginState = LoginState(account: account);
-      _state$.value = loginState;
+      updateStateAccount(account);
+
+      // Initialize PurchaseManager after account is set up
+      // PurchaseManager needs account to be available for purchase verification
+      try {
+        await PurchaseManager.instance.initialize();
+      } catch (e) {
+        debugPrint('Failed to initialize PurchaseManager: $e');
+        // Don't fail login if PurchaseManager initialization fails
+      }
 
       // Set up signer configuration for this pubkey
       await _setupSignerForPubkey(lastPubkey);
 
       // Try to login to last circle or first circle
-      await _tryLoginLastCircle(loginState);
+      await _tryLoginLastCircle();
 
       _notifyLoginSuccess();
       return true;
@@ -342,6 +351,14 @@ extension LoginManagerAccount on LoginManager {
 
     if (isLoginCircle) {
       await logoutCircle();
+    }
+
+    // Dispose PurchaseManager before clearing account state
+    // PurchaseManager is account-specific and should be released on logout
+    try {
+      PurchaseManager.instance.dispose();
+    } catch (e) {
+      debugPrint('Failed to dispose PurchaseManager: $e');
     }
 
     // Clear login state
@@ -451,13 +468,21 @@ extension LoginManagerAccount on LoginManager {
         }
       });
       // 4. Update login state
-      final loginState = LoginState(account: account);
-      _state$.value = loginState;
+      updateStateAccount(account);
 
-      // 5. Persist login information
+      // 5. Initialize PurchaseManager after account is set up
+      // PurchaseManager needs account to be available for purchase verification
+      try {
+        await PurchaseManager.instance.initialize();
+      } catch (e) {
+        debugPrint('Failed to initialize PurchaseManager: $e');
+        // Don't fail login if PurchaseManager initialization fails
+      }
+
+      // 6. Persist login information
       await _persistLoginInfo(pubkey);
 
-      // 6. Persist signer selection if provided
+      // 7. Persist signer selection if provided
       if (signerKey != null) {
         await _persistSignerInfo(pubkey, signerKey);
         // Also set the signer in ExternalSignerTool for immediate use
@@ -465,8 +490,8 @@ extension LoginManagerAccount on LoginManager {
         debugPrint('LoginManager: Set signer mapping $pubkey -> $signerKey');
       }
 
-      // 6. Try to login to last circle or first circle
-      await _tryLoginLastCircle(loginState);
+      // 8. Try to login to last circle or first circle
+      await _tryLoginLastCircle();
 
       _notifyLoginSuccess();
       return true;
@@ -579,10 +604,10 @@ extension LoginManagerCircle on LoginManager {
       );
     }
 
-    final success = await _loginToCircle(circle, currentState);
+    final success = await _loginToCircle(circle);
     if (!success) {
       if (originCircle != null) {
-        _loginToCircle(originCircle, currentState);
+        _loginToCircle(originCircle);
       }
       return LoginFailure(
         type: LoginFailureType.circleDbFailed,
@@ -785,15 +810,15 @@ extension LoginManagerCircle on LoginManager {
     }
   }
 
-  Future<bool> _tryLoginLastCircle(LoginState loginState) async {
-    final account = loginState.account;
+  Future<bool> _tryLoginLastCircle() async {
+    final account = currentState.account;
     if (account == null) return false;
 
     final lastCircleId = account.lastLoginCircleId ?? '';
     if (lastCircleId.isNotEmpty && account.circles.isNotEmpty) {
       final targetCircle = account.circles.where((c) => c.id == lastCircleId).firstOrNull;
       if (targetCircle != null) {
-        return await _loginToCircle(targetCircle, loginState);
+        return await _loginToCircle(targetCircle);
       }
     }
 
@@ -803,9 +828,9 @@ extension LoginManagerCircle on LoginManager {
   /// Login to specified circle
   ///
   /// This performs circle-level login using Account.sharedInstance methods
-  Future<bool> _loginToCircle(Circle circle, LoginState loginState) async {
+  Future<bool> _loginToCircle(Circle circle) async {
     try {
-      final account = loginState.account;
+      final account = currentState.account;
       if (account == null) {
         _notifyCircleChange(false, LoginFailure(
           type: LoginFailureType.errorEnvironment,

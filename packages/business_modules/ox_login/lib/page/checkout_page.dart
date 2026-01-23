@@ -2,15 +2,11 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:ox_common/component.dart';
-import 'package:ox_common/login/login_manager.dart';
-import 'package:ox_common/login/login_models.dart';
-import 'package:ox_common/utils/account_credentials_utils.dart';
-import 'package:chatcore/chat-core.dart';
+import 'package:ox_common/log_util.dart';
 import 'package:ox_common/navigator/navigator.dart';
+import 'package:ox_common/purchase/purchase_manager.dart';
 import 'package:ox_common/utils/adapt.dart';
-import 'package:ox_common/widgets/common_loading.dart';
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import 'circle_activated_page.dart';
@@ -31,8 +27,7 @@ class CheckoutPage extends StatefulWidget {
 }
 
 class _CheckoutPageState extends State<CheckoutPage> {
-  final InAppPurchase _inAppPurchase = InAppPurchase.instance;
-  late StreamSubscription<List<PurchaseDetails>> _subscription;
+  StreamSubscription<PurchaseStateEvent>? _purchaseStateSubscription;
   bool _isProcessing = false;
   bool _purchasePending = false;
 
@@ -40,120 +35,113 @@ class _CheckoutPageState extends State<CheckoutPage> {
   void initState() {
     super.initState();
 
-    // Listen to purchase updates
-    final Stream<List<PurchaseDetails>> purchaseUpdated =
-        _inAppPurchase.purchaseStream;
-    _subscription = purchaseUpdated.listen(
-      (List<PurchaseDetails> purchaseDetailsList) {
-        _listenToPurchaseUpdated(purchaseDetailsList);
-      },
-      onDone: () {
-        _subscription.cancel();
-      },
-      onError: (Object error) {
-        _handleError(error);
-      },
+    // Listen to purchase state changes for UI updates
+    _purchaseStateSubscription = PurchaseManager.instance.purchaseStateStream.listen(
+      _onPurchaseStateChanged,
     );
+    
+    // [DEBUG] Temporary logging for issue diagnosis
+    LogUtil.d(() => '''
+      [CheckoutPage] initState:
+      - selectedPlan: ${widget.selectedPlan.name}
+      - selectedPeriod: ${widget.selectedPeriod}
+      - productId: ${widget.selectedPlan.getProductId(widget.selectedPeriod)}
+      - stream subscription created
+    ''');
   }
 
   @override
   void dispose() {
-    _subscription.cancel();
+    _purchaseStateSubscription?.cancel();
+    LogUtil.d(() => '[CheckoutPage] dispose: stream subscription canceled');
     super.dispose();
   }
 
-  Future<void> _listenToPurchaseUpdated(
-      List<PurchaseDetails> purchaseDetailsList) async {
-    for (final PurchaseDetails purchaseDetails in purchaseDetailsList) {
-      if (purchaseDetails.status == PurchaseStatus.pending) {
+  /// Handle purchase state changes from PurchaseManager
+  /// 
+  /// This is called when purchase state changes (pending, processing, success, error, canceled).
+  /// We only handle UI updates here - all purchase logic is in PurchaseManager.
+  void _onPurchaseStateChanged(PurchaseStateEvent event) {
+    // [DEBUG] Temporary logging for issue diagnosis
+    LogUtil.d(() => '''
+      [CheckoutPage] _onPurchaseStateChanged called:
+      - mounted: $mounted
+      - event.productId: ${event.productId}
+      - event.state: ${event.state}
+      - event.errorMessage: ${event.errorMessage}
+      - current _isProcessing: $_isProcessing
+      - current _purchasePending: $_purchasePending
+    ''');
+
+    if (!mounted) {
+      LogUtil.w(() => '[CheckoutPage] _onPurchaseStateChanged: widget not mounted, ignoring event');
+      return;
+    }
+
+    // Only handle events for the product we're purchasing
+    final currentProductId = widget.selectedPlan.getProductId(widget.selectedPeriod);
+    
+    // [DEBUG] Temporary logging for issue diagnosis
+    LogUtil.d(() => '''
+      [CheckoutPage] Product ID comparison:
+      - event.productId: "${event.productId}"
+      - currentProductId: "$currentProductId"
+      - match: ${event.productId == currentProductId}
+      - event.productId.length: ${event.productId.length}
+      - currentProductId.length: ${currentProductId.length}
+    ''');
+
+    if (event.productId != currentProductId) {
+      LogUtil.w(() => '''
+        [CheckoutPage] Ignoring purchase state event (different product):
+        - event productId: "${event.productId}"
+        - current productId: "$currentProductId"
+        - This event will be ignored, UI will not update!
+      ''');
+      return;
+    }
+
+    LogUtil.d(() => '''
+      [CheckoutPage] Processing purchase state event (product ID matches):
+      - productId: ${event.productId}
+      - state: ${event.state}
+      - errorMessage: ${event.errorMessage}
+      - verificationResult: ${event.verificationResult != null ? 'present' : 'null'}
+    ''');
+
+    switch (event.state) {
+      case PurchaseState.pending:
+        LogUtil.d(() => '[CheckoutPage] State: pending - setting _purchasePending = true');
         setState(() {
           _purchasePending = true;
         });
-      } else {
-        if (purchaseDetails.status == PurchaseStatus.error) {
-          _handleError(purchaseDetails.error!);
-          // Complete purchase even on error to free up the queue
-          if (purchaseDetails.pendingCompletePurchase) {
-            await _inAppPurchase.completePurchase(purchaseDetails);
-          }
-        } else if (purchaseDetails.status == PurchaseStatus.purchased ||
-            purchaseDetails.status == PurchaseStatus.restored) {
-          // Handle purchase success
-          await _handlePurchaseSuccess(purchaseDetails);
-        }
+        break;
+
+      case PurchaseState.processing:
+        LogUtil.d(() => '[CheckoutPage] State: processing - setting _isProcessing = true');
         setState(() {
           _purchasePending = false;
+          _isProcessing = true;
         });
-      }
-    }
-  }
+        break;
 
-  Future<void> _handlePurchaseSuccess(PurchaseDetails purchaseDetails) async {
-    if (!mounted) return;
-
-    try {
-      setState(() => _isProcessing = true);
-      OXLoading.show();
-
-      // Get receipt/purchase token
-      String receipt = purchaseDetails.verificationData.serverVerificationData;
-      if (receipt.isEmpty) {
-        receipt = purchaseDetails.verificationData.source;
-      }
-
-      // Get credentials for API call
-      final credentials = await AccountCredentialsUtils.getCredentials();
-      if (credentials == null) {
-        throw Exception('Failed to get account credentials');
-      }
-
-      // Verify payment and get relay URL using CircleApi
-      final PaymentVerificationResult result;
-      if (Platform.isIOS) {
-        // Apple App Store
-        result = await CircleApi.verifyApplePayment(
-          pubkey: credentials['pubkey'] as String,
-          privkey: credentials['privkey'] as String,
-          productId: purchaseDetails.productID,
-          receiptData: receipt,
-        );
-      } else {
-        // Google Play - need to get purchase token
-        // For Google Play, the receipt should be the purchase token
-        result = await CircleApi.verifyGooglePayment(
-          pubkey: credentials['pubkey'] as String,
-          privkey: credentials['privkey'] as String,
-          productId: purchaseDetails.productID,
-          purchaseToken: receipt,
-        );
-      }
-
-      if (result.relayUrl.isEmpty) {
-        throw Exception('Failed to get relay URL from server');
-      }
-
-      // Complete the purchase
-      if (purchaseDetails.pendingCompletePurchase) {
-        await _inAppPurchase.completePurchase(purchaseDetails);
-      }
-
-      // Create and join Circle with the relay URL
-      final failure = await LoginManager.instance.joinCircle(
-        result.relayUrl,
-        type: CircleType.relay,
-      );
-
-      OXLoading.dismiss();
-
-      if (failure != null) {
+      case PurchaseState.success:
+        LogUtil.d(() => '''
+          [CheckoutPage] State: success - updating UI and navigating:
+          - productId: ${event.productId}
+          - relayUrl: ${event.verificationResult?.relayUrl ?? 'N/A'}
+          - tenantId: ${event.verificationResult?.tenantId ?? 'N/A'}
+          - Before setState: _isProcessing = $_isProcessing
+        ''');
+        setState(() {
+          _purchasePending = false;
+          _isProcessing = false;
+        });
+        LogUtil.d(() => '[CheckoutPage] After setState: _isProcessing = $_isProcessing');
+        
+        // Purchase successful - navigate to success page
         if (mounted) {
-          CommonToast.instance
-              .show(context, 'Failed to create circle: ${failure.message}');
-        }
-      } else {
-        // Success - navigate to circle activated page
-        if (mounted) {
-          // Close all checkout pages
+          LogUtil.d(() => '[CheckoutPage] Navigating to CircleActivatedPage...');
           Navigator.of(context).popUntil((route) => route.isFirst);
           OXNavigator.pushPage(
             context,
@@ -162,32 +150,47 @@ class _CheckoutPageState extends State<CheckoutPage> {
               planName: widget.selectedPlan.name,
             ),
           );
+          LogUtil.d(() => '[CheckoutPage] Navigation completed');
+        } else {
+          LogUtil.w(() => '[CheckoutPage] Widget not mounted after setState, cannot navigate');
         }
-      }
-    } catch (e) {
-      OXLoading.dismiss();
-      // On error, still complete purchase to free up the queue
-      if (purchaseDetails.pendingCompletePurchase) {
-        await _inAppPurchase.completePurchase(purchaseDetails);
-      }
-      if (mounted) {
-        CommonToast.instance.show(context, 'Failed to process payment: $e');
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isProcessing = false);
-      }
-    }
-  }
+        break;
 
+      case PurchaseState.error:
+        LogUtil.e(() => '''
+          [CheckoutPage] State: error - updating UI:
+          - errorMessage: ${event.errorMessage}
+          - Before setState: _isProcessing = $_isProcessing
+        ''');
+        setState(() {
+          _purchasePending = false;
+          _isProcessing = false;
+        });
+        LogUtil.d(() => '[CheckoutPage] After setState: _isProcessing = $_isProcessing');
+        if (mounted && event.errorMessage != null) {
+          CommonToast.instance.show(
+            context,
+            event.errorMessage!,
+          );
+        }
+        break;
 
-  void _handleError(dynamic error) {
-    if (mounted) {
-      CommonToast.instance.show(context, 'Purchase error: ${error.toString()}');
-      setState(() {
-        _isProcessing = false;
-        _purchasePending = false;
-      });
+      case PurchaseState.canceled:
+        LogUtil.d(() => '''
+          [CheckoutPage] State: canceled - updating UI:
+          - Before setState: _isProcessing = $_isProcessing
+        ''');
+        setState(() {
+          _purchasePending = false;
+          _isProcessing = false;
+        });
+        LogUtil.d(() => '[CheckoutPage] After setState: _isProcessing = $_isProcessing');
+        // User canceled - no error message needed
+        break;
+
+      case PurchaseState.idle:
+        // No action needed
+        break;
     }
   }
 
@@ -494,90 +497,42 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
+  /// Initiate purchase for the selected plan
+  /// 
+  /// All purchase logic (query, validation, debouncing) is handled by PurchaseManager.
+  /// We only need to call purchaseProduct and handle state changes.
   Future<void> _handlePay() async {
-    // Query product details for the selected plan and period
     final String productId = widget.selectedPlan.getProductId(widget.selectedPeriod);
-    await _queryAndBuyProduct(productId);
-  }
-
-  Future<void> _queryAndBuyProduct(String productId) async {
+    
+    // [DEBUG] Temporary logging for issue diagnosis
+    LogUtil.d(() => '''
+      [CheckoutPage] User clicked pay button:
+      - productId: "$productId"
+      - plan: ${widget.selectedPlan.name}
+      - period: ${widget.selectedPeriod}
+      - current _isProcessing: $_isProcessing
+      - current _purchasePending: $_purchasePending
+    ''');
+    
     try {
-      setState(() {
-        _isProcessing = true;
-      });
-
-      final bool isAvailable = await _inAppPurchase.isAvailable();
-      if (!isAvailable) {
-        setState(() {
-          _isProcessing = false;
-        });
-        CommonToast.instance.show(context, 'Store not available');
-        return;
-      }
-
-      final ProductDetailsResponse productDetailResponse =
-          await _inAppPurchase.queryProductDetails({productId});
-
-      if (productDetailResponse.error != null) {
-        setState(() {
-          _isProcessing = false;
-        });
-        CommonToast.instance.show(
-          context,
-          'Error: ${productDetailResponse.error!.message}',
-        );
-        return;
-      }
-
-      if (productDetailResponse.productDetails.isEmpty) {
-        setState(() {
-          _isProcessing = false;
-        });
-        CommonToast.instance.show(
-          context,
-          'Product not found: $productId\nPlease check if the product is configured in ${Platform.isIOS ? "App Store Connect" : "Google Play Console"}',
-        );
-        return;
-      }
-
-      final ProductDetails productDetails =
-          productDetailResponse.productDetails.first;
-      await _buyProduct(productDetails);
-    } catch (e) {
-      setState(() {
-        _isProcessing = false;
-      });
-      CommonToast.instance.show(context, 'Error: $e');
-    }
-  }
-
-  Future<void> _buyProduct(ProductDetails productDetails) async {
-    try {
-      setState(() => _isProcessing = true);
-
-      final PurchaseParam purchaseParam = PurchaseParam(
-        productDetails: productDetails,
-      );
-
-      // Use buyNonConsumable for subscriptions (the system recognizes subscription products)
-      final bool success = await _inAppPurchase.buyNonConsumable(
-        purchaseParam: purchaseParam,
-      );
-
-      if (!success) {
-        if (mounted) {
-          setState(() => _isProcessing = false);
-          CommonToast.instance.show(
-            context,
-            'Failed to initiate purchase. Please try again.',
-          );
-        }
-      }
-      // Purchase status will be handled by _listenToPurchaseUpdated
-    } catch (e) {
+      LogUtil.d(() => '[CheckoutPage] Calling PurchaseManager.instance.purchaseProduct("$productId")...');
+      await PurchaseManager.instance.purchaseProduct(productId);
+      LogUtil.d(() => '[CheckoutPage] purchaseProduct() returned successfully');
+      // Purchase state changes will be handled by _onPurchaseStateChanged
+    } catch (e, stack) {
+      LogUtil.e(() => '''
+        [CheckoutPage] Error initiating purchase:
+        - productId: "$productId"
+        - error: $e
+        - stack: $stack
+      ''');
+      // Error is already handled by PurchaseManager and will trigger state change
+      // But we can show a toast here if needed
       if (mounted) {
-        setState(() => _isProcessing = false);
-        CommonToast.instance.show(context, 'Purchase error: $e');
+        CommonToast.instance.show(
+          context,
+          'Failed to initiate purchase: $e',
+        );
       }
     }
   }
