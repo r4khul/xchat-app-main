@@ -4,9 +4,11 @@ import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/page/circle_introduction_page.dart';
 import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/utils/circle_join_utils.dart';
+import 'package:ox_common/utils/account_credentials_utils.dart';
 import 'package:ox_common/widgets/common_loading.dart';
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_localizable/ox_localizable.dart';
+import 'package:chatcore/chat-core.dart';
 import '../controller/onboarding_controller.dart';
 import 'private_cloud_overview_page.dart';
 
@@ -377,29 +379,98 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
   }
 
   Future<void> _onUseInvite() async {
+    print('onUseInvite');
     // Show dialog to enter invite code
-    final inviteCode = await _showInviteCodeDialog();
-    if (inviteCode == null || inviteCode.isEmpty) return;
+    final inviteInput = await _showInviteCodeDialog();
+    if (inviteInput == null || inviteInput.isEmpty) return;
 
     setState(() => _isProcessing = true);
     OXLoading.show();
 
     try {
-      if (_controller != null) {
-        // Use onboarding controller for new users
-        final result = await _controller!.joinPrivateCircle(
-          relayUrl: inviteCode,
-          context: context,
-        );
-        _handleOnboardingResult(result);
+      final trimmedInput = inviteInput.trim();
+      
+      // Check if input is an invite link
+      bool isInviteLink = trimmedInput.startsWith('https://0xchat.com/x/invite')
+          || trimmedInput.startsWith('https://www.0xchat.com/x/invite')
+          || trimmedInput.startsWith('https://0xchat.com/lite/invite')
+          || trimmedInput.startsWith('https://www.0xchat.com/lite/invite');
+
+      if (isInviteLink) {
+        // Parse invite link to extract code and relay
+        try {
+          final uri = Uri.parse(trimmedInput);
+          final code = uri.queryParameters['code'];
+          final relay = uri.queryParameters['relay'];
+
+          if (code == null || code.isEmpty) {
+            throw Exception('Invalid invite link: missing invitation code');
+          }
+          if (relay == null || relay.isEmpty) {
+            throw Exception('Invalid invite link: missing relay URL');
+          }
+
+          // Get credentials
+          final credentials = await AccountCredentialsUtils.getCredentials();
+          if (credentials == null) {
+            throw Exception('Unable to get account credentials. Please login first.');
+          }
+
+          // Call HTTP API to join with invitation code
+          final joinResult = await CircleApi.joinWithInvitationCode(
+            pubkey: credentials['pubkey']!,
+            privkey: credentials['privkey']!,
+            invitationCode: code,
+            relayUrl: relay,
+          );
+
+          // If successful, join the circle using the relay URL from response
+          final relayUrl = joinResult.relayUrl;
+          
+          if (_controller != null) {
+            print('onUseInvite with controller - joining circle after API success');
+            // Use onboarding controller for new users
+            final result = await _controller!.joinPrivateCircle(
+              relayUrl: relayUrl,
+              context: context,
+              supportInvite: false, // Already handled via HTTP API
+            );
+            _handleOnboardingResult(result);
+          } else {
+            print('onUseInvite without controller - joining circle after API success');
+            // Use CircleJoinUtils for existing users
+            await CircleJoinUtils.processJoinCircle(
+              input: relayUrl,
+              context: context,
+              supportInvite: false, // Already handled via HTTP API
+            );
+            if (mounted) {
+              Navigator.of(context).pop(true);
+            }
+          }
+        } catch (e) {
+          if (mounted) {
+            CommonToast.instance.show(context, e.toString());
+          }
+        }
       } else {
-        // Use CircleJoinUtils for existing users
-        await CircleJoinUtils.processJoinCircle(
-          input: inviteCode,
-          context: context,
-        );
-        if (mounted) {
-          Navigator.of(context).pop(true);
+        // Not an invite link, use existing flow
+        if (_controller != null) {
+          final result = await _controller!.joinPrivateCircle(
+            relayUrl: trimmedInput,
+            context: context,
+            supportInvite: true,
+          );
+          _handleOnboardingResult(result);
+        } else {
+          await CircleJoinUtils.processJoinCircle(
+            input: trimmedInput,
+            context: context,
+            supportInvite: true, // Enable invite link support
+          );
+          if (mounted) {
+            Navigator.of(context).pop(true);
+          }
         }
       }
     } catch (e) {
@@ -445,6 +516,7 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
         await CircleJoinUtils.processJoinCircle(
           input: relayUrl,
           context: context,
+          supportInvite: true, // Enable invite link support
         );
         if (mounted) {
           Navigator.of(context).pop(true);

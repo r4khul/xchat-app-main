@@ -8,6 +8,7 @@ import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/login/login_models.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/utils/custom_uri_helper.dart';
+import 'package:ox_common/utils/account_credentials_utils.dart';
 import 'package:ox_common/widgets/common_loading.dart';
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_common/utils//string_utils.dart';
@@ -128,54 +129,53 @@ extension ScanAnalysisHandlerEx on ScanUtils {
 
       // Handle invitation code (new format)
       if (code != null && code.isNotEmpty) {
-        // Ensure we're in the target circle before using invitation code
-        Circle? targetCircle;
-        
-        // Case 1: If it's the current circle, use it directly
-        if (currentCircle != null && normalizedCurrentRelayUrl == normalizedRelayUrl) {
-          targetCircle = currentCircle;
-        } else {
-          // Case 2: Check if target circle exists in account's circle list
+        try {
+          // Get credentials for HTTP API call
+          final credentials = await AccountCredentialsUtils.getCredentials();
+          if (credentials == null) {
+            OXLoading.dismiss();
+            CommonToast.instance.show(context, Localized.text('ox_common.no_account_logged_in'));
+            return;
+          }
+
+          // Call HTTP API to join with invitation code (no need to join circle first)
+          final joinResult = await CircleApi.joinWithInvitationCode(
+            pubkey: credentials['pubkey']!,
+            privkey: credentials['privkey']!,
+            invitationCode: code,
+            relayUrl: relayUrl,
+          );
+
+          // Get the relay URL from the response
+          final resultRelayUrl = joinResult.relayUrl;
+          
+          // Check if circle already exists
+          Circle? targetCircle;
+          final normalizedResultRelayUrl = resultRelayUrl.replaceFirst(RegExp(r'/+$'), '');
+          
+          // Check if target circle exists in account's circle list
           for (final circle in account.circles) {
             final normalizedCircleRelayUrl = circle.relayUrl.replaceFirst(RegExp(r'/+$'), '');
-            if (normalizedCircleRelayUrl == normalizedRelayUrl) {
+            if (normalizedCircleRelayUrl == normalizedResultRelayUrl) {
               targetCircle = circle;
               break;
             }
           }
           
-          // Case 3: Circle doesn't exist, need to join first
+          // If circle doesn't exist, show dialog to join
           if (targetCircle == null) {
             OXLoading.dismiss();
-            final agreeJoin = await _showJoinCircleDialogFromScan(context, [relayUrl], '');
+            final agreeJoin = await _showJoinCircleDialogFromScan(context, [resultRelayUrl], '');
             if (agreeJoin != true) {
               return;
             }
             
             // Join the circle
             OXLoading.show();
-            final failure = await LoginManager.instance.joinCircle(relayUrl);
+            final failure = await LoginManager.instance.joinCircle(resultRelayUrl);
             if (failure != null) {
               OXLoading.dismiss();
               CommonToast.instance.show(context, failure.message);
-              return;
-            }
-            
-            // Find the newly joined circle
-            final updatedAccount = LoginManager.instance.currentState.account;
-            if (updatedAccount != null) {
-              for (final circle in updatedAccount.circles) {
-                final normalizedCircleRelayUrl = circle.relayUrl.replaceFirst(RegExp(r'/+$'), '');
-                if (normalizedCircleRelayUrl == normalizedRelayUrl) {
-                  targetCircle = circle;
-                  break;
-                }
-              }
-            }
-            
-            if (targetCircle == null) {
-              OXLoading.dismiss();
-              CommonToast.instance.show(context, Localized.text('ox_common.failed_to_join_circle'));
               return;
             }
           } else if (targetCircle != currentCircle) {
@@ -191,29 +191,17 @@ extension ScanAnalysisHandlerEx on ScanUtils {
             if (!switchResult) {
               return;
             }
-            
-            // Update targetCircle to current circle after switch
-            targetCircle = LoginManager.instance.currentCircle;
           }
-        }
-        
-        // Now use the invitation code to join
-        if (targetCircle != null) {
-          try {
-            await CircleMemberService.sharedInstance.joinWithInvitationCode(
-              invitationCode: code,
-            );
-            
-            OXLoading.dismiss();
-            CommonToast.instance.show(context, Localized.text('ox_common.operation_success'));
-            
-            // Refresh circle info
-            await Future.delayed(Duration(milliseconds: 500));
-            OXNavigator.popToRoot(context);
-          } catch (e) {
-            OXLoading.dismiss();
-            CommonToast.instance.show(context, e.toString());
-          }
+          
+          OXLoading.dismiss();
+          CommonToast.instance.show(context, Localized.text('ox_common.operation_success'));
+          
+          // Refresh circle info
+          await Future.delayed(Duration(milliseconds: 500));
+          OXNavigator.popToRoot(context);
+        } catch (e) {
+          OXLoading.dismiss();
+          CommonToast.instance.show(context, e.toString());
         }
         return;
       }
@@ -294,7 +282,7 @@ extension ScanAnalysisHandlerEx on ScanUtils {
           try {
             final decompressed = await CompressionUtils.decompressWithPrefix(keypackage);
             if (decompressed != null) {
-              decompressedKeyPackage = decompressed!;
+              decompressedKeyPackage = decompressed;
               print('Successfully decompressed keypackage data');
             } else {
               print('Failed to decompress keypackage data, using original');

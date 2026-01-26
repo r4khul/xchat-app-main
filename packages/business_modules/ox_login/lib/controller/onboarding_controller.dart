@@ -100,11 +100,13 @@ extension OnboardingControllerCircleEx on OnboardingController {
   Future<OnboardingResult> joinPrivateCircle({
     required String relayUrl,
     required BuildContext context,
+    bool supportInvite = false,
   }) async {
     return _joinCircle(
       relayUrl: relayUrl,
       forceJoin: false,
       context: context,
+      supportInvite: supportInvite,
     );
   }
 }
@@ -114,12 +116,14 @@ extension _NewAccountEx on OnboardingController {
     required String relayUrl,
     required bool forceJoin,
     BuildContext? context,
+    bool supportInvite = false,
   }) async {
     try {
       await CircleJoinUtils.processJoinCircle(
         input: relayUrl,
         usePreCheck: !forceJoin,
         context: context,
+        supportInvite: supportInvite,
       );
 
       if (isCreateNewAccount) {
