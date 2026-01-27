@@ -121,12 +121,10 @@ class _FeatureCard {
 }
 
 class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
-  StreamSubscription<PurchaseStateEvent>? _purchaseStateSubscription;
   SubscriptionPeriod _selectedPeriod = SubscriptionPeriod.monthly;
   SubscriptionPlan? _selectedPlan;
   bool _isRestoring = false;
   bool _isProcessing = false;
-  bool _purchasePending = false;
   late PageController _featurePageController;
   int _currentFeatureIndex = 0;
   Timer? _featureCarouselTimer;
@@ -210,16 +208,10 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
     
     // Start auto-play carousel
     _startFeatureCarousel();
-
-    // Listen to purchase state changes for UI updates
-    _purchaseStateSubscription = PurchaseManager.instance.purchaseStateStream.listen(
-      _onPurchaseStateChanged,
-    );
   }
 
   @override
   void dispose() {
-    _purchaseStateSubscription?.cancel();
     _featureCarouselTimer?.cancel();
     _featurePageController.dispose();
     super.dispose();
@@ -245,82 +237,6 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
     _startFeatureCarousel();
   }
 
-  /// Handle purchase state changes from PurchaseManager
-  /// 
-  /// This is called when purchase state changes (pending, processing, success, error, canceled).
-  /// We only handle UI updates here - all purchase logic is in PurchaseManager.
-  void _onPurchaseStateChanged(PurchaseStateEvent event) {
-    if (!mounted) return;
-
-    // Only handle events for the product we're purchasing (if we have a selected plan)
-    if (_selectedPlan != null) {
-      final currentProductId = _selectedPlan!.getProductId(_selectedPeriod);
-      if (event.productId != currentProductId) {
-        // Ignore events for other products
-        return;
-      }
-    }
-
-    switch (event.state) {
-      case PurchaseState.pending:
-        setState(() {
-          _purchasePending = true;
-        });
-        break;
-
-      case PurchaseState.processing:
-        setState(() {
-          _purchasePending = false;
-          _isProcessing = true;
-        });
-        break;
-
-      case PurchaseState.success:
-        setState(() {
-          _purchasePending = false;
-          _isProcessing = false;
-        });
-        // Purchase successful - navigate to success page
-        if (mounted && _selectedPlan != null) {
-          Navigator.of(context).pop(); // Close upgrade page
-          OXNavigator.pushPage(
-            context,
-            (context) => CircleActivatedPage(
-              maxUsers: _selectedPlan!.maxUsers,
-              planName: _selectedPlan!.name,
-            ),
-            type: OXPushPageType.present,
-            fullscreenDialog: true,
-          );
-        }
-        break;
-
-      case PurchaseState.error:
-        setState(() {
-          _purchasePending = false;
-          _isProcessing = false;
-        });
-        if (mounted && event.errorMessage != null) {
-          CommonToast.instance.show(
-            context,
-            event.errorMessage!,
-          );
-        }
-        break;
-
-      case PurchaseState.canceled:
-        setState(() {
-          _purchasePending = false;
-          _isProcessing = false;
-        });
-        // User canceled - no error message needed
-        break;
-
-      case PurchaseState.idle:
-        // No action needed
-        break;
-    }
-  }
 
 
   @override
@@ -785,7 +701,7 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
   Widget _buildPayButton() {
     if (_selectedPlan == null) return const SizedBox.shrink();
 
-    final isEnabled = !_isProcessing && !_purchasePending;
+    final isEnabled = !_isProcessing;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -806,7 +722,7 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    if (_isProcessing || _purchasePending)
+                    if (_isProcessing)
                       SizedBox(
                         width: 20.px,
                         height: 20.px,
@@ -824,7 +740,7 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
                       ),
                     SizedBox(width: 8.px),
                     CLText.titleMedium(
-                      _isProcessing || _purchasePending
+                      _isProcessing
                           ? Localized.text('ox_usercenter.processing')
                           : Localized.text('ox_login.pay'),
                       customColor: Colors.white,
@@ -836,7 +752,7 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
           )
         else
           CLButton.filled(
-            text: _isProcessing || _purchasePending
+            text: _isProcessing
                 ? Localized.text('ox_usercenter.processing')
                 : Localized.text('ox_login.pay'),
             onTap: isEnabled ? _handlePay : null,
@@ -856,22 +772,61 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
   /// Initiate purchase for the selected plan
   /// 
   /// All purchase logic (query, validation, debouncing) is handled by PurchaseManager.
-  /// We only need to call purchaseProduct and handle state changes.
+  /// We handle UI state changes here based on the result.
   Future<void> _handlePay() async {
     if (_selectedPlan == null) return;
 
     final String productId = _selectedPlan!.getProductId(_selectedPeriod);
     
+    // Set processing state before calling
+    if (mounted) {
+      setState(() {
+        _isProcessing = true;
+      });
+    }
+    
     try {
-      await PurchaseManager.instance.purchaseProduct(productId);
-      // Purchase state changes will be handled by _onPurchaseStateChanged
-    } catch (e) {
-      // Error is already handled by PurchaseManager and will trigger state change
-      // But we can show a toast here if needed
+      final result = await PurchaseManager.instance.purchaseProduct(productId);
+      
+      // Update UI based on result
       if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+        
+        if (result.success) {
+          // Purchase successful - navigate to success page
+          Navigator.of(context).pop(); // Close upgrade page
+          OXNavigator.pushPage(
+            context,
+            (context) => CircleActivatedPage(
+              maxUsers: _selectedPlan!.maxUsers,
+              planName: _selectedPlan!.name,
+            ),
+            type: OXPushPageType.present,
+            fullscreenDialog: true,
+          );
+        } else if (result.isCanceled) {
+          // Purchase canceled by user - no need to show error message
+          // Just reset UI state (already done above)
+        } else {
+          // Purchase failed - show user-friendly error message
+          final errorMessage = result.errorMessage ?? 'Purchase failed. Please try again.';
+          CommonToast.instance.show(
+            context,
+            errorMessage,
+          );
+        }
+      }
+    } catch (e) {
+      // Handle unexpected errors
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
         CommonToast.instance.show(
           context,
-          'Failed to initiate purchase: $e',
+          'Failed to initiate purchase. Please try again.',
         );
       }
     }
@@ -881,12 +836,31 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
   Future<void> _restorePurchases() async {
     try {
       setState(() => _isRestoring = true);
-      await PurchaseManager.instance.restorePurchases();
-      // Restored purchases will be delivered via purchaseStateStream
-      // and handled by _onPurchaseStateChanged
+      
+      // Get all product IDs from available plans
+      final productIds = <String>{};
+      for (final plan in plans) {
+        productIds.add(plan.getProductId(SubscriptionPeriod.monthly));
+        productIds.add(plan.getProductId(SubscriptionPeriod.yearly));
+      }
+      
+      final results = await PurchaseManager.instance.restorePurchases(
+        productIds: productIds.isNotEmpty ? productIds : null,
+      );
+      
       if (mounted) {
-        CommonToast.instance
-            .show(context, Localized.text('ox_usercenter.restoring_purchases'));
+        final successCount = results.where((r) => r.success).length;
+        if (successCount > 0) {
+          CommonToast.instance.show(
+            context,
+            Localized.text('ox_usercenter.restoring_purchases'),
+          );
+        } else {
+          CommonToast.instance.show(
+            context,
+            'No purchases found to restore',
+          );
+        }
       }
     } catch (e) {
       if (mounted) {

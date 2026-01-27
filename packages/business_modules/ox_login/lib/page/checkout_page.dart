@@ -27,172 +27,7 @@ class CheckoutPage extends StatefulWidget {
 }
 
 class _CheckoutPageState extends State<CheckoutPage> {
-  StreamSubscription<PurchaseStateEvent>? _purchaseStateSubscription;
   bool _isProcessing = false;
-  bool _purchasePending = false;
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Listen to purchase state changes for UI updates
-    _purchaseStateSubscription = PurchaseManager.instance.purchaseStateStream.listen(
-      _onPurchaseStateChanged,
-    );
-    
-    // [DEBUG] Temporary logging for issue diagnosis
-    LogUtil.d(() => '''
-      [CheckoutPage] initState:
-      - selectedPlan: ${widget.selectedPlan.name}
-      - selectedPeriod: ${widget.selectedPeriod}
-      - productId: ${widget.selectedPlan.getProductId(widget.selectedPeriod)}
-      - stream subscription created
-    ''');
-  }
-
-  @override
-  void dispose() {
-    _purchaseStateSubscription?.cancel();
-    LogUtil.d(() => '[CheckoutPage] dispose: stream subscription canceled');
-    super.dispose();
-  }
-
-  /// Handle purchase state changes from PurchaseManager
-  /// 
-  /// This is called when purchase state changes (pending, processing, success, error, canceled).
-  /// We only handle UI updates here - all purchase logic is in PurchaseManager.
-  void _onPurchaseStateChanged(PurchaseStateEvent event) {
-    // [DEBUG] Temporary logging for issue diagnosis
-    LogUtil.d(() => '''
-      [CheckoutPage] _onPurchaseStateChanged called:
-      - mounted: $mounted
-      - event.productId: ${event.productId}
-      - event.state: ${event.state}
-      - event.errorMessage: ${event.errorMessage}
-      - current _isProcessing: $_isProcessing
-      - current _purchasePending: $_purchasePending
-    ''');
-
-    if (!mounted) {
-      LogUtil.w(() => '[CheckoutPage] _onPurchaseStateChanged: widget not mounted, ignoring event');
-      return;
-    }
-
-    // Only handle events for the product we're purchasing
-    final currentProductId = widget.selectedPlan.getProductId(widget.selectedPeriod);
-    
-    // [DEBUG] Temporary logging for issue diagnosis
-    LogUtil.d(() => '''
-      [CheckoutPage] Product ID comparison:
-      - event.productId: "${event.productId}"
-      - currentProductId: "$currentProductId"
-      - match: ${event.productId == currentProductId}
-      - event.productId.length: ${event.productId.length}
-      - currentProductId.length: ${currentProductId.length}
-    ''');
-
-    if (event.productId != currentProductId) {
-      LogUtil.w(() => '''
-        [CheckoutPage] Ignoring purchase state event (different product):
-        - event productId: "${event.productId}"
-        - current productId: "$currentProductId"
-        - This event will be ignored, UI will not update!
-      ''');
-      return;
-    }
-
-    LogUtil.d(() => '''
-      [CheckoutPage] Processing purchase state event (product ID matches):
-      - productId: ${event.productId}
-      - state: ${event.state}
-      - errorMessage: ${event.errorMessage}
-      - verificationResult: ${event.verificationResult != null ? 'present' : 'null'}
-    ''');
-
-    switch (event.state) {
-      case PurchaseState.pending:
-        LogUtil.d(() => '[CheckoutPage] State: pending - setting _purchasePending = true');
-        setState(() {
-          _purchasePending = true;
-        });
-        break;
-
-      case PurchaseState.processing:
-        LogUtil.d(() => '[CheckoutPage] State: processing - setting _isProcessing = true');
-        setState(() {
-          _purchasePending = false;
-          _isProcessing = true;
-        });
-        break;
-
-      case PurchaseState.success:
-        LogUtil.d(() => '''
-          [CheckoutPage] State: success - updating UI and navigating:
-          - productId: ${event.productId}
-          - relayUrl: ${event.verificationResult?.relayUrl ?? 'N/A'}
-          - tenantId: ${event.verificationResult?.tenantId ?? 'N/A'}
-          - Before setState: _isProcessing = $_isProcessing
-        ''');
-        setState(() {
-          _purchasePending = false;
-          _isProcessing = false;
-        });
-        LogUtil.d(() => '[CheckoutPage] After setState: _isProcessing = $_isProcessing');
-        
-        // Purchase successful - navigate to success page
-        if (mounted) {
-          LogUtil.d(() => '[CheckoutPage] Navigating to CircleActivatedPage...');
-          Navigator.of(context).popUntil((route) => route.isFirst);
-          OXNavigator.pushPage(
-            context,
-            (context) => CircleActivatedPage(
-              maxUsers: widget.selectedPlan.maxUsers,
-              planName: widget.selectedPlan.name,
-            ),
-          );
-          LogUtil.d(() => '[CheckoutPage] Navigation completed');
-        } else {
-          LogUtil.w(() => '[CheckoutPage] Widget not mounted after setState, cannot navigate');
-        }
-        break;
-
-      case PurchaseState.error:
-        LogUtil.e(() => '''
-          [CheckoutPage] State: error - updating UI:
-          - errorMessage: ${event.errorMessage}
-          - Before setState: _isProcessing = $_isProcessing
-        ''');
-        setState(() {
-          _purchasePending = false;
-          _isProcessing = false;
-        });
-        LogUtil.d(() => '[CheckoutPage] After setState: _isProcessing = $_isProcessing');
-        if (mounted && event.errorMessage != null) {
-          CommonToast.instance.show(
-            context,
-            event.errorMessage!,
-          );
-        }
-        break;
-
-      case PurchaseState.canceled:
-        LogUtil.d(() => '''
-          [CheckoutPage] State: canceled - updating UI:
-          - Before setState: _isProcessing = $_isProcessing
-        ''');
-        setState(() {
-          _purchasePending = false;
-          _isProcessing = false;
-        });
-        LogUtil.d(() => '[CheckoutPage] After setState: _isProcessing = $_isProcessing');
-        // User canceled - no error message needed
-        break;
-
-      case PurchaseState.idle:
-        // No action needed
-        break;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -430,8 +265,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   Widget _buildPaymentButtons() {
-    final isEnabled = !_isProcessing && !_purchasePending;
-
+    final isEnabled = !_isProcessing;
     return Padding(
       padding: EdgeInsets.symmetric(
         vertical: 16.px,
@@ -455,7 +289,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      if (_isProcessing || _purchasePending)
+                      if (_isProcessing)
                         SizedBox(
                           width: 20.px,
                           height: 20.px,
@@ -473,7 +307,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                         ),
                       SizedBox(width: 8.px),
                       CLText.titleMedium(
-                        _isProcessing || _purchasePending
+                        _isProcessing
                             ? Localized.text('ox_usercenter.processing')
                             : Localized.text('ox_login.pay'),
                         customColor: Colors.white,
@@ -485,7 +319,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
             )
           else
             CLButton.filled(
-              text: _isProcessing || _purchasePending
+              text: _isProcessing
                   ? Localized.text('ox_usercenter.processing')
                   : Localized.text('ox_login.pay'),
               onTap: isEnabled ? _handlePay : null,
@@ -500,25 +334,48 @@ class _CheckoutPageState extends State<CheckoutPage> {
   /// Initiate purchase for the selected plan
   /// 
   /// All purchase logic (query, validation, debouncing) is handled by PurchaseManager.
-  /// We only need to call purchaseProduct and handle state changes.
+  /// We handle UI state changes here based on the result.
   Future<void> _handlePay() async {
     final String productId = widget.selectedPlan.getProductId(widget.selectedPeriod);
     
-    // [DEBUG] Temporary logging for issue diagnosis
-    LogUtil.d(() => '''
-      [CheckoutPage] User clicked pay button:
-      - productId: "$productId"
-      - plan: ${widget.selectedPlan.name}
-      - period: ${widget.selectedPeriod}
-      - current _isProcessing: $_isProcessing
-      - current _purchasePending: $_purchasePending
-    ''');
+    // Set processing state before calling
+    if (mounted) {
+      setState(() {
+        _isProcessing = true;
+      });
+    }
     
     try {
-      LogUtil.d(() => '[CheckoutPage] Calling PurchaseManager.instance.purchaseProduct("$productId")...');
-      await PurchaseManager.instance.purchaseProduct(productId);
-      LogUtil.d(() => '[CheckoutPage] purchaseProduct() returned successfully');
-      // Purchase state changes will be handled by _onPurchaseStateChanged
+      final result = await PurchaseManager.instance.purchaseProduct(productId);
+      
+      // Update UI based on result
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+        
+        if (result.success) {
+          // Purchase successful - navigate to success page
+          Navigator.of(context).popUntil((route) => route.isFirst);
+          OXNavigator.pushPage(
+            context,
+            (context) => CircleActivatedPage(
+              maxUsers: widget.selectedPlan.maxUsers,
+              planName: widget.selectedPlan.name,
+            ),
+          );
+        } else if (result.isCanceled) {
+          // Purchase canceled by user - no need to show error message
+          // Just reset UI state (already done above)
+        } else {
+          // Purchase failed - show user-friendly error message
+          final errorMessage = result.errorMessage ?? 'Purchase failed. Please try again.';
+          CommonToast.instance.show(
+            context,
+            errorMessage,
+          );
+        }
+      }
     } catch (e, stack) {
       LogUtil.e(() => '''
         [CheckoutPage] Error initiating purchase:
@@ -526,12 +383,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
         - error: $e
         - stack: $stack
       ''');
-      // Error is already handled by PurchaseManager and will trigger state change
-      // But we can show a toast here if needed
+      // Handle unexpected errors
       if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
         CommonToast.instance.show(
           context,
-          'Failed to initiate purchase: $e',
+          'Failed to initiate purchase. Please try again.',
         );
       }
     }

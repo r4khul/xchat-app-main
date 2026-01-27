@@ -1,8 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:ox_chat/widget/welcome_onboarding_dialog.dart';
 import 'package:ox_common/component.dart';
+import 'package:ox_common/purchase/purchase_manager.dart';
 import 'package:ox_common/widgets/common_toast.dart';
+import 'package:ox_common/widgets/common_loading.dart';
 import 'package:ox_localizable/ox_localizable.dart';
+import 'package:ox_login/ox_login.dart';
 import 'package:ox_module_service/ox_module_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:ox_usercenter/user_feedback/app_review_manager.dart';
@@ -90,11 +93,41 @@ class _AboutXChatPageState extends State<AboutXChatPage> {
                 title: Localized.text('ox_usercenter.show_welcome_guide'),
                 onTap: _showWelcomeGuideOnTap,
               ),
+              LabelItemModel(
+                icon: ListViewIcon.data(CupertinoIcons.arrow_2_circlepath),
+                title: Localized.text('ox_usercenter.restore_purchases'),
+                onTap: _restorePurchasesOnTap,
+              ),
             ],
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _restorePurchasesOnTap() async {
+    try {
+      OXLoading.show(status: Localized.text('ox_usercenter.restoring_purchases'));
+      final results = await PurchaseManager.instance.restorePurchases(
+        productIds: kSubscriptionProductIds,
+      );
+      if (!mounted) return;
+      final successCount = results.where((r) => r.success).length;
+      if (successCount > 0) {
+        CommonToast.instance.show(
+          context,
+          Localized.text('ox_usercenter.restoring_purchases'),
+        );
+      } else {
+        CommonToast.instance.show(context, 'No purchases found to restore');
+      }
+    } catch (e) {
+      if (mounted) {
+        CommonToast.instance.show(context, 'Failed to restore purchases: $e');
+      }
+    } finally {
+      await OXLoading.dismiss();
+    }
   }
 
   void _contactUsOnTap() {

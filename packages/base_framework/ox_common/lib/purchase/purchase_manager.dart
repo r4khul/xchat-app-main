@@ -1,77 +1,151 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:convert';
+import 'dart:ui';
+
+import 'package:flutter/services.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:chatcore/chat-core.dart';
 import 'package:ox_common/log_util.dart';
 import 'package:ox_common/purchase/purchase_idempotency_manager.dart';
 import 'package:ox_common/purchase/purchase_service.dart';
 
-/// Purchase event with processing result
-class PurchaseEvent {
-  final PurchaseDetails purchaseDetails;
-  final PurchaseProcessResult? processResult;
-  final String? resultMessage;
-  final PaymentVerificationResult? verificationResult;
-
-  PurchaseEvent({
-    required this.purchaseDetails,
-    this.processResult,
-    this.resultMessage,
-    this.verificationResult,
-  });
-}
-
-/// Purchase state for UI updates
-enum PurchaseState {
-  idle,
-  pending,
-  processing,
-  success,
-  error,
-  canceled,
-}
-
-/// Purchase state change event
-class PurchaseStateEvent {
-  final String productId;
-  final PurchaseState state;
-  final String? errorMessage;
-  final PaymentVerificationResult? verificationResult;
-
-  PurchaseStateEvent({
-    required this.productId,
-    required this.state,
+/// Purchase result returned from purchaseProduct/restorePurchases
+class PurchaseResult {
+  PurchaseResult({
+    required this.success,
     this.errorMessage,
     this.verificationResult,
+    this.purchaseDetails,
+    this.isCanceled = false,
   });
+
+  /// Whether the purchase was successful
+  final bool success;
+  
+  /// Error message if purchase failed
+  final String? errorMessage;
+  
+  /// Payment verification result (available on success)
+  final PaymentVerificationResult? verificationResult;
+  
+  /// Purchase details (available on success)
+  final PurchaseDetails? purchaseDetails;
+  
+  /// Whether the purchase was canceled by user
+  final bool isCanceled;
+
+  /// Create success result
+  factory PurchaseResult.success({
+    required PaymentVerificationResult verificationResult,
+    required PurchaseDetails purchaseDetails,
+  }) {
+    return PurchaseResult(
+      success: true,
+      verificationResult: verificationResult,
+      purchaseDetails: purchaseDetails,
+      isCanceled: false,
+    );
+  }
+
+  /// Create error result
+  factory PurchaseResult.error(String errorMessage) {
+    return PurchaseResult(
+      success: false,
+      errorMessage: errorMessage,
+      isCanceled: false,
+    );
+  }
+
+  /// Create canceled result
+  factory PurchaseResult.canceled() {
+    return PurchaseResult(
+      success: false,
+      errorMessage: null, // Canceled doesn't need error message
+      isCanceled: true,
+    );
+  }
 }
 
-/// Global purchase manager that handles purchase stream subscription at app startup
-/// 
-/// This ensures that purchase events are not missed even if the user closes
-/// the purchase page or the app restarts during a purchase flow.
+
+enum _SessionType { purchase, restore }
+
+/// Internal session used to route purchaseStream events and complete Futures.
+class _PurchaseSession {
+  _PurchaseSession({
+    required this.type,
+    required this.productIds,
+    required this.createdAt,
+    required this.window,
+    required this.idleTimeout,
+    this.completer,
+    this.restoreCompleters,
+  });
+
+  final _SessionType type;
+
+  /// Allowed products for routing. For restore this is usually empty (allow all).
+  final Set<String> productIds;
+
+  /// When the session starts (used by time window filter).
+  final DateTime createdAt;
+
+  /// Accept events whose transactionDate is within [createdAt - window, now + window].
+  final Duration window;
+
+  /// Restore session ends when no new events arrive for [idleTimeout].
+  final Duration idleTimeout;
+
+  /// Completer for purchase session (single product)
+  final Completer<PurchaseResult>? completer;
+
+  /// Completers for restore session (multiple products)
+  final Map<String, Completer<PurchaseResult>>? restoreCompleters;
+
+  Timer? _idleTimer;
+
+  void touch(VoidCallback onIdle) {
+    _idleTimer?.cancel();
+    _idleTimer = Timer(idleTimeout, onIdle);
+  }
+
+  void dispose() {
+    _idleTimer?.cancel();
+    _idleTimer = null;
+  }
+}
+
+/// Global purchase manager that listens to purchaseStream at app startup,
+/// but only processes events when a session (purchase/restore) is active.
+///
+/// Design goals:
+/// - Global listener always on (never resubscribe) to avoid missing events.
+/// - No silent restore / no startup processing (per your policy).
+/// - Session-based routing with strict filters to avoid old restored events polluting new purchases.
+/// - Local txKey de-duplication to prevent duplicated processing & log flood.
+/// - Restore session ends by idle-timeout and auto-unregisters.
 class PurchaseManager {
   static final PurchaseManager instance = PurchaseManager._();
-  
+
   final InAppPurchase _inAppPurchase = InAppPurchase.instance;
   StreamSubscription<List<PurchaseDetails>>? _subscription;
   bool _isInitialized = false;
-  
-  // Callbacks for handling purchases
-  // Handler receives PurchaseEvent which includes both purchase details and processing result
-  final List<Function(PurchaseEvent)> _purchaseHandlers = [];
-  
-  // Purchase state stream for UI updates
-  final _purchaseStateController = StreamController<PurchaseStateEvent>.broadcast();
-  
-  // Debouncing map to prevent duplicate purchases
+
+  /// Debouncing map to prevent duplicate purchases
   final Map<String, bool> _pendingPurchases = {};
-  
+
+  /// Active routing session (purchase or restore)
+  _PurchaseSession? _activeSession;
+
+  /// Local dedupe: txKey -> lastSeenAt
+  final Map<String, DateTime> _seenTxKeys = {};
+
+  /// Dedupe retention (prevents log flood & repeated processing)
+  final Duration _seenRetention = const Duration(minutes: 10);
+
   PurchaseManager._();
 
-  /// Initialize the purchase manager and subscribe to purchase stream
-  /// 
-  /// This should be called early in app initialization (e.g., in app_initializer.dart)
+  /// Initialize the purchase manager and subscribe to purchase stream.
+  /// Call early in app init.
   Future<void> initialize() async {
     if (_isInitialized) {
       LogUtil.d(() => 'PurchaseManager already initialized');
@@ -86,7 +160,7 @@ class PurchaseManager {
         },
         cancelOnError: false,
       );
-      
+
       _isInitialized = true;
       LogUtil.d(() => 'PurchaseManager initialized successfully');
     } catch (e) {
@@ -95,303 +169,478 @@ class PurchaseManager {
     }
   }
 
-  /// Handle purchase updates from the stream
-  /// 
-  /// This method processes all purchase updates and ensures idempotency
+  /// --- Session APIs ---------------------------------------------------------
+
+  /// Start a "new purchase" session. Must be called just before buyNonConsumable.
+  ///
+  /// Filters:
+  /// - productId must match
+  /// - ignores restored events entirely
+  /// - only accepts transactionDate within a time window (default 2 minutes)
+  void _beginPurchaseSession({
+    required String productId,
+    required Completer<PurchaseResult> completer,
+    Duration acceptWindow = const Duration(minutes: 2),
+  }) {
+    _endSessionInternal(reason: 'beginPurchaseSession replaces old session');
+
+    _activeSession = _PurchaseSession(
+      type: _SessionType.purchase,
+      productIds: {productId},
+      createdAt: DateTime.now(),
+      window: acceptWindow,
+      idleTimeout: const Duration(seconds: 0), // not used for purchase
+      completer: completer,
+    );
+
+    LogUtil.d(() => '''
+      [PurchaseManager] beginPurchaseSession:
+      - productId: $productId
+      - createdAt: ${_activeSession!.createdAt.toIso8601String()}
+      - window: ${_activeSession!.window}
+    ''');
+  }
+
+  /// Start a "restore purchases" session and call Store restore.
+  ///
+  /// Restore session ends automatically when no new events arrive for [idleTimeout].
+  void _beginRestoreSession({
+    required Map<String, Completer<PurchaseResult>> restoreCompleters,
+    Duration acceptWindow = const Duration(days: 3650), // accept almost all
+    Duration idleTimeout = const Duration(seconds: 2),
+  }) {
+    _endSessionInternal(reason: 'beginRestoreSession replaces old session');
+
+    _activeSession = _PurchaseSession(
+      type: _SessionType.restore,
+      productIds: <String>{}, // allow all (you can restrict if needed)
+      createdAt: DateTime.now(),
+      window: acceptWindow,
+      idleTimeout: idleTimeout,
+      restoreCompleters: restoreCompleters,
+    );
+
+    LogUtil.d(() => '''
+      [PurchaseManager] beginRestoreSession:
+      - createdAt: ${_activeSession!.createdAt.toIso8601String()}
+      - idleTimeout: $idleTimeout
+      - window: $acceptWindow
+      - products to restore: ${restoreCompleters.keys.join(', ')}
+    ''');
+  }
+
+  void _endSessionInternal({required String reason}) {
+    if (_activeSession == null) return;
+    LogUtil.d(() => '[PurchaseManager] endSession: $reason');
+    
+    // Complete any pending completers with timeout error
+    final session = _activeSession!;
+    if (session.completer != null && !session.completer!.isCompleted) {
+      session.completer!.completeError(
+        Exception('Purchase session ended: $reason'),
+      );
+    }
+    if (session.restoreCompleters != null) {
+      for (final completer in session.restoreCompleters!.values) {
+        if (!completer.isCompleted) {
+          completer.completeError(
+            Exception('Restore session ended: $reason'),
+          );
+        }
+      }
+    }
+    
+    session.dispose();
+    _activeSession = null;
+  }
+
+  /// --- purchaseStream handler ----------------------------------------------
+
   Future<void> _handlePurchaseUpdates(
-    List<PurchaseDetails> purchaseDetailsList,
-  ) async {
+      List<PurchaseDetails> purchaseDetailsList,
+      ) async {
+    _evictSeenKeys();
+
     for (final purchaseDetails in purchaseDetailsList) {
       try {
-        // Log purchase details
+        // Log raw event (always), but avoid flooding by txKey dedupe.
+        final txKey = _buildTxKey(purchaseDetails);
+        if (_markSeen(txKey)) {
+          LogUtil.d(() => '''
+            [PurchaseManager] Purchase update:
+            - txKey: $txKey
+            - productID: ${purchaseDetails.productID}
+            - purchaseID: ${purchaseDetails.purchaseID}
+            - status: ${purchaseDetails.status}
+            - transactionDate: ${purchaseDetails.transactionDate}
+            - localVerificationData: ${purchaseDetails.verificationData.localVerificationData}
+            - source: ${purchaseDetails.verificationData.source}
+            - pendingCompletePurchase: ${purchaseDetails.pendingCompletePurchase}
+          ''');
+        } else {
+          // Seen recently; skip verbose log.
+          LogUtil.d(() => '[PurchaseManager] Purchase update duplicated (ignored log): txKey=$txKey status=${purchaseDetails.status}');
+        }
+
+        // Policy: App startup => do not process anything unless a session is active.
+        final session = _activeSession;
+        if (session == null) {
+          // No silent processing; we intentionally do nothing here.
+          // (Still keeping listener globally to avoid missing events)
+          continue;
+        }
+
+        // Session routing filters
+        if (!_shouldRouteToSession(purchaseDetails, session)) {
+          LogUtil.d(() => '''
+            [PurchaseManager] Purchase update rejected by routing filter:
+            - txKey: $txKey
+            - productID: ${purchaseDetails.productID}
+            - status: ${purchaseDetails.status}
+          ''');
+          continue;
+        }
+
         LogUtil.d(() => '''
-          [PurchaseManager] Purchase update:
+          [PurchaseManager] Purchase update accepted, processing:
+          - txKey: $txKey
           - productID: ${purchaseDetails.productID}
-          - purchaseID: ${purchaseDetails.purchaseID}
           - status: ${purchaseDetails.status}
-          - transactionDate: ${purchaseDetails.transactionDate}
-          - pendingCompletePurchase: ${purchaseDetails.pendingCompletePurchase}
+          - session type: ${session.type}
         ''');
 
-        // Get transaction ID for idempotency check
-        final transactionId = PurchaseIdempotencyManager.getTransactionId(
-          purchaseDetails,
-        );
-
-        // Handle different purchase statuses
-        switch (purchaseDetails.status) {
-          case PurchaseStatus.pending:
-            LogUtil.d(() => 'Purchase pending: ${purchaseDetails.productID}');
-            // Notify handlers about pending purchase (no result yet)
-            _notifyHandlers(PurchaseEvent(purchaseDetails: purchaseDetails));
-            // Notify state change
-            _purchaseStateController.add(PurchaseStateEvent(
-              productId: purchaseDetails.productID,
-              state: PurchaseState.pending,
-            ));
-            break;
-
-          case PurchaseStatus.purchased:
-            await _handlePurchased(purchaseDetails, transactionId);
-            break;
-
-          case PurchaseStatus.restored:
-            await _handleRestored(purchaseDetails, transactionId);
-            break;
-
-          case PurchaseStatus.error:
-            await _handleError(purchaseDetails);
-            break;
-
-          case PurchaseStatus.canceled:
-            await _handleCanceled(purchaseDetails);
-            break;
+        // For restore sessions, keep alive until idle timeout.
+        if (session.type == _SessionType.restore) {
+          session.touch(() {
+            // auto end restore session by idle timeout
+            _endSessionInternal(reason: 'restore idle timeout');
+          });
         }
+
+        // Route & process only once per txKey per session window
+        // (We already have global seen-txKey dedupe. This ensures stable behavior.)
+        await _processRoutedPurchase(purchaseDetails);
       } catch (e, stack) {
         LogUtil.e(() => 'Error handling purchase update: $e\n$stack');
       }
     }
   }
 
-  /// Handle purchased status
-  Future<void> _handlePurchased(
-    PurchaseDetails purchaseDetails,
-    String transactionId,
-  ) async {
+  bool _shouldRouteToSession(PurchaseDetails p, _PurchaseSession session) {
+    // 1) product filter
+    if (session.type == _SessionType.purchase) {
+      // Only this productId
+      if (!session.productIds.contains(p.productID)) return false;
+
+      // For purchase session, handle restored status specially
+      // New purchases can come as "restored" with transactionReason="PURCHASE"
+      if (p.status == PurchaseStatus.restored) {
+        // Check transactionReason to determine if this is a new purchase
+        final transactionReason = _parseTransactionReason(p);
+        if (transactionReason == 'PURCHASE') {
+          // This is a new purchase, accept it regardless of time window
+          // The transactionDate might be old (from previous purchase attempt),
+          // but transactionReason="PURCHASE" indicates it's a new purchase
+          LogUtil.d(() => '''
+            [PurchaseManager] Accepting restored status with transactionReason=PURCHASE:
+            - productID: ${p.productID}
+            - transactionDate: ${p.transactionDate}
+            - transactionReason: $transactionReason
+            - Skipping time window check for new purchase
+          ''');
+          // Return true immediately - skip all time window checks
+          return true;
+        } else {
+          // transactionReason is not "PURCHASE" (could be "RENEWAL" or null)
+          // Apply time window check to avoid processing old restores
+          final txTime = _parseTransactionDate(p.transactionDate);
+          if (txTime != null) {
+            final minTime = session.createdAt.subtract(session.window);
+            final maxTime = DateTime.now().add(session.window);
+            final isWithinWindow = !txTime.isBefore(minTime) && !txTime.isAfter(maxTime);
+            if (!isWithinWindow) {
+              // Out-of-window (very likely an old restore)
+              LogUtil.d(() => '''
+                [PurchaseManager] Rejecting restored status (out of time window):
+                - productID: ${p.productID}
+                - transactionDate: ${p.transactionDate}
+                - transactionReason: $transactionReason
+              ''');
+              return false;
+            }
+            // Within window - likely a renewal that should be processed
+          } else {
+            // If cannot parse time, check session age
+            final age = DateTime.now().difference(session.createdAt);
+            if (age > session.window) {
+              LogUtil.d(() => '''
+                [PurchaseManager] Rejecting restored status (session too old):
+                - productID: ${p.productID}
+                - session age: ${age.inSeconds}s
+                - transactionReason: $transactionReason
+              ''');
+              return false;
+            }
+            // Recent session - likely a renewal
+          }
+        }
+      }
+    } else {
+      // restore session: allow all productIds by default
+      if (session.productIds.isNotEmpty && !session.productIds.contains(p.productID)) {
+        return false;
+      }
+    }
+
+    // 2) time window filter (for non-restored events in purchase session, or all events in restore session)
+    if (session.type == _SessionType.purchase && p.status != PurchaseStatus.restored) {
+      // Already checked above for restored, so skip here
+    } else {
+      final txTime = _parseTransactionDate(p.transactionDate);
+      if (txTime != null) {
+        final minTime = session.createdAt.subtract(session.window);
+        final maxTime = DateTime.now().add(session.window);
+        if (txTime.isBefore(minTime) || txTime.isAfter(maxTime)) {
+          // Out-of-window (very likely an old restore)
+          return false;
+        }
+      } else {
+        // If cannot parse, for purchase session we are stricter: require it to be close in time by session age.
+        if (session.type == _SessionType.purchase) {
+          final age = DateTime.now().difference(session.createdAt);
+          if (age > session.window) return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
+  DateTime? _parseTransactionDate(String? transactionDate) {
+    if (transactionDate == null || transactionDate.isEmpty) return null;
+    // transactionDate in plugin is often millis since epoch in string
+    final millis = int.tryParse(transactionDate);
+    if (millis != null) {
+      // Some platforms use seconds; detect by magnitude.
+      if (millis < 1000000000000) {
+        // seconds
+        return DateTime.fromMillisecondsSinceEpoch(millis * 1000);
+      }
+      return DateTime.fromMillisecondsSinceEpoch(millis);
+    }
+    // Try ISO8601 as fallback
+    try {
+      return DateTime.parse(transactionDate);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Parse transactionReason from localVerificationData JSON
+  /// 
+  /// Returns "PURCHASE" for new purchases, "RENEWAL" for renewals, or null if not found
+  String? _parseTransactionReason(PurchaseDetails purchaseDetails) {
+    try {
+      final localVerificationData = purchaseDetails.verificationData.localVerificationData;
+      if (localVerificationData.isEmpty) {
+        return null;
+      }
+      
+      final json = jsonDecode(localVerificationData) as Map<String, dynamic>;
+      return json['transactionReason'] as String?;
+    } catch (e) {
+      LogUtil.w(() => '[PurchaseManager] Failed to parse transactionReason: $e');
+      return null;
+    }
+  }
+
+  Future<void> _processRoutedPurchase(PurchaseDetails purchaseDetails) async {
     LogUtil.d(() => '''
-      [PurchaseManager] Processing new purchase:
+      [PurchaseManager] _processRoutedPurchase called:
+      - productID: ${purchaseDetails.productID}
+      - status: ${purchaseDetails.status}
+    ''');
+    
+    // Get transaction ID for idempotency check (your own helper)
+    final transactionId = PurchaseIdempotencyManager.getTransactionId(purchaseDetails);
+
+    switch (purchaseDetails.status) {
+      case PurchaseStatus.pending:
+        LogUtil.d(() => '[PurchaseManager] Handling pending status');
+        _onPending(purchaseDetails);
+        break;
+      case PurchaseStatus.purchased:
+        LogUtil.d(() => '[PurchaseManager] Handling purchased status');
+        await _handlePurchased(purchaseDetails, transactionId);
+        break;
+      case PurchaseStatus.restored:
+        LogUtil.d(() => '[PurchaseManager] Handling restored status');
+        await _handleRestored(purchaseDetails, transactionId);
+        break;
+      case PurchaseStatus.error:
+        LogUtil.d(() => '[PurchaseManager] Handling error status');
+        await _handleError(purchaseDetails);
+        break;
+      case PurchaseStatus.canceled:
+        LogUtil.d(() => '[PurchaseManager] Handling canceled status');
+        await _handleCanceled(purchaseDetails);
+        break;
+    }
+    
+    LogUtil.d(() => '[PurchaseManager] _processRoutedPurchase completed');
+  }
+
+  void _onPending(PurchaseDetails purchaseDetails) {
+    LogUtil.d(() => 'Purchase pending: ${purchaseDetails.productID}');
+    // UI state management is now handled by callers
+  }
+
+  /// --- Purchased / Restored processing (unchanged core, but invoked only when routed) ----
+
+  Future<void> _handlePurchased(
+      PurchaseDetails purchaseDetails,
+      String transactionId,
+      ) async {
+    LogUtil.d(() => '''
+      [PurchaseManager] Processing purchased:
       - productID: ${purchaseDetails.productID}
       - purchaseID: ${purchaseDetails.purchaseID}
       - transactionId: $transactionId
       - transactionDate: ${purchaseDetails.transactionDate}
       - pendingCompletePurchase: ${purchaseDetails.pendingCompletePurchase}
     ''');
-    
-    // Send processing state to UI (in case purchaseProduct didn't send it)
-    _purchaseStateController.add(PurchaseStateEvent(
-      productId: purchaseDetails.productID,
-      state: PurchaseState.processing,
-    ));
-    
-    // Process purchase through PurchaseService (server verification + delivery)
-    // This ensures purchases are processed even if the purchase page is closed
-    // [DEBUG] Temporary logging for issue diagnosis
+
+    final response = await PurchaseService.instance.processPurchase(purchaseDetails);
+
     LogUtil.d(() => '''
-      [PurchaseManager] Calling PurchaseService.processPurchase:
+      [PurchaseManager] processPurchase completed:
+      - productID: "${purchaseDetails.productID}"
+      - result: ${response.result}
+      - message: ${response.message}
+      - hasVerificationResult: ${response.verificationResult != null}
+      - relayUrl: ${response.verificationResult?.relayUrl ?? 'N/A'}
+      - tenantId: ${response.verificationResult?.tenantId ?? 'N/A'}
+    ''');
+
+    // Complete the Future for purchaseProduct
+    final session = _activeSession;
+    if (session != null && 
+        session.type == _SessionType.purchase && 
+        session.completer != null &&
+        !session.completer!.isCompleted) {
+      if (response.result == PurchaseProcessResult.success ||
+          response.result == PurchaseProcessResult.alreadyProcessed) {
+        session.completer!.complete(PurchaseResult.success(
+          verificationResult: response.verificationResult!,
+          purchaseDetails: purchaseDetails,
+        ));
+      } else {
+        session.completer!.complete(PurchaseResult.error(
+          response.message ?? 'Purchase processing failed',
+        ));
+      }
+      // Clear pending flag immediately
+      _pendingPurchases.remove(purchaseDetails.productID);
+      LogUtil.d(() => '[PurchaseManager] Purchase processed, pending flag cleared for: ${purchaseDetails.productID}');
+    }
+  }
+
+  Future<void> _handleRestored(
+      PurchaseDetails purchaseDetails,
+      String transactionId,
+      ) async {
+    LogUtil.d(() => '''
+      [PurchaseManager] _handleRestored called:
       - productID: ${purchaseDetails.productID}
       - transactionId: $transactionId
+      - purchaseID: ${purchaseDetails.purchaseID}
     ''');
+
+    // Determine if this is a new purchase or a restore based on session type
+    // For subscriptions, new purchases can come as "restored" status
+    // We need to use the correct processing method based on context
+    final session = _activeSession;
+    final bool isNewPurchase = session?.type == _SessionType.purchase;
     
-    await PurchaseService.instance.processPurchase(
-      purchaseDetails,
-      onResult: (result, message, verificationResult) {
-        // [DEBUG] Temporary logging for issue diagnosis
-        LogUtil.d(() => '''
-          [PurchaseManager] onResult callback called:
-          - productID: "${purchaseDetails.productID}"
-          - result: $result
-          - message: $message
-          - hasVerificationResult: ${verificationResult != null}
-          - relayUrl: ${verificationResult?.relayUrl ?? 'N/A'}
-          - tenantId: ${verificationResult?.tenantId ?? 'N/A'}
-        ''');
-        
-        // Notify handlers with processing result
-        _notifyHandlers(PurchaseEvent(
-          purchaseDetails: purchaseDetails,
-          processResult: result,
-          resultMessage: message,
-          verificationResult: verificationResult,
-        ));
-        
-        // Notify state change
-        if (result == PurchaseProcessResult.success) {
-          LogUtil.d(() => '''
-            [PurchaseManager] Purchase processed successfully:
-            - productID: "${purchaseDetails.productID}"
-            - transactionId: $transactionId
-            - relayUrl: ${verificationResult?.relayUrl ?? 'N/A'}
-            - tenantId: ${verificationResult?.tenantId ?? 'N/A'}
-          ''');
-          
-          // [DEBUG] Temporary logging for issue diagnosis
-          LogUtil.d(() => '''
-            [PurchaseManager] About to send PurchaseStateEvent.success:
-            - productId: "${purchaseDetails.productID}"
-            - state: PurchaseState.success
-          ''');
-          
-          _purchaseStateController.add(PurchaseStateEvent(
-            productId: purchaseDetails.productID,
-            state: PurchaseState.success,
-            verificationResult: verificationResult,
-          ));
-          
-          // [DEBUG] Temporary logging for issue diagnosis
-          LogUtil.d(() => '''
-            [PurchaseManager] PurchaseStateEvent.success sent:
-            - productId: "${purchaseDetails.productID}"
-            - state: PurchaseState.success
-          ''');
-        } else if (result == PurchaseProcessResult.alreadyProcessed) {
-          LogUtil.d(() => '''
-            [PurchaseManager] Purchase already processed:
-            - productID: "${purchaseDetails.productID}"
-            - transactionId: $transactionId
-          ''');
-          
-          // [DEBUG] Temporary logging for issue diagnosis
-          LogUtil.d(() => '''
-            [PurchaseManager] About to send PurchaseStateEvent.success (alreadyProcessed):
-            - productId: "${purchaseDetails.productID}"
-            - state: PurchaseState.success
-          ''');
-          
-          _purchaseStateController.add(PurchaseStateEvent(
-            productId: purchaseDetails.productID,
-            state: PurchaseState.success,
-            verificationResult: verificationResult,
-          ));
-          
-          LogUtil.d(() => '''
-            [PurchaseManager] PurchaseStateEvent.success (alreadyProcessed) sent:
-            - productId: "${purchaseDetails.productID}"
-          ''');
-        } else {
-          LogUtil.e(() => '''
-            [PurchaseManager] Purchase processing failed:
-            - productID: "${purchaseDetails.productID}"
-            - transactionId: $transactionId
-            - result: $result
-            - message: $message
-          ''');
-          
-          // [DEBUG] Temporary logging for issue diagnosis
-          LogUtil.e(() => '''
-            [PurchaseManager] About to send PurchaseStateEvent.error:
-            - productId: "${purchaseDetails.productID}"
-            - state: PurchaseState.error
-          ''');
-          
-          _purchaseStateController.add(PurchaseStateEvent(
-            productId: purchaseDetails.productID,
-            state: PurchaseState.error,
-            errorMessage: message,
-          ));
-          
-          LogUtil.e(() => '''
-            [PurchaseManager] PurchaseStateEvent.error sent:
-            - productId: "${purchaseDetails.productID}"
-          ''');
+    PurchaseProcessResponse response;
+    if (isNewPurchase) {
+      // New purchase that came as "restored" status - use processPurchase
+      // This ensures proper delivery flow (joinCircle for new purchase)
+      LogUtil.d(() => '''
+        [PurchaseManager] Restored event in purchase session (new purchase):
+        - productID: ${purchaseDetails.productID}
+        - Using processPurchase (not processRestoredPurchase)
+      ''');
+      response = await PurchaseService.instance.processPurchase(purchaseDetails);
+    } else {
+      // True restore - use processRestoredPurchase
+      response = await PurchaseService.instance.processRestoredPurchase(purchaseDetails);
+    }
+
+    LogUtil.d(() => '''
+      [PurchaseManager] ${isNewPurchase ? 'processPurchase' : 'processRestoredPurchase'} completed:
+      - productID: "${purchaseDetails.productID}"
+      - result: ${response.result}
+      - message: ${response.message}
+      - hasVerificationResult: ${response.verificationResult != null}
+    ''');
+
+    // Complete the Future based on session type
+    if (session != null) {
+      if (session.type == _SessionType.restore && 
+          session.restoreCompleters != null) {
+        final completer = session.restoreCompleters![purchaseDetails.productID];
+        if (completer != null && !completer.isCompleted) {
+          if (response.result == PurchaseProcessResult.success ||
+              response.result == PurchaseProcessResult.alreadyProcessed) {
+            completer.complete(PurchaseResult.success(
+              verificationResult: response.verificationResult!,
+              purchaseDetails: purchaseDetails,
+            ));
+          } else {
+            completer.complete(PurchaseResult.error(
+              response.message ?? 'Restore processing failed',
+            ));
+          }
         }
-      },
-    );
-    
-    // [DEBUG] Temporary logging for issue diagnosis
-    LogUtil.d(() => '[PurchaseManager] PurchaseService.processPurchase await completed');
+      } else if (session.type == _SessionType.purchase) {
+        // Handle restored event in purchase session (new purchase that came as "restored")
+        if (session.completer != null && !session.completer!.isCompleted) {
+          if (response.result == PurchaseProcessResult.success) {
+            // Success with verification result
+            session.completer!.complete(PurchaseResult.success(
+              verificationResult: response.verificationResult!,
+              purchaseDetails: purchaseDetails,
+            ));
+          } else if (response.result == PurchaseProcessResult.alreadyProcessed) {
+            // Already processed - transaction was handled before
+            // For already processed transactions, we don't have verificationResult
+            // but we should still complete the completer as success since the transaction
+            // was successfully processed previously
+            LogUtil.d(() => '''
+              [PurchaseManager] Purchase already processed, completing as success:
+              - productID: ${purchaseDetails.productID}
+              - transactionId: $transactionId
+            ''');
+            // Create success result without verificationResult (it's already processed)
+            session.completer!.complete(PurchaseResult(
+              success: true,
+              purchaseDetails: purchaseDetails,
+              isCanceled: false,
+            ));
+          } else {
+            session.completer!.complete(PurchaseResult.error(
+              response.message ?? 'Purchase processing failed',
+            ));
+          }
+          // Clear pending flag immediately
+          _pendingPurchases.remove(purchaseDetails.productID);
+          LogUtil.d(() => '[PurchaseManager] Purchase processed (restored), pending flag cleared for: ${purchaseDetails.productID}');
+        }
+      }
+    }
   }
 
-  /// Handle restored status
-  Future<void> _handleRestored(
-    PurchaseDetails purchaseDetails,
-    String transactionId,
-  ) async {
-    LogUtil.d(() => 'Purchase restored: ${purchaseDetails.productID}');
-    
-    // Process restored purchase through PurchaseService
-    // Restored purchases should sync entitlements, not create new purchases
-    await PurchaseService.instance.processRestoredPurchase(
-      purchaseDetails,
-      onResult: (result, message, verificationResult) {
-        // [DEBUG] Temporary logging for issue diagnosis
-        LogUtil.d(() => '''
-          [PurchaseManager] _handleRestored onResult callback called:
-          - productID: "${purchaseDetails.productID}"
-          - result: $result
-          - message: $message
-          - hasVerificationResult: ${verificationResult != null}
-        ''');
-        
-        // Notify handlers with processing result
-        _notifyHandlers(PurchaseEvent(
-          purchaseDetails: purchaseDetails,
-          processResult: result,
-          resultMessage: message,
-          verificationResult: verificationResult,
-        ));
-        
-        // Notify state change - same logic as _handlePurchased
-        if (result == PurchaseProcessResult.success) {
-          LogUtil.d(() => '''
-            [PurchaseManager] Restored purchase processed successfully:
-            - productID: ${purchaseDetails.productID}
-            - transactionId: $transactionId
-            - relayUrl: ${verificationResult?.relayUrl ?? 'N/A'}
-          ''');
-          
-          // [DEBUG] Temporary logging for issue diagnosis
-          LogUtil.d(() => '''
-            [PurchaseManager] About to send PurchaseStateEvent.success (restored):
-            - productId: "${purchaseDetails.productID}"
-            - state: PurchaseState.success
-          ''');
-          
-          _purchaseStateController.add(PurchaseStateEvent(
-            productId: purchaseDetails.productID,
-            state: PurchaseState.success,
-            verificationResult: verificationResult,
-          ));
-          
-          LogUtil.d(() => '''
-            [PurchaseManager] PurchaseStateEvent.success (restored) sent:
-            - productId: "${purchaseDetails.productID}"
-          ''');
-        } else if (result == PurchaseProcessResult.alreadyProcessed) {
-          LogUtil.d(() => '''
-            [PurchaseManager] Restored purchase already processed:
-            - productID: ${purchaseDetails.productID}
-            - transactionId: $transactionId
-          ''');
-          
-          // [DEBUG] Temporary logging for issue diagnosis
-          LogUtil.d(() => '''
-            [PurchaseManager] About to send PurchaseStateEvent.success (restored, alreadyProcessed):
-            - productId: "${purchaseDetails.productID}"
-            - state: PurchaseState.success
-          ''');
-          
-          // Send success state even if already processed, so UI can update
-          _purchaseStateController.add(PurchaseStateEvent(
-            productId: purchaseDetails.productID,
-            state: PurchaseState.success,
-            verificationResult: verificationResult,
-          ));
-          
-          LogUtil.d(() => '''
-            [PurchaseManager] PurchaseStateEvent.success (restored, alreadyProcessed) sent:
-            - productId: "${purchaseDetails.productID}"
-          ''');
-        } else {
-          LogUtil.w(() => '''
-            [PurchaseManager] Restored purchase processing result:
-            - productID: ${purchaseDetails.productID}
-            - transactionId: $transactionId
-            - result: $result
-            - message: $message
-          ''');
-          
-          // Send error state for other failure cases
-          _purchaseStateController.add(PurchaseStateEvent(
-            productId: purchaseDetails.productID,
-            state: PurchaseState.error,
-            errorMessage: message,
-          ));
-        }
-      },
-    );
-  }
-
-  /// Handle error status
   Future<void> _handleError(PurchaseDetails purchaseDetails) async {
     LogUtil.e(() => '''
       [PurchaseManager] Purchase error:
@@ -403,202 +652,162 @@ class PurchaseManager {
       - pendingCompletePurchase: ${purchaseDetails.pendingCompletePurchase}
     ''');
 
-    // Notify state change: error
-    _purchaseStateController.add(PurchaseStateEvent(
-      productId: purchaseDetails.productID,
-      state: PurchaseState.error,
-      errorMessage: purchaseDetails.error?.message ?? 'Purchase error',
-    ));
+    final errorMessage = purchaseDetails.error?.message ?? 'Purchase error';
 
-    // Complete purchase even on error to free up the queue
-    if (purchaseDetails.pendingCompletePurchase) {
-      LogUtil.d(() => '[PurchaseManager] Completing purchase on error to free up queue');
-      await _inAppPurchase.completePurchase(purchaseDetails);
+    // Complete the Future for purchaseProduct
+    final session = _activeSession;
+    if (session != null && 
+        session.type == _SessionType.purchase && 
+        session.completer != null &&
+        !session.completer!.isCompleted) {
+      session.completer!.complete(PurchaseResult.error(errorMessage));
+      // Clear pending flag immediately
+      _pendingPurchases.remove(purchaseDetails.productID);
+      LogUtil.d(() => '[PurchaseManager] Purchase error handled, pending flag cleared for: ${purchaseDetails.productID}');
     }
+
+    // Do NOT finish here. PurchaseService decides finish/shouldFinish policy.
   }
 
-  /// Handle canceled status
-  /// 
-  /// This status indicates that the user canceled the purchase.
-  /// Unlike error, this is a user-initiated action and should be handled gracefully.
   Future<void> _handleCanceled(PurchaseDetails purchaseDetails) async {
     LogUtil.d(() => '''
       Purchase canceled by user:
       - productID: ${purchaseDetails.productID}
       - purchaseID: ${purchaseDetails.purchaseID}
+      - pendingCompletePurchase: ${purchaseDetails.pendingCompletePurchase}
     ''');
 
-    // Notify handlers about canceled purchase (no processing result)
-    _notifyHandlers(PurchaseEvent(purchaseDetails: purchaseDetails));
-
-    // Notify state change: canceled
-    _purchaseStateController.add(PurchaseStateEvent(
-      productId: purchaseDetails.productID,
-      state: PurchaseState.canceled,
-    ));
-
-    // Complete purchase to free up the queue
-    // Note: canceled purchases may or may not have pendingCompletePurchase
-    // depending on when the user canceled (before or after payment)
-    if (purchaseDetails.pendingCompletePurchase) {
-      await _inAppPurchase.completePurchase(purchaseDetails);
+    // Complete the Future for purchaseProduct
+    final session = _activeSession;
+    if (session != null && 
+        session.type == _SessionType.purchase && 
+        session.completer != null &&
+        !session.completer!.isCompleted) {
+      session.completer!.complete(PurchaseResult.canceled());
+      // Clear pending flag immediately
+      _pendingPurchases.remove(purchaseDetails.productID);
+      LogUtil.d(() => '[PurchaseManager] Purchase canceled, pending flag cleared for: ${purchaseDetails.productID}');
     }
+
+    // Do NOT finish here. PurchaseService decides finish/shouldFinish policy.
   }
 
-  /// Notify all registered handlers about a purchase update
-  void _notifyHandlers(PurchaseEvent event) {
-    LogUtil.d(() => '''
-      [PurchaseManager] Notifying ${_purchaseHandlers.length} handler(s):
-      - productID: ${event.purchaseDetails.productID}
-      - status: ${event.purchaseDetails.status}
-      - processResult: ${event.processResult}
-    ''');
-    
-    for (final handler in _purchaseHandlers) {
-      try {
-        handler(event);
-      } catch (e, stack) {
-        LogUtil.e(() => '''
-          [PurchaseManager] Error in purchase handler:
-          - error: $e
-          - stack: $stack
-        ''');
-      }
-    }
-  }
+  /// --- Lifecycle ------------------------------------------------------------
 
-  /// Register a handler for purchase updates
-  /// 
-  /// [handler] Function that will be called when purchase updates are received.
-  /// The handler receives a PurchaseEvent which includes both purchase details
-  /// and processing result (if processing has completed).
-  /// Returns a function to unregister the handler
-  Function() registerHandler(Function(PurchaseEvent) handler) {
-    _purchaseHandlers.add(handler);
-    return () => _purchaseHandlers.remove(handler);
-  }
-
-  /// Dispose the purchase manager
   void dispose() {
     _subscription?.cancel();
     _subscription = null;
-    _purchaseHandlers.clear();
+
+    _endSessionInternal(reason: 'dispose');
     _pendingPurchases.clear();
-    _purchaseStateController.close();
+
+    _seenTxKeys.clear();
     _isInitialized = false;
+
     LogUtil.d(() => 'PurchaseManager disposed');
   }
 
-  /// Check if the manager is initialized
   bool get isInitialized => _isInitialized;
 
-  /// Stream of purchase state changes for UI updates
-  Stream<PurchaseStateEvent> get purchaseStateStream => _purchaseStateController.stream;
+  /// --- Public operations ----------------------------------------------------
 
-  /// Purchase a product by product ID
+  /// Purchase a product
   /// 
-  /// This method handles:
-  /// - Store availability check
-  /// - Product query
-  /// - Purchase initiation
-  /// - Debouncing to prevent duplicate purchases
+  /// Returns a [Future<PurchaseResult>] that completes when the purchase is processed.
+  /// The Future will complete with:
+  /// - [PurchaseResult.success] if purchase succeeds
+  /// - [PurchaseResult.error] if purchase fails
+  /// - [PurchaseResult.canceled] if user cancels
   /// 
-  /// [productId] The product ID to purchase
-  /// 
-  /// Returns true if purchase was initiated successfully, false otherwise
-  /// Throws an exception if there's an error
-  Future<bool> purchaseProduct(String productId) async {
+  /// **Usage:**
+  /// ```dart
+  /// final result = await PurchaseManager.instance.purchaseProduct('product_id');
+  /// if (result.success) {
+  ///   // Handle success
+  ///   print('Relay URL: ${result.verificationResult?.relayUrl}');
+  /// } else {
+  ///   // Handle error
+  ///   print('Error: ${result.errorMessage}');
+  /// }
+  /// ```
+  Future<PurchaseResult> purchaseProduct(String productId) async {
     LogUtil.d(() => '[PurchaseManager] Starting purchase for product: $productId');
-    
-    // Debounce: prevent duplicate purchases
+
     if (_pendingPurchases[productId] == true) {
       LogUtil.w(() => '[PurchaseManager] Purchase already in progress for product: $productId');
-      throw Exception('Purchase already in progress. Please wait...');
+      return PurchaseResult.error('Purchase already in progress. Please wait...');
     }
 
     _pendingPurchases[productId] = true;
+    
+    // Create completer to return result
+    final completer = Completer<PurchaseResult>();
+    
+    // Helper to complete and clear pending flag
+    void completeAndClear(PurchaseResult result) {
+      if (!completer.isCompleted) {
+        completer.complete(result);
+      }
+      // Clear pending flag immediately when completer is completed
+      _pendingPurchases[productId] = false;
+      LogUtil.d(() => '[PurchaseManager] Purchase completed and pending flag cleared for: $productId');
+    }
+    
     try {
-      // Notify state change: pending
-      _purchaseStateController.add(PurchaseStateEvent(
+      // Create purchase session BEFORE initiating purchase.
+      _beginPurchaseSession(
         productId: productId,
-        state: PurchaseState.pending,
-      ));
-      LogUtil.d(() => '[PurchaseManager] Purchase state: pending for $productId');
+        completer: completer,
+      );
 
-      // Check store availability
-      LogUtil.d(() => '[PurchaseManager] Checking store availability...');
       final bool isAvailable = await _inAppPurchase.isAvailable();
       if (!isAvailable) {
-        LogUtil.e(() => '[PurchaseManager] Store not available');
-        throw Exception('Store not available');
+        completeAndClear(PurchaseResult.error('Store not available'));
+        return completer.future;
       }
-      LogUtil.d(() => '[PurchaseManager] Store is available');
 
-      // Query product details
-      LogUtil.d(() => '[PurchaseManager] Querying product details for: $productId');
       final ProductDetailsResponse productDetailResponse =
-          await _inAppPurchase.queryProductDetails({productId});
+      await _inAppPurchase.queryProductDetails({productId});
 
       if (productDetailResponse.error != null) {
-        LogUtil.e(() => '''
-          [PurchaseManager] Product query error:
-          - code: ${productDetailResponse.error!.code}
-          - message: ${productDetailResponse.error!.message}
-          - details: ${productDetailResponse.error!.details}
-        ''');
-        throw Exception(productDetailResponse.error!.message);
+        completeAndClear(PurchaseResult.error(
+          'Failed to query product details. Please try again.',
+        ));
+        return completer.future;
       }
 
       if (productDetailResponse.productDetails.isEmpty) {
-        LogUtil.e(() => '''
-          [PurchaseManager] Product not found:
-          - productId: $productId
-          - notFoundIDs: ${productDetailResponse.notFoundIDs}
-        ''');
-        throw Exception(
-          'Product not found: $productId\n'
-          'Please check if the product is configured in '
-          '${Platform.isIOS ? "App Store Connect" : "Google Play Console"}',
-        );
+        completeAndClear(PurchaseResult.error(
+          'Product not found. Please check if the product is configured correctly.',
+        ));
+        return completer.future;
       }
 
       final ProductDetails productDetails =
           productDetailResponse.productDetails.first;
-      LogUtil.d(() => '''
-        [PurchaseManager] Product details retrieved:
-        - productID: ${productDetails.id}
-        - title: ${productDetails.title}
-        - price: ${productDetails.price}
-        - currencyCode: ${productDetails.currencyCode}
-      ''');
 
-      // Notify state change: processing (purchase is being initiated)
-      _purchaseStateController.add(PurchaseStateEvent(
-        productId: productId,
-        state: PurchaseState.processing,
-      ));
-      LogUtil.d(() => '[PurchaseManager] Purchase state: processing for $productId');
-
-      // Initiate purchase
-      LogUtil.d(() => '[PurchaseManager] Initiating purchase...');
       final PurchaseParam purchaseParam = PurchaseParam(
         productDetails: productDetails,
       );
 
-      // Use buyNonConsumable for subscriptions
       final bool success = await _inAppPurchase.buyNonConsumable(
         purchaseParam: purchaseParam,
       );
 
       if (!success) {
-        LogUtil.e(() => '[PurchaseManager] buyNonConsumable returned false');
-        throw Exception('Failed to initiate purchase. Please try again.');
+        completeAndClear(PurchaseResult.error('Failed to initiate purchase. Please try again.'));
+        return completer.future;
       }
 
-      LogUtil.d(() => '[PurchaseManager] Purchase initiated successfully. Waiting for purchaseStream event...');
-      // Purchase status will be handled by purchaseStream
-      // The state will be updated when we receive the purchase event
-      return true;
+      // Set timeout for purchase completion
+      Future.delayed(const Duration(minutes: 5), () {
+        if (!completer.isCompleted) {
+          completeAndClear(PurchaseResult.error('Purchase timeout. Please try again.'));
+          _endSessionInternal(reason: 'purchase timeout');
+        }
+      });
+
+      return completer.future;
     } catch (e, stack) {
       LogUtil.e(() => '''
         [PurchaseManager] Error in purchaseProduct:
@@ -606,38 +815,127 @@ class PurchaseManager {
         - error: $e
         - stack: $stack
       ''');
-      // Notify state change: error
-      _purchaseStateController.add(PurchaseStateEvent(
-        productId: productId,
-        state: PurchaseState.error,
-        errorMessage: e.toString(),
-      ));
-      rethrow;
-    } finally {
-      // Clear debounce flag after a delay
-      Future.delayed(const Duration(seconds: 5), () {
-        _pendingPurchases[productId] = false;
-        LogUtil.d(() => '[PurchaseManager] Debounce flag cleared for: $productId');
-      });
+
+      var message = 'Failed to initiate purchase. Please try again.';
+      if (e is PlatformException) {
+        message = e.message ?? message;
+      }
+      completeAndClear(PurchaseResult.error(message));
+      return completer.future;
     }
   }
 
   /// Restore purchases
   /// 
-  /// This will trigger the restore flow, and restored purchases will be
-  /// processed through the purchase stream.
-  Future<void> restorePurchases() async {
-    LogUtil.d(() => '[PurchaseManager] Starting restore purchases...');
+  /// Returns a [Future<List<PurchaseResult>>] that completes when restore is finished.
+  /// Each result corresponds to a restored product.
+  /// 
+  /// **Usage:**
+  /// ```dart
+  /// final results = await PurchaseManager.instance.restorePurchases();
+  /// for (final result in results) {
+  ///   if (result.success) {
+  ///     print('Restored: ${result.purchaseDetails?.productID}');
+  ///   }
+  /// }
+  /// ```
+  Future<List<PurchaseResult>> restorePurchases({
+    Set<String>? productIds,
+    Duration timeout = const Duration(seconds: 10),
+  }) async {
+    LogUtil.d(() => '[PurchaseManager] restorePurchases() called');
+
+    // Create completers for each product (or empty map if productIds is null)
+    final restoreCompleters = <String, Completer<PurchaseResult>>{};
+    
+    if (productIds != null) {
+      for (final productId in productIds) {
+        restoreCompleters[productId] = Completer<PurchaseResult>();
+      }
+    }
+
+    // Start restore session
+    _beginRestoreSession(restoreCompleters: restoreCompleters);
+
+    // Call platform restore
+    await _inAppPurchase.restorePurchases();
+
+    // Wait for all completers or timeout
+    final futures = restoreCompleters.values.map((c) => c.future).toList();
+    
     try {
-      await _inAppPurchase.restorePurchases();
-      LogUtil.d(() => '[PurchaseManager] restorePurchases() called successfully. Waiting for purchaseStream events...');
-    } catch (e, stack) {
-      LogUtil.e(() => '''
-        [PurchaseManager] Error restoring purchases:
-        - error: $e
-        - stack: $stack
-      ''');
-      rethrow;
+      final results = await Future.wait(
+        futures,
+        eagerError: false,
+      ).timeout(timeout);
+      return results;
+    } catch (e) {
+      // Timeout or error - complete remaining completers
+      for (final completer in restoreCompleters.values) {
+        if (!completer.isCompleted) {
+          completer.complete(PurchaseResult.error(
+            e is TimeoutException ? 'Restore timeout' : e.toString(),
+          ));
+        }
+      }
+      
+      // Return completed results - wait for all futures
+      final results = <PurchaseResult>[];
+      for (final completer in restoreCompleters.values) {
+        if (completer.isCompleted) {
+          try {
+            results.add(await completer.future);
+          } catch (e) {
+            results.add(PurchaseResult.error(e.toString()));
+          }
+        } else {
+          results.add(PurchaseResult.error('Restore failed'));
+        }
+      }
+      return results;
+    } finally {
+      // End session after timeout
+      Future.delayed(timeout, () {
+        _endSessionInternal(reason: 'restore timeout');
+      });
+    }
+  }
+
+  /// --- Dedupe helpers -------------------------------------------------------
+
+  String _buildTxKey(PurchaseDetails p) {
+    // Prefer your idempotency manager output (often originalTransactionId / transactionId / purchaseID)
+    final t = PurchaseIdempotencyManager.getTransactionId(p);
+    if (t.isNotEmpty) return 'tx:$t:${p.productID}';
+
+    final pid = p.purchaseID ?? '';
+    if (pid.isNotEmpty) return 'pid:$pid:${p.productID}';
+
+    final raw = p.verificationData.serverVerificationData;
+    if (raw.isNotEmpty) return 'rcpt:${raw.hashCode}:${p.productID}';
+
+    return 'fallback:${p.transactionDate ?? ''}:${p.productID}';
+  }
+
+  /// Returns true if first time seen in retention window (good for verbose log),
+  /// false if duplicated.
+  bool _markSeen(String txKey) {
+    final now = DateTime.now();
+    final last = _seenTxKeys[txKey];
+    _seenTxKeys[txKey] = now;
+    if (last == null) return true;
+    return now.difference(last) > const Duration(seconds: 3);
+  }
+
+  void _evictSeenKeys() {
+    final now = DateTime.now();
+    final keys = _seenTxKeys.keys.toList(growable: false);
+    for (final k in keys) {
+      final t = _seenTxKeys[k];
+      if (t == null) continue;
+      if (now.difference(t) > _seenRetention) {
+        _seenTxKeys.remove(k);
+      }
     }
   }
 }

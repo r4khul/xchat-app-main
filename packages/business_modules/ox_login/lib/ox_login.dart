@@ -9,6 +9,7 @@ export 'page/private_relay_upgrade_page.dart';
 
 // Export utilities
 export 'utils/username_generator.dart';
+export 'subscription_product_ids.dart';
 
 // Export module service
 export 'ox_login_module_service.dart';

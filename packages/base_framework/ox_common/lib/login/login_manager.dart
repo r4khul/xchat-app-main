@@ -645,6 +645,20 @@ extension LoginManagerCircle on LoginManager {
         );
       }
 
+      // Check if circle with same relayUrl already exists
+      final existingCircle = account.circles.firstWhere(
+        (circle) => circle.type == type && circle.relayUrl == relayUrl,
+        orElse: () => Circle(id: '', name: '', relayUrl: ''),
+      );
+
+      // If circle already exists, just switch to it
+      if (existingCircle.id.isNotEmpty) {
+        debugPrint('[LoginManager] Circle already exists, switching to existing circle: relayUrl=$relayUrl, circleId=${existingCircle.id}, circleName=${existingCircle.name}');
+        final switchResult = await switchToCircle(existingCircle);
+        return switchResult;
+      }
+
+      // Circle doesn't exist, create new one
       final newCircle = Circle(
         name: _extractCircleName(relayUrl, type),
         relayUrl: relayUrl,
