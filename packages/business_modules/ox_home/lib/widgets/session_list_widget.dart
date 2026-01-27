@@ -118,29 +118,6 @@ class _SessionListWidgetState extends State<SessionListWidget> {
 
   Widget buildSeparator(BuildContext context, int index, List<SessionListViewModel> sessionList) {
     return const SizedBox.shrink();
-
-    final currentItem = sessionList[index];
-
-    // Is between pinned and unpinned items
-    if (index < sessionList.length - 1) {
-      final nextItem = sessionList[index + 1];
-
-      // No separator between pinned and unpinned items
-      if (currentItem.isAlwaysTop && !nextItem.isAlwaysTop) {
-        return const SizedBox.shrink();
-      }
-    }
-
-    return Container(
-      color: currentItem.isAlwaysTop ? ColorToken.surfaceContainer.of(context) : null,
-      child: Padding(
-        padding: EdgeInsets.only(left: 72.px),
-        child: Container(
-          height: 0.5,
-          color: CupertinoColors.separator,
-        ),
-      ),
-    );
   }
 
   Widget _buildEmptyState(BuildContext context) {
@@ -228,7 +205,6 @@ class _SessionListWidgetState extends State<SessionListWidget> {
     OXNavigator.pushPage(
       context,
       (context) => const FindPeoplePage(),
-      type: OXPushPageType.present,
     );
   }
 

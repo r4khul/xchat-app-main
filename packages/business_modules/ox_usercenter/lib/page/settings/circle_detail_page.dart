@@ -61,12 +61,14 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
   @override
   void initState() {
     super.initState();
-    _circleName = widget.circle.name ?? '';
+    _circleName = widget.circle.name;
     _planName$ = ValueNotifier<String>('Family');
     _renewDate$ = ValueNotifier<String>('Dec 31, 2025');
     _storageUsed$ = ValueNotifier<String>('45.2 GB');
     _fileServerName$ = ValueNotifier<String>('');
     _checkIfOwner();
+    // Load local data first, then request server update
+    _loadLocalData();
     _loadSubscriptionInfo();
     _loadFileServerInfo();
   }
@@ -85,66 +87,90 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
     _isOwner = widget.circle.pubkey == currentPubkey;
   }
 
-  Future<void> _loadSubscriptionInfo() async {
-    try {
-      // Load tenant info to get all tenant information
-      final tenantInfo = await CircleMemberService.sharedInstance.getTenantInfo();
-      
-      // Check if current user is tenant admin
-      final currentPubkey = LoginManager.instance.currentPubkey;
-      final tenantAdminPubkey = tenantInfo['tenant_admin_pubkey'] as String?;
-      if (tenantAdminPubkey != null && tenantAdminPubkey.isNotEmpty) {
-        _isOwner = tenantAdminPubkey.toLowerCase() == currentPubkey.toLowerCase();
-      } else {
-        // Fallback to circle pubkey check
-        _isOwner = widget.circle.pubkey == currentPubkey;
+  /// Load local data first (for paid circles, load cached tenant info)
+  Future<void> _loadLocalData() async {
+    // From widget.circle get local data
+    _circleName = widget.circle.name;
+
+    // If it's a paid circle, load cached tenant info from CircleDBISAR
+    if (widget.circle.category == CircleCategory.paid) {
+      final cachedTenantInfo = await _loadCachedTenantInfo();
+      if (cachedTenantInfo != null) {
+        _updateUIWithTenantInfo(cachedTenantInfo);
       }
-      
-      // Extract member count and limits
-      final currentMembers = tenantInfo['current_members'] as int? ?? 0;
-      final maxMembers = tenantInfo['max_members'] as int? ?? 100;
-      
-      // Extract and convert members list
-      final membersList = <UserDBISAR>[];
-      final membersData = tenantInfo['members'] as List<dynamic>?;
-      if (membersData != null) {
-        for (final memberData in membersData) {
-          final memberMap = memberData as Map<String, dynamic>;
-          final pubkey = memberMap['pubkey'] as String?;
-          if (pubkey != null && pubkey.isNotEmpty) {
-            final user = await Account.sharedInstance.getUserInfo(pubkey);
-            if (user != null) {
-              // Update display name if provided
-              final displayName = memberMap['display_name'] as String?;
-              if (displayName != null && displayName.isNotEmpty) {
-                user.name = displayName;
-              }
-              membersList.add(user);
+    }
+  }
+
+  /// Load cached tenant info from CircleDBISAR
+  Future<Map<String, dynamic>?> _loadCachedTenantInfo() async {
+    try {
+      return await Account.sharedInstance.loadTenantInfoFromCircleDB(
+        widget.circle.id,
+      );
+    } catch (e) {
+      LogUtil.w(() => 'Failed to load cached tenant info: $e');
+      return null;
+    }
+  }
+
+  /// Update UI with tenant info
+  Future<void> _updateUIWithTenantInfo(Map<String, dynamic> tenantInfo) async {
+    // Check if current user is tenant admin
+    final currentPubkey = LoginManager.instance.currentPubkey;
+    final tenantAdminPubkey = tenantInfo['tenant_admin_pubkey'] as String?;
+    if (tenantAdminPubkey != null && tenantAdminPubkey.isNotEmpty) {
+      _isOwner = tenantAdminPubkey.toLowerCase() == currentPubkey.toLowerCase();
+    } else {
+      // Fallback to circle pubkey check
+      _isOwner = widget.circle.pubkey == currentPubkey;
+    }
+
+    // Extract member count and limits
+    final currentMembers = tenantInfo['current_members'] as int? ?? 0;
+    final maxMembers = tenantInfo['max_members'] as int? ?? 100;
+
+    // Extract and convert members list
+    final membersList = <UserDBISAR>[];
+    final membersData = tenantInfo['members'] as List<dynamic>?;
+    if (membersData != null) {
+      for (final memberData in membersData) {
+        final memberMap = memberData as Map<String, dynamic>;
+        final pubkey = memberMap['pubkey'] as String?;
+        if (pubkey != null && pubkey.isNotEmpty) {
+          final user = await Account.sharedInstance.getUserInfo(pubkey);
+          if (user != null) {
+            // Update display name if provided
+            final displayName = memberMap['display_name'] as String?;
+            if (displayName != null && displayName.isNotEmpty) {
+              user.name = displayName;
             }
+            membersList.add(user);
           }
         }
       }
-      
-      // Extract expires_at and format renew date
-      String renewDateText = 'Dec 31, 2025'; // Default
-      final expiresAt = tenantInfo['expires_at'] as int?;
-      if (expiresAt != null && expiresAt > 0) {
-        try {
-          // expires_at is in seconds, convert to milliseconds
-          final date = DateTime.fromMillisecondsSinceEpoch(expiresAt * 1000);
-          renewDateText = DateFormat('MMM d, yyyy').format(date);
-        } catch (e) {
-          LogUtil.w(() => 'Failed to format expires_at: $e');
-        }
+    }
+
+    // Extract expires_at and format renew date
+    String renewDateText = 'Dec 31, 2025'; // Default
+    final expiresAt = tenantInfo['expires_at'] as int?;
+    if (expiresAt != null && expiresAt > 0) {
+      try {
+        // expires_at is in seconds, convert to milliseconds
+        final date = DateTime.fromMillisecondsSinceEpoch(expiresAt * 1000);
+        renewDateText = DateFormat('MMM d, yyyy').format(date);
+      } catch (e) {
+        LogUtil.w(() => 'Failed to format expires_at: $e');
       }
-      
-      // Extract tenant name if available
-      final tenantName = tenantInfo['name'] as String?;
-      if (tenantName != null && tenantName.isNotEmpty && tenantName != _circleName) {
-        // Optionally update circle name if different
-        // _circleName = tenantName;
-      }
-      
+    }
+
+    // Extract tenant name if available
+    final tenantName = tenantInfo['name'] as String?;
+    if (tenantName != null && tenantName.isNotEmpty && tenantName != _circleName) {
+      // Optionally update circle name if different
+      // _circleName = tenantName;
+    }
+
+    if (mounted) {
       setState(() {
         _currentMembers = currentMembers;
         _maxMembers = maxMembers;
@@ -153,15 +179,61 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
         _planName$.value = 'Family'; // TODO: Load actual plan name from API if available
         _storageUsed$.value = '45.2 GB'; // TODO: Load actual storage from API if available
       });
+    }
+  }
+
+  /// Save tenant info to cache (CircleDBISAR)
+  Future<void> _saveTenantInfoToCache(Map<String, dynamic> tenantInfo) async {
+    try {
+      if (widget.circle.category == CircleCategory.paid) {
+        await Account.sharedInstance.saveTenantInfoToCircleDB(
+          circleId: widget.circle.id,
+          tenantInfo: tenantInfo,
+        );
+      }
     } catch (e) {
-      // If not a member or error, use defaults
+      LogUtil.w(() => 'Failed to save tenant info to cache: $e');
+    }
+  }
+
+  Future<void> _loadSubscriptionInfo() async {
+    // If it's a paid circle, try to load cached data from local first and display immediately
+    if (widget.circle.category == CircleCategory.paid) {
+      final cachedData = await _loadCachedTenantInfo();
+      if (cachedData != null) {
+        _updateUIWithTenantInfo(cachedData);
+      }
+    }
+
+    // Then request server update (request regardless of whether cached data exists)
+    try {
+      final tenantInfo = await CircleMemberService.sharedInstance.getTenantInfo();
+      // Update UI
+      await _updateUIWithTenantInfo(tenantInfo);
+
+      // If it's a paid circle, save to local cache
+      if (widget.circle.category == CircleCategory.paid) {
+        await _saveTenantInfoToCache(tenantInfo);
+      }
+
+      // If server returns tenant_name different from local, update circle name
+      final tenantName = tenantInfo['name'] as String?;
+      if (tenantName != null &&
+          tenantName.isNotEmpty &&
+          tenantName != _circleName) {
+        if (mounted) {
+          setState(() {
+            _circleName = tenantName;
+          });
+        }
+      }
+    } catch (e) {
+      // Request failed, keep displaying local data (if any)
       LogUtil.w(() => 'Failed to load subscription info: $e');
-      setState(() {
-        _currentMembers = _members.length;
-        _maxMembers = 100;
-        // Try to load at least current user as fallback
+      // If no cached data was loaded and request failed, try fallback
+      if (_members.isEmpty && widget.circle.category == CircleCategory.paid) {
         _loadCurrentUserFallback();
-      });
+      }
     }
   }
   
@@ -195,7 +267,7 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
         final matched = servers.firstWhere((e) => e.url == selectedUrl);
         displayName = matched.name.isNotEmpty ? matched.name : matched.url;
       } catch (e) {
-        displayName = selectedUrl ?? '';
+        displayName = selectedUrl;
       }
     }
     
@@ -311,9 +383,13 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
-                CLText.titleLarge(
-                  _circleName,
-                  textAlign: TextAlign.center,
+                Flexible(
+                  child: CLText.titleLarge(
+                    _circleName,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
                 SizedBox(width: 8.px),
                 Icon(
