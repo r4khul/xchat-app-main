@@ -274,6 +274,9 @@ class PurchaseManager {
   Future<void> _handlePurchaseUpdates(
       List<PurchaseDetails> purchaseDetailsList,
       ) async {
+    final session = _activeSession;
+    if (session == null) return;
+
     _evictSeenKeys();
 
     for (final purchaseDetails in purchaseDetailsList) {
@@ -295,14 +298,6 @@ class PurchaseManager {
         } else {
           // Seen recently; skip verbose log.
           LogUtil.d(() => '[PurchaseManager] Purchase update duplicated (ignored log): txKey=$txKey status=${purchaseDetails.status}');
-        }
-
-        // Policy: App startup => do not process anything unless a session is active.
-        final session = _activeSession;
-        if (session == null) {
-          // No silent processing; we intentionally do nothing here.
-          // (Still keeping listener globally to avoid missing events)
-          continue;
         }
 
         // Session routing filters
