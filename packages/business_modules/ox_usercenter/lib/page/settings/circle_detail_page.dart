@@ -6,6 +6,7 @@ import 'package:ox_common/component.dart';
 import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/login/login_models.dart';
 import 'package:ox_common/login/circle_service.dart';
+import 'package:ox_common/login/circle_repository.dart';
 import 'package:chatcore/chat-core.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/utils/adapt.dart';
@@ -87,16 +88,25 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
     _isOwner = widget.circle.pubkey == currentPubkey;
   }
 
-  /// Load local data first (for paid circles, load cached tenant info)
+  /// Check if this circle is a paid relay (based on relayUrl matching privateRelayApiBaseUrl)
+  bool _isPaidRelay() {
+    return CircleApi.isPaidRelay(widget.circle.relayUrl);
+  }
+
+  /// Load local data first (for paid relays, load cached tenant info)
   Future<void> _loadLocalData() async {
     // From widget.circle get local data
     _circleName = widget.circle.name;
 
-    // If it's a paid circle, load cached tenant info from CircleDBISAR
-    if (widget.circle.category == CircleCategory.paid) {
+    // If it's a paid relay, load cached tenant info from CircleDBISAR
+    if (_isPaidRelay()) {
       final cachedTenantInfo = await _loadCachedTenantInfo();
       if (cachedTenantInfo != null) {
         _updateUIWithTenantInfo(cachedTenantInfo);
+      }
+      // Update category if it's not already paid
+      if (widget.circle.category != CircleCategory.paid) {
+        await _updateCircleCategory(CircleCategory.paid);
       }
     }
   }
@@ -183,38 +193,44 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
   }
 
   /// Save tenant info to cache (CircleDBISAR)
+  /// This method is called when we successfully get tenant info, which means it's a paid circle
   Future<void> _saveTenantInfoToCache(Map<String, dynamic> tenantInfo) async {
     try {
-      if (widget.circle.category == CircleCategory.paid) {
-        await Account.sharedInstance.saveTenantInfoToCircleDB(
-          circleId: widget.circle.id,
-          tenantInfo: tenantInfo,
-        );
-      }
+      await Account.sharedInstance.saveTenantInfoToCircleDB(
+        circleId: widget.circle.id,
+        tenantInfo: tenantInfo,
+      );
     } catch (e) {
       LogUtil.w(() => 'Failed to save tenant info to cache: $e');
     }
   }
 
   Future<void> _loadSubscriptionInfo() async {
-    // If it's a paid circle, try to load cached data from local first and display immediately
-    if (widget.circle.category == CircleCategory.paid) {
-      final cachedData = await _loadCachedTenantInfo();
-      if (cachedData != null) {
-        _updateUIWithTenantInfo(cachedData);
-      }
+    // Only load subscription info for paid relays
+    if (!_isPaidRelay()) {
+      return;
+    }
+
+    // Try to load cached data from local first and display immediately
+    final cachedData = await _loadCachedTenantInfo();
+    if (cachedData != null) {
+      _updateUIWithTenantInfo(cachedData);
+    }
+
+    // Update category if it's not already paid
+    if (widget.circle.category != CircleCategory.paid) {
+      await _updateCircleCategory(CircleCategory.paid);
     }
 
     // Then request server update (request regardless of whether cached data exists)
     try {
       final tenantInfo = await CircleMemberService.sharedInstance.getTenantInfo();
+      
       // Update UI
       await _updateUIWithTenantInfo(tenantInfo);
 
-      // If it's a paid circle, save to local cache
-      if (widget.circle.category == CircleCategory.paid) {
-        await _saveTenantInfoToCache(tenantInfo);
-      }
+      // Save to local cache
+      await _saveTenantInfoToCache(tenantInfo);
 
       // If server returns tenant_name different from local, update circle name
       final tenantName = tenantInfo['name'] as String?;
@@ -231,9 +247,36 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
       // Request failed, keep displaying local data (if any)
       LogUtil.w(() => 'Failed to load subscription info: $e');
       // If no cached data was loaded and request failed, try fallback
-      if (_members.isEmpty && widget.circle.category == CircleCategory.paid) {
+      if (_members.isEmpty && cachedData == null) {
         _loadCurrentUserFallback();
       }
+    }
+  }
+
+  /// Update circle category in account-level database
+  Future<void> _updateCircleCategory(CircleCategory category) async {
+    try {
+      final loginManager = LoginManager.instance;
+      final account = loginManager.currentState.account;
+      if (account == null) return;
+
+      // Find the circle in account circles
+      final circleIndex = account.circles.indexWhere((c) => c.id == widget.circle.id);
+      if (circleIndex == -1) return;
+
+      // Update category
+      account.circles[circleIndex].category = category;
+
+      // Save to account database
+      final accountDb = account.db;
+      final success = await CircleRepository.update(accountDb, account.circles[circleIndex]);
+      if (success) {
+        LogUtil.v(() => 'Updated circle category to $category for circle: ${widget.circle.id}');
+        // Update LoginManager state to reflect the change
+        loginManager.updateStateAccount(account);
+      }
+    } catch (e) {
+      LogUtil.w(() => 'Failed to update circle category: $e');
     }
   }
   

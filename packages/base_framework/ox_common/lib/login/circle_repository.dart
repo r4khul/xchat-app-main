@@ -68,15 +68,33 @@ class CircleRepository {
         return false;
       }
 
-      // Update fields
-      existing.name = circle.name;
-      existing.relayUrl = circle.relayUrl;
-      existing.type = circle.type;
-      existing.invitationCode = circle.invitationCode;
-      existing.category = circle.category;
+      // Extract values from Circle object to avoid capturing the Circle object (which contains Isar db) in the closure
+      final name = circle.name;
+      final relayUrl = circle.relayUrl;
+      final type = circle.type;
+      final invitationCode = circle.invitationCode;
+      final category = circle.category;
 
+      // Update fields
+      existing.name = name;
+      existing.relayUrl = relayUrl;
+      existing.type = type;
+      existing.invitationCode = invitationCode;
+      existing.category = category;
+
+      // Store existing.id in a local variable to avoid capturing the Circle object
+      final existingId = existing.id;
       await accountDb.writeAsync((accountDb) {
-        accountDb.circleISARs.put(existing);
+        // Get the existing object again inside the closure to avoid capturing it
+        final circleToUpdate = accountDb.circleISARs.get(existingId);
+        if (circleToUpdate != null) {
+          circleToUpdate.name = name;
+          circleToUpdate.relayUrl = relayUrl;
+          circleToUpdate.type = type;
+          circleToUpdate.invitationCode = invitationCode;
+          circleToUpdate.category = category;
+          accountDb.circleISARs.put(circleToUpdate);
+        }
       });
 
       LogUtil.v(() => 'Circle updated: ${circle.id}');
