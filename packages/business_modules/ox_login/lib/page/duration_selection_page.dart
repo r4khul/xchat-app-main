@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/navigator/navigator.dart';
+import 'package:ox_common/purchase/purchase_plan.dart';
 import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import 'checkout_page.dart';
-import 'private_relay_upgrade_page.dart';
 
 class DurationSelectionPage extends StatefulWidget {
   const DurationSelectionPage({

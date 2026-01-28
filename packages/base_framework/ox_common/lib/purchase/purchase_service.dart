@@ -12,6 +12,7 @@ import 'package:ox_common/purchase/purchase_idempotency_manager.dart';
 enum PurchaseProcessResult {
   success,
   alreadyProcessed,
+  alreadyRestored,
   serverVerificationFailed,
   deliveryFailed,
   error,
@@ -456,22 +457,19 @@ class PurchaseService {
   /// 
   /// Restored purchases should sync entitlements, not create new purchases
   /// 
-  /// Optimization: For restored purchases, we check if the circle already exists
-  /// before calling the server. This avoids unnecessary server calls for:
-  /// - Already processed transactions (idempotency check)
-  /// - Subscription renewals where circle already exists
+  /// For restored purchases we always re-verify with the server and then call
+  /// [_deliverRestoredPurchase]. Idempotency for delivery is handled at the
+  /// circle level (we check whether the circle already exists before calling
+  /// `joinCircle`). This allows scenarios like:
+  /// - User had an active subscription and a circle created
+  /// - User deletes the circle locally
+  /// - User taps \"restore purchases\" to (re)join the circle
   /// 
   /// Returns [PurchaseProcessResponse] containing the processing result
   Future<PurchaseProcessResponse> processRestoredPurchase(
     PurchaseDetails purchaseDetails,
   ) async {
     final transactionId = PurchaseIdempotencyManager.getTransactionId(purchaseDetails);
-
-    // Check if already processed
-    final idempotencyResult = await _checkIdempotency(transactionId, purchaseDetails);
-    if (idempotencyResult != null) {
-      return idempotencyResult;
-    }
 
     // Get account to check if circle already exists
     final account = LoginManager.instance.currentState.account;
@@ -503,21 +501,19 @@ class PurchaseService {
       }
 
       // Step 3: Delivery - join Circle (MUST happen before finish)
-      // This ensures we only finish transactions that have been successfully delivered
       final deliveryResponse = await _deliverRestoredPurchase(verificationResult, account);
-      if (deliveryResponse.result != PurchaseProcessResult.success) {
+      if (deliveryResponse.result != PurchaseProcessResult.success &&
+          deliveryResponse.result != PurchaseProcessResult.alreadyRestored) {
         // Delivery failed - don't finish, don't mark as processed
-        // Let system retry later or user can restore purchases again
         return deliveryResponse;
       }
 
-      // Step 4: Mark as processed (only after successful delivery)
+      // Step 4: Mark as processed (success or alreadyRestored - transaction is valid)
       await PurchaseIdempotencyManager.markAsProcessed(transactionId);
 
-      // Step 5: Complete the purchase (finish) - only after successful delivery
+      // Step 5: Complete the purchase (finish) - clear the transaction from queue
       await _completePurchase(purchaseDetails);
 
-      // Success
       return deliveryResponse;
 
     } catch (e, stack) {
@@ -555,9 +551,9 @@ class PurchaseService {
         - circleId: ${existingCircle.id}
         - circleName: ${existingCircle.name}
       ''');
-      // Circle already exists, no need to call joinCircle
+      // Circle already exists: no new delivery, but not an error.
       return PurchaseProcessResponse(
-        result: PurchaseProcessResult.success,
+        result: PurchaseProcessResult.alreadyRestored,
         verificationResult: verificationResult,
       );
     }

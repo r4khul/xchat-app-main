@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/navigator/navigator.dart';
+import 'package:ox_common/purchase/purchase_plan.dart';
 import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import 'duration_selection_page.dart';
-import 'private_relay_upgrade_page.dart';
 
 class CapacitySelectionPage extends StatefulWidget {
   const CapacitySelectionPage({super.key});
@@ -16,54 +16,14 @@ class CapacitySelectionPage extends StatefulWidget {
 class _CapacitySelectionPageState extends State<CapacitySelectionPage> {
   SubscriptionPlan? _selectedPlan;
 
+  List<SubscriptionPlan> allPlan = SubscriptionPlanEx.allPlan;
+
   @override
   void initState() {
     super.initState();
     // Select the popular plan by default
-    _selectedPlan = _getPlans()
-        .firstWhere((p) => p.isPopular, orElse: () => _getPlans()[1]);
-  }
-
-  List<SubscriptionPlan> _getPlans() {
-    return const [
-      SubscriptionPlan(
-        id: 'lovers',
-        name: '2 Members',
-        description: 'Perfect for couples or best friends',
-        maxUsers: 2,
-        fileSizeLimitMB: -1,
-        monthlyPrice: 1.99,
-        yearlyPrice: 19.99,
-        cardColor: Color(0xFFFFE5F1),
-        monthlyProductId: 'level1.monthly',
-        yearlyProductId: 'level1.yearly',
-      ),
-      SubscriptionPlan(
-        id: 'family',
-        name: '6 Members',
-        description: 'Great for small groups and families',
-        maxUsers: 6,
-        fileSizeLimitMB: -1,
-        monthlyPrice: 5.99,
-        yearlyPrice: 59.99,
-        cardColor: Color(0xFFE5F0FF),
-        isPopular: true,
-        monthlyProductId: 'level2.monthly',
-        yearlyProductId: 'level2.yearly',
-      ),
-      SubscriptionPlan(
-        id: 'community',
-        name: '20 Members',
-        description: 'For larger groups and communities',
-        maxUsers: 20,
-        fileSizeLimitMB: -1,
-        monthlyPrice: 19.99,
-        yearlyPrice: 199.99,
-        cardColor: Color(0xFFF0E5FF),
-        monthlyProductId: 'level3.monthly',
-        yearlyProductId: 'level3.yearly',
-      ),
-    ];
+    _selectedPlan = allPlan
+        .firstWhere((p) => p.isPopular, orElse: () => allPlan[1]);
   }
 
   @override
@@ -167,24 +127,23 @@ class _CapacitySelectionPageState extends State<CapacitySelectionPage> {
   }
 
   Widget _buildCapacityOptions() {
-    final plans = _getPlans();
     return Column(
       children: [
         _buildCapacityOption(
-          plan: plans[0], // 2 Members
+          plan: allPlan[0], // 2 Members
           title: Localized.text('ox_login.capacity_2_members'),
           description: Localized.text('ox_login.capacity_2_members_desc'),
         ),
         SizedBox(height: 16.px),
         _buildCapacityOption(
-          plan: plans[1], // 6 Members
+          plan: allPlan[1], // 6 Members
           title: Localized.text('ox_login.capacity_6_members'),
           description: Localized.text('ox_login.capacity_6_members_desc'),
           isPopular: true,
         ),
         SizedBox(height: 16.px),
         _buildCapacityOption(
-          plan: plans[2], // 20 Members (Community)
+          plan: allPlan[2], // 20 Members (Community)
           title: Localized.text('ox_login.capacity_50_members'),
           description: Localized.text('ox_login.capacity_50_members_desc'),
         ),

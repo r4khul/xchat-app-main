@@ -7,6 +7,7 @@ import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:chatcore/chat-core.dart';
 import 'package:ox_common/log_util.dart';
 import 'package:ox_common/purchase/purchase_idempotency_manager.dart';
+import 'package:ox_common/purchase/purchase_plan.dart';
 import 'package:ox_common/purchase/purchase_service.dart';
 
 /// Purchase result returned from purchaseProduct/restorePurchases
@@ -17,22 +18,26 @@ class PurchaseResult {
     this.verificationResult,
     this.purchaseDetails,
     this.isCanceled = false,
+    this.isAlreadyRestored = false,
   });
 
-  /// Whether the purchase was successful
+  /// Whether the purchase was successful (new delivery completed)
   final bool success;
-  
+
   /// Error message if purchase failed
   final String? errorMessage;
-  
+
   /// Payment verification result (available on success)
   final PaymentVerificationResult? verificationResult;
-  
+
   /// Purchase details (available on success)
   final PurchaseDetails? purchaseDetails;
-  
+
   /// Whether the purchase was canceled by user
   final bool isCanceled;
+
+  /// Restore only: entitlement already present (circle exists), no new delivery. Not error.
+  final bool isAlreadyRestored;
 
   /// Create success result
   factory PurchaseResult.success({
@@ -62,6 +67,16 @@ class PurchaseResult {
       success: false,
       errorMessage: null, // Canceled doesn't need error message
       isCanceled: true,
+    );
+  }
+
+  /// Restore only: circle already exists, nothing new to restore. Not success, not error.
+  factory PurchaseResult.alreadyRestored() {
+    return PurchaseResult(
+      success: false,
+      errorMessage: null,
+      isCanceled: false,
+      isAlreadyRestored: true,
     );
   }
 }
@@ -591,16 +606,17 @@ class PurchaseManager {
           session.restoreCompleters != null) {
         final completer = session.restoreCompleters![purchaseDetails.productID];
         if (completer != null && !completer.isCompleted) {
-          if (response.result == PurchaseProcessResult.success ||
-              response.result == PurchaseProcessResult.alreadyProcessed) {
+          if (response.result == PurchaseProcessResult.success) {
             completer.complete(PurchaseResult.success(
               verificationResult: response.verificationResult!,
               purchaseDetails: purchaseDetails,
             ));
+          } else if (response.result == PurchaseProcessResult.alreadyRestored) {
+            completer.complete(PurchaseResult.alreadyRestored());
           } else {
-            completer.complete(PurchaseResult.error(
-              response.message ?? 'Restore processing failed',
-            ));
+            final message =
+                response.message ?? 'No purchase to restore for this product';
+            completer.complete(PurchaseResult.error(message));
           }
         }
       } else if (session.type == _SessionType.purchase) {
@@ -825,80 +841,74 @@ class PurchaseManager {
     }
   }
 
-  /// Restore purchases
-  /// 
-  /// Returns a [Future<List<PurchaseResult>>] that completes when restore is finished.
-  /// Each result corresponds to a restored product.
-  /// 
-  /// **Usage:**
-  /// ```dart
-  /// final results = await PurchaseManager.instance.restorePurchases();
-  /// for (final result in results) {
-  ///   if (result.success) {
-  ///     print('Restored: ${result.purchaseDetails?.productID}');
-  ///   }
-  /// }
-  /// ```
+  /// Delay after platform restore to allow all [PurchaseStatus.restored] events to arrive.
+  /// StoreKit can deliver events late (e.g. after user returns from Apple subscription UI),
+  /// so we wait a bit before treating "no event" as "no purchase to restore".
+  static const Duration _restoreSettlingDuration = Duration(seconds: 8);
+
   Future<List<PurchaseResult>> restorePurchases({
     Set<String>? productIds,
-    Duration timeout = const Duration(seconds: 10),
+    Duration timeout = const Duration(seconds: 15),
   }) async {
     LogUtil.d(() => '[PurchaseManager] restorePurchases() called');
 
-    // Create completers for each product (or empty map if productIds is null)
+    // If caller doesn't specify products, use all known subscription SKUs.
+    productIds ??=
+        SubscriptionPlanEx.allPlan.expand((e) => [e.monthlyProductId, e.yearlyProductId]).toSet();
+    if (productIds.isEmpty) return [];
+
+    // One completer per productId we care about.
     final restoreCompleters = <String, Completer<PurchaseResult>>{};
-    
-    if (productIds != null) {
-      for (final productId in productIds) {
-        restoreCompleters[productId] = Completer<PurchaseResult>();
-      }
+    for (final productId in productIds) {
+      restoreCompleters[productId] = Completer<PurchaseResult>();
     }
 
-    // Start restore session
-    _beginRestoreSession(restoreCompleters: restoreCompleters);
+    // idleTimeout must be longer than our settling period, otherwise the session
+    // would auto-end and completeError remaining completers before we mark them
+    // as "no purchase to restore".
+    final settling =
+        timeout > _restoreSettlingDuration ? _restoreSettlingDuration : timeout;
+    final idleTimeout = settling + const Duration(seconds: 2);
 
-    // Call platform restore
+    _beginRestoreSession(
+      restoreCompleters: restoreCompleters,
+      idleTimeout: idleTimeout,
+    );
+
     await _inAppPurchase.restorePurchases();
 
-    // Wait for all completers or timeout
-    final futures = restoreCompleters.values.map((c) => c.future).toList();
-    
-    try {
-      final results = await Future.wait(
-        futures,
-        eagerError: false,
-      ).timeout(timeout);
-      return results;
-    } catch (e) {
-      // Timeout or error - complete remaining completers
-      for (final completer in restoreCompleters.values) {
-        if (!completer.isCompleted) {
-          completer.complete(PurchaseResult.error(
-            e is TimeoutException ? 'Restore timeout' : e.toString(),
-          ));
-        }
+    // Wait for restored events to arrive. StoreKit only emits for products the user owns;
+    // the rest never complete, so we must not wait for all completers.
+    await Future.delayed(settling);
+
+    // Complete any product that did not get a restored event (no purchase to restore)
+    const noRestoreMessage = 'No purchase to restore for this product';
+    for (final entry in restoreCompleters.entries) {
+      if (!entry.value.isCompleted) {
+        entry.value.complete(PurchaseResult.error(noRestoreMessage));
+        LogUtil.d(() => '[PurchaseManager] No restored event for product: ${entry.key}');
       }
-      
-      // Return completed results - wait for all futures
-      final results = <PurchaseResult>[];
-      for (final completer in restoreCompleters.values) {
-        if (completer.isCompleted) {
-          try {
-            results.add(await completer.future);
-          } catch (e) {
-            results.add(PurchaseResult.error(e.toString()));
-          }
-        } else {
-          results.add(PurchaseResult.error('Restore failed'));
-        }
-      }
-      return results;
-    } finally {
-      // End session after timeout
-      Future.delayed(timeout, () {
-        _endSessionInternal(reason: 'restore timeout');
-      });
     }
+
+    final futures = restoreCompleters.values.map((c) => c.future).toList();
+    List<PurchaseResult> results;
+    try {
+      results = await Future.wait(futures, eagerError: false)
+          .timeout(const Duration(seconds: 5));
+    } catch (e) {
+      results = [];
+      for (final c in restoreCompleters.values) {
+        try {
+          results.add(await c.future);
+        } catch (_) {
+          results.add(PurchaseResult.error(e.toString()));
+        }
+      }
+    } finally {
+      _endSessionInternal(reason: 'restore completed');
+    }
+
+    return results;
   }
 
   /// --- Dedupe helpers -------------------------------------------------------

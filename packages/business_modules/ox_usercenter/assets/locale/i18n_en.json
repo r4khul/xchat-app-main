@@ -96,6 +96,8 @@
   "default_file_server_group_subtitle": "Default file server",
   "restore_purchases": "Restore Purchases",
   "restoring_purchases": "Restoring purchases...",
+  "restore_purchases_success": "Restore successful",
+  "restore_purchases_already_restored": "Your purchases are already restored",
   "processing": "Processing...",
   "subscription_and_usage": "SUBSCRIPTION & USAGE",
   "plan": "Plan",

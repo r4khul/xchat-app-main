@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:ox_chat/widget/welcome_onboarding_dialog.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/purchase/purchase_manager.dart';
+import 'package:ox_common/purchase/purchase_plan.dart';
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_common/widgets/common_loading.dart';
 import 'package:ox_localizable/ox_localizable.dart';
@@ -107,25 +108,52 @@ class _AboutXChatPageState extends State<AboutXChatPage> {
 
   Future<void> _restorePurchasesOnTap() async {
     try {
+      // Show a single loading while performing restore.
       OXLoading.show(status: Localized.text('ox_usercenter.restoring_purchases'));
-      final results = await PurchaseManager.instance.restorePurchases(
-        productIds: kSubscriptionProductIds,
-      );
+
+      final results = await PurchaseManager.instance.restorePurchases();
       if (!mounted) return;
-      final successCount = results.where((r) => r.success).length;
-      if (successCount > 0) {
-        CommonToast.instance.show(
-          context,
-          Localized.text('ox_usercenter.restoring_purchases'),
-        );
+      await OXLoading.dismiss();
+
+      final successes = results.where((r) => r.success).toList();
+      final failures = results.where((r) => !r.success).toList();
+
+      final realFailures = failures.where(
+        (r) {
+          final msg = (r.errorMessage ?? '').trim();
+          if (msg.isEmpty) return false;
+          return msg != 'No purchase to restore for this product';
+        },
+      ).toList();
+
+      var message = '';
+      if (successes.isNotEmpty) {
+        message = Localized.text('ox_usercenter.restore_purchases_success');
+      } else if (realFailures.isNotEmpty) {
+        final firstError = realFailures.first;
+        message =  firstError.errorMessage
+            ?? 'Failed to restore purchases. Please try again.';
+      } else if (results.any((r) => r.isAlreadyRestored)) {
+        message = Localized.text('ox_usercenter.restore_purchases_already_restored');
       } else {
-        CommonToast.instance.show(context, 'No purchases found to restore');
+        message = 'No purchases found to restore';
       }
+
+      await CLAlertDialog.show<bool>(
+        context: context,
+        content: message,
+        actions: [CLAlertAction.ok()],
+      );
     } catch (e) {
       if (mounted) {
-        CommonToast.instance.show(context, 'Failed to restore purchases: $e');
+        await OXLoading.dismiss();
+        CommonToast.instance.show(
+          context,
+          'Failed to restore purchases: $e',
+        );
       }
     } finally {
+      // Ensure loading is dismissed even if we returned early.
       await OXLoading.dismiss();
     }
   }

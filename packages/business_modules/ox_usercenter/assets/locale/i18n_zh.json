@@ -96,6 +96,8 @@
   "default_file_server_group_subtitle": "默认文件服务器",
   "restore_purchases": "恢复购买",
   "restoring_purchases": "正在恢复购买...",
+  "restore_purchases_success": "恢复成功",
+  "restore_purchases_already_restored": "您的购买已恢复，无需再次恢复",
   "processing": "处理中...",
   "subscription_and_usage": "订阅和使用情况",
   "plan": "方案",
