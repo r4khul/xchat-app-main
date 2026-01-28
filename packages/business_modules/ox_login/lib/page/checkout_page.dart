@@ -367,6 +367,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
         } else if (result.isCanceled) {
           // Purchase canceled by user - no need to show error message
           // Just reset UI state (already done above)
+        } else if (result.isAlreadyRestored) {
+          // User already has an active subscription for this product
+          CommonToast.instance.show(
+            context,
+            Localized.text('ox_login.already_purchased'),
+          );
         } else {
           // Purchase failed - show user-friendly error message
           final errorMessage = result.errorMessage ?? 'Purchase failed. Please try again.';

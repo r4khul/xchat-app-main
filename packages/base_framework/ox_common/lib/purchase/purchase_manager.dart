@@ -7,7 +7,7 @@ import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:chatcore/chat-core.dart';
 import 'package:ox_common/log_util.dart';
 import 'package:ox_common/purchase/purchase_idempotency_manager.dart';
-import 'package:ox_common/purchase/purchase_plan.dart';
+import 'package:ox_common/purchase/subscription_registry.dart';
 import 'package:ox_common/purchase/purchase_service.dart';
 
 /// Purchase result returned from purchaseProduct/restorePurchases
@@ -381,6 +381,18 @@ class PurchaseManager {
                 - transactionDate: ${p.transactionDate}
                 - transactionReason: $transactionReason
               ''');
+              
+              // Special handling for active subscriptions:
+              // If user manually initiates a purchase while they already have
+              // an active subscription, the store may send a "restored"
+              // renewal event with an older transactionDate.
+              //
+              // In this case, instead of making the UI wait for a timeout,
+              // we complete the purchase session immediately and tell the
+              // caller that the product is already owned.
+              if (session.type == _SessionType.purchase) {
+                _completeAlreadyOwned(p, reason: 'restored out of time window (likely existing subscription)');
+              }
               return false;
             }
             // Within window - likely a renewal that should be processed
@@ -429,6 +441,39 @@ class PurchaseManager {
     }
 
     return true;
+  }
+
+  /// Complete current purchase session as "already owned".
+  ///
+  /// This is used when the store reports a restored/renewal transaction
+  /// that is clearly older than the current purchase session window,
+  /// which typically means the user already has an active subscription.
+  void _completeAlreadyOwned(
+    PurchaseDetails purchaseDetails, {
+    required String reason,
+  }) {
+    final session = _activeSession;
+    if (session == null ||
+        session.type != _SessionType.purchase ||
+        session.completer == null ||
+        session.completer!.isCompleted) {
+      return;
+    }
+
+    LogUtil.d(() => '''
+      [PurchaseManager] Completing purchase as already owned:
+      - productID: ${purchaseDetails.productID}
+      - reason: $reason
+    ''');
+
+    // Tell caller that the entitlement already exists.
+    session.completer!.complete(PurchaseResult.alreadyRestored());
+
+    // Clear pending flag for this product.
+    _pendingPurchases.remove(purchaseDetails.productID);
+
+    // End session to clean up timers / state.
+    _endSessionInternal(reason: reason);
   }
 
   DateTime? _parseTransactionDate(String? transactionDate) {
@@ -852,9 +897,8 @@ class PurchaseManager {
   }) async {
     LogUtil.d(() => '[PurchaseManager] restorePurchases() called');
 
-    // If caller doesn't specify products, use all known subscription SKUs.
-    productIds ??=
-        SubscriptionPlanEx.allPlan.expand((e) => [e.monthlyProductId, e.yearlyProductId]).toSet();
+    // If caller doesn't specify products, use all configured subscription productIds.
+    productIds ??= SubscriptionRegistry.instance.allProductIds;
     if (productIds.isEmpty) return [];
 
     // One completer per productId we care about.
