@@ -804,6 +804,8 @@ extension LoginManagerCircle on LoginManager {
         return false;
       }
 
+      await CircleService.deleteCircle(account.db, circleId);
+
       final newCircle = account.circles.where((c) => c.id != circleId).toList();
       await updatedCircles(newCircle);
 
