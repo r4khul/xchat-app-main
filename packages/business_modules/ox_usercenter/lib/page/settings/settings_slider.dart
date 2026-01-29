@@ -20,6 +20,7 @@ import 'settings_detail_page.dart';
 import 'qr_code_display_page.dart';
 import 'package:ox_common/login/login_models.dart';
 import 'package:ox_login/page/circle_selection_page.dart' show CircleSelectionPage;
+import 'package:ox_login/utils/circle_entry_helper.dart';
 
 class SettingSlider extends StatefulWidget {
   const SettingSlider({super.key});
@@ -479,11 +480,15 @@ class SettingSliderState extends State<SettingSlider> {
     ));
   }
 
-  void addCircleItemOnTap() {
-    OXNavigator.pushPage(
-      context,
-      (context) => const CircleSelectionPage(controller: null),
-    );
+  void addCircleItemOnTap() async {
+    final didNavigateToRestore = await CircleEntryHelper.tryNavigateToCircleRestoreIfNeeded(context);
+    if (!mounted) return;
+    if (!didNavigateToRestore) {
+      OXNavigator.pushPage(
+        context,
+        (context) => const CircleSelectionPage(controller: null),
+      );
+    }
   }
 
   void profileItemOnTap() {
