@@ -1,29 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/navigator/navigator.dart';
-import 'package:ox_common/purchase/purchase_plan.dart';
+import 'package:ox_common/purchase/subscription_registry.dart';
+import 'package:ox_common/purchase/subscription_tier.dart';
 import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import 'duration_selection_page.dart';
 
 class CapacitySelectionPage extends StatefulWidget {
-  const CapacitySelectionPage({super.key});
+  const CapacitySelectionPage({
+    super.key,
+    required this.subscriptionGroupId,
+  });
+
+  final String subscriptionGroupId;
 
   @override
   State<CapacitySelectionPage> createState() => _CapacitySelectionPageState();
 }
 
 class _CapacitySelectionPageState extends State<CapacitySelectionPage> {
-  SubscriptionPlan? _selectedPlan;
+  SubscriptionTier? _selectedTier;
 
-  List<SubscriptionPlan> allPlan = SubscriptionPlanEx.allPlan;
+  late List<SubscriptionTier> _tiers;
 
   @override
   void initState() {
     super.initState();
-    // Select the popular plan by default
-    _selectedPlan = allPlan
-        .firstWhere((p) => p.isPopular, orElse: () => allPlan[1]);
+    _tiers = SubscriptionRegistry.instance.tiersForGroup(widget.subscriptionGroupId);
+    _selectedTier = _tiers.isEmpty
+        ? null
+        : (_tiers.length > 1 ? _tiers[1] : _tiers[0]);
   }
 
   @override
@@ -43,18 +50,16 @@ class _CapacitySelectionPageState extends State<CapacitySelectionPage> {
         top: 24.px,
         bottom: 100.px,
       ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildProgressIndicator(1, 3),
-            SizedBox(height: 24.px),
-            _buildHeader(),
-            SizedBox(height: 32.px),
-            _buildCapacityOptions(),
-            // SizedBox(height: 24.px),
-            // _buildBottomInfo(),
-          ],
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildProgressIndicator(1, 3),
+          SizedBox(height: 24.px),
+          _buildHeader(),
+          SizedBox(height: 32.px),
+          _buildCapacityOptions(),
+        ],
+      ),
     );
   }
 
@@ -126,44 +131,64 @@ class _CapacitySelectionPageState extends State<CapacitySelectionPage> {
     );
   }
 
+  static Color _colorForTier(SubscriptionTier t) {
+    switch (t.id) {
+      case SubscriptionTierIds.lovers:
+        return const Color(0xFFFFE5F1);
+      case SubscriptionTierIds.family:
+        return const Color(0xFFE5F0FF);
+      case SubscriptionTierIds.community:
+        return const Color(0xFFF0E5FF);
+      default:
+        return const Color(0xFFE5E5E5);
+    }
+  }
+
   Widget _buildCapacityOptions() {
     return Column(
       children: [
-        _buildCapacityOption(
-          plan: allPlan[0], // 2 Members
-          title: Localized.text('ox_login.capacity_2_members'),
-          description: Localized.text('ox_login.capacity_2_members_desc'),
-        ),
-        SizedBox(height: 16.px),
-        _buildCapacityOption(
-          plan: allPlan[1], // 6 Members
-          title: Localized.text('ox_login.capacity_6_members'),
-          description: Localized.text('ox_login.capacity_6_members_desc'),
-          isPopular: true,
-        ),
-        SizedBox(height: 16.px),
-        _buildCapacityOption(
-          plan: allPlan[2], // 20 Members (Community)
-          title: Localized.text('ox_login.capacity_50_members'),
-          description: Localized.text('ox_login.capacity_50_members_desc'),
-        ),
+        for (int i = 0; i < _tiers.length; i++) ...[
+          if (i > 0) SizedBox(height: 16.px),
+          _buildCapacityOption(
+            tier: _tiers[i],
+            isPopular: _tiers[i].id == SubscriptionTierIds.family,
+          ),
+        ],
       ],
     );
   }
 
   Widget _buildCapacityOption({
-    required SubscriptionPlan plan,
-    required String title,
-    required String description,
+    required SubscriptionTier tier,
     bool isPopular = false,
   }) {
-    final isSelected = _selectedPlan?.id == plan.id;
+    final isSelected = _selectedTier?.id == tier.id;
+    String title;
+    String desc;
+    switch (tier.id) {
+      case SubscriptionTierIds.lovers:
+        title = Localized.text('ox_login.capacity_2_members');
+        desc = Localized.text('ox_login.capacity_2_members_desc');
+        break;
+      case SubscriptionTierIds.family:
+        title = Localized.text('ox_login.capacity_6_members');
+        desc = Localized.text('ox_login.capacity_6_members_desc');
+        break;
+      case SubscriptionTierIds.community:
+        title = Localized.text('ox_login.capacity_50_members');
+        desc = Localized.text('ox_login.capacity_50_members_desc');
+        break;
+      default:
+        title = '';
+        desc = '';
+    }
+    final color = _colorForTier(tier);
 
     return Stack(
       clipBehavior: Clip.none,
       children: [
         GestureDetector(
-          onTap: () => setState(() => _selectedPlan = plan),
+          onTap: () => setState(() => _selectedTier = tier),
           child: Container(
             padding: EdgeInsets.all(20.px),
             decoration: BoxDecoration(
@@ -182,7 +207,7 @@ class _CapacitySelectionPageState extends State<CapacitySelectionPage> {
                   width: 40.px,
                   height: 40.px,
                   decoration: BoxDecoration(
-                    color: plan.cardColor,
+                    color: color,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -224,7 +249,7 @@ class _CapacitySelectionPageState extends State<CapacitySelectionPage> {
                       ),
                       SizedBox(height: 4.px),
                       CLText.bodySmall(
-                        description,
+                        desc,
                         colorToken: ColorToken.onSurfaceVariant,
                       ),
                     ],
@@ -269,7 +294,7 @@ class _CapacitySelectionPageState extends State<CapacitySelectionPage> {
       ),
       child: CLButton.filled(
         text: Localized.text('ox_login.connect'),
-        onTap: _selectedPlan != null ? _onContinue : null,
+        onTap: _selectedTier != null ? _onContinue : null,
         expanded: true,
         height: 50.px,
         child: Row(
@@ -292,12 +317,13 @@ class _CapacitySelectionPageState extends State<CapacitySelectionPage> {
   }
 
   void _onContinue() {
-    if (_selectedPlan == null) return;
-
+    if (_selectedTier == null) return;
     OXNavigator.pushPage(
       context,
-      (context) => DurationSelectionPage(selectedPlan: _selectedPlan!),
+      (context) => DurationSelectionPage(
+        subscriptionGroupId: widget.subscriptionGroupId,
+        selectedTier: _selectedTier!,
+      ),
     );
   }
 }
-

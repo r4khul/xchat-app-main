@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -6,7 +5,9 @@ import 'package:ox_common/component.dart';
 import 'package:ox_common/log_util.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/purchase/purchase_manager.dart';
-import 'package:ox_common/purchase/purchase_plan.dart';
+import 'package:ox_common/purchase/subscription_period.dart';
+import 'package:ox_common/purchase/subscription_registry.dart';
+import 'package:ox_common/purchase/subscription_tier.dart';
 import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_localizable/ox_localizable.dart';
@@ -15,11 +16,13 @@ import 'circle_activated_page.dart';
 class CheckoutPage extends StatefulWidget {
   const CheckoutPage({
     super.key,
-    required this.selectedPlan,
+    required this.subscriptionGroupId,
+    required this.selectedTier,
     required this.selectedPeriod,
   });
 
-  final SubscriptionPlan selectedPlan;
+  final String subscriptionGroupId;
+  final SubscriptionTier selectedTier;
   final SubscriptionPeriod selectedPeriod;
 
   @override
@@ -129,13 +132,28 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
+  static String _planDisplayName(SubscriptionTier t) {
+    switch (t.id) {
+      case SubscriptionTierIds.lovers:
+        return Localized.text('ox_login.capacity_2_members');
+      case SubscriptionTierIds.family:
+        return Localized.text('ox_login.capacity_6_members');
+      case SubscriptionTierIds.community:
+        return Localized.text('ox_login.capacity_50_members');
+      default:
+        return '${t.maxUsers} ${Localized.text('ox_login.max_users')}';
+    }
+  }
+
   Widget _buildOrderSummary() {
-    final price = widget.selectedPlan.getPrice(widget.selectedPeriod);
-    final periodText = widget.selectedPeriod == SubscriptionPeriod.monthly
+    final t = widget.selectedTier;
+    final p = widget.selectedPeriod;
+    final price = t.price(p);
+    final periodText = p == SubscriptionPeriod.monthly
         ? Localized.text('ox_login.monthly')
         : Localized.text('ox_login.yearly');
-    final planName = widget.selectedPlan.name;
-    final membersText = '${widget.selectedPlan.maxUsers} ${Localized.text('ox_login.max_users')}';
+    final planName = _planDisplayName(t);
+    final membersText = '${t.maxUsers} ${Localized.text('ox_login.max_users')}';
     final storageText = Localized.text('ox_login.tb_storage');
 
     return Container(
@@ -331,54 +349,43 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
-  /// Initiate purchase for the selected plan
-  /// 
-  /// All purchase logic (query, validation, debouncing) is handled by PurchaseManager.
-  /// We handle UI state changes here based on the result.
   Future<void> _handlePay() async {
-    final String productId = widget.selectedPlan.getProductId(widget.selectedPeriod);
-    
-    // Set processing state before calling
+    final reg = SubscriptionRegistry.instance;
+    final productId = reg.productIdFor(
+      widget.subscriptionGroupId,
+      widget.selectedTier.id,
+      widget.selectedPeriod,
+    );
+
     if (mounted) {
-      setState(() {
-        _isProcessing = true;
-      });
+      setState(() => _isProcessing = true);
     }
-    
+
     try {
       final result = await PurchaseManager.instance.purchaseProduct(productId);
-      
-      // Update UI based on result
+
       if (mounted) {
-        setState(() {
-          _isProcessing = false;
-        });
-        
+        setState(() => _isProcessing = false);
         if (result.success) {
-          // Purchase successful - navigate to success page
           Navigator.of(context).popUntil((route) => route.isFirst);
           OXNavigator.pushPage(
             context,
             (context) => CircleActivatedPage(
-              maxUsers: widget.selectedPlan.maxUsers,
-              planName: widget.selectedPlan.name,
+              maxUsers: widget.selectedTier.maxUsers,
+              planName: _planDisplayName(widget.selectedTier),
             ),
           );
         } else if (result.isCanceled) {
-          // Purchase canceled by user - no need to show error message
-          // Just reset UI state (already done above)
+          // no toast
         } else if (result.isAlreadyRestored) {
-          // User already has an active subscription for this product
           CommonToast.instance.show(
             context,
             Localized.text('ox_login.already_purchased'),
           );
         } else {
-          // Purchase failed - show user-friendly error message
-          final errorMessage = result.errorMessage ?? 'Purchase failed. Please try again.';
           CommonToast.instance.show(
             context,
-            errorMessage,
+            result.errorMessage ?? 'Purchase failed. Please try again.',
           );
         }
       }
@@ -389,11 +396,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
         - error: $e
         - stack: $stack
       ''');
-      // Handle unexpected errors
       if (mounted) {
-        setState(() {
-          _isProcessing = false;
-        });
+        setState(() => _isProcessing = false);
         CommonToast.instance.show(
           context,
           'Failed to initiate purchase. Please try again.',
@@ -402,4 +406,3 @@ class _CheckoutPageState extends State<CheckoutPage> {
     }
   }
 }
-

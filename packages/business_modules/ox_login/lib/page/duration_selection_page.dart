@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:ox_common/component.dart';
 import 'package:ox_common/navigator/navigator.dart';
-import 'package:ox_common/purchase/purchase_plan.dart';
+import 'package:ox_common/purchase/subscription_period.dart';
+import 'package:ox_common/purchase/subscription_tier.dart';
 import 'package:ox_common/utils/adapt.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import 'checkout_page.dart';
@@ -9,10 +10,12 @@ import 'checkout_page.dart';
 class DurationSelectionPage extends StatefulWidget {
   const DurationSelectionPage({
     super.key,
-    required this.selectedPlan,
+    required this.subscriptionGroupId,
+    required this.selectedTier,
   });
 
-  final SubscriptionPlan selectedPlan;
+  final String subscriptionGroupId;
+  final SubscriptionTier selectedTier;
 
   @override
   State<DurationSelectionPage> createState() => _DurationSelectionPageState();
@@ -120,11 +123,12 @@ class _DurationSelectionPageState extends State<DurationSelectionPage> {
   }
 
   Widget _buildDurationOptions() {
+    final t = widget.selectedTier;
     return Column(
       children: [
         _buildDurationOption(
           period: SubscriptionPeriod.yearly,
-          price: widget.selectedPlan.yearlyPrice,
+          price: t.yearlyPrice,
           label: Localized.text('ox_login.yearly'),
           billingText: Localized.text('ox_login.billed_every_12_months'),
           showSaveTag: true,
@@ -132,7 +136,7 @@ class _DurationSelectionPageState extends State<DurationSelectionPage> {
         SizedBox(height: 16.px),
         _buildDurationOption(
           period: SubscriptionPeriod.monthly,
-          price: widget.selectedPlan.monthlyPrice,
+          price: t.monthlyPrice,
           label: Localized.text('ox_login.monthly'),
           billingText: Localized.text('ox_login.billed_every_month'),
           showSaveTag: false,
@@ -281,10 +285,10 @@ class _DurationSelectionPageState extends State<DurationSelectionPage> {
     OXNavigator.pushPage(
       context,
       (context) => CheckoutPage(
-        selectedPlan: widget.selectedPlan,
+        subscriptionGroupId: widget.subscriptionGroupId,
+        selectedTier: widget.selectedTier,
         selectedPeriod: _selectedPeriod,
       ),
     );
   }
 }
-
