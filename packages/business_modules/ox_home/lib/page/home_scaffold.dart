@@ -13,6 +13,7 @@ import 'package:ox_common/widgets/common_loading.dart';
 import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_theme/ox_theme.dart';
 import 'package:ox_login/page/circle_selection_page.dart';
+import 'package:ox_login/utils/circle_entry_helper.dart';
 
 import 'home_header_components.dart';
 import '../widgets/session_list_widget.dart';
@@ -225,13 +226,20 @@ class _HomeScaffoldState extends State<HomeScaffold> {
   void _handleJoinCircle() async {
     isContrastedChild$.value = true;
     debugPrint('HomeScaffold: Join Circle button tapped');
-    // Navigate to circle selection page
-    OXNavigator.pushPage(
+    final didNavigateToRestore = await CircleEntryHelper.tryNavigateToCircleRestoreIfNeeded(
       context,
-      (context) => const CircleSelectionPage(controller: null),
       type: OXPushPageType.present,
       fullscreenDialog: true,
     );
+    if (!mounted) return;
+    if (!didNavigateToRestore) {
+      OXNavigator.pushPage(
+        context,
+        (context) => const CircleSelectionPage(controller: null),
+        type: OXPushPageType.present,
+        fullscreenDialog: true,
+      );
+    }
     isContrastedChild$.value = false;
     isShowExtendBody$.value = false;
   }
