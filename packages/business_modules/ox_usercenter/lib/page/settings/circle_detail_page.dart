@@ -16,6 +16,7 @@ import 'package:ox_localizable/ox_localizable.dart';
 import 'package:ox_common/utils/file_server_helper.dart';
 import 'package:ox_common/repository/file_server_repository.dart';
 import 'package:ox_common/log_util.dart';
+import 'package:ox_common/model/file_server_model.dart';
 
 import 'file_server_page.dart';
 import 'profile_settings_page.dart';
@@ -225,6 +226,63 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
     // Then request server update (request regardless of whether cached data exists)
     try {
       final tenantInfo = await CircleMemberService.sharedInstance.getTenantInfo();
+      
+      // Handle s3_config if present
+      if (tenantInfo['s3_config'] != null) {
+        try {
+          final s3ConfigJson = tenantInfo['s3_config'] as Map<String, dynamic>;
+          final s3Config = S3Config.fromJson(s3ConfigJson);
+          
+          // Save S3 config to CircleDBISAR
+          await S3ConfigUtils.saveS3ConfigToCircleDB(
+            circleId: widget.circle.id,
+            s3Config: s3Config,
+          );
+          
+          // Create/update FileServerModel in repository
+          final repo = FileServerRepository(DBISAR.sharedInstance.isar);
+          final s3Url = S3ConfigUtils.getS3FileServerUrl(s3Config);
+          final fileServer = FileServerModel(
+            id: 0,
+            type: FileServerType.minio,
+            name: tenantInfo['name'] as String? ?? widget.circle.name,
+            url: s3Url,
+            accessKey: s3Config.accessKeyId,
+            secretKey: s3Config.secretAccessKey,
+            bucketName: s3Config.bucket,
+            pathPrefix: s3Config.pathPrefix,
+            region: s3Config.region,
+            sessionToken: s3Config.sessionToken,
+            expiration: s3Config.expiration,
+          );
+          
+          // Check if server already exists
+          final existingServers = repo.fetch();
+          try {
+            final existing = existingServers.firstWhere(
+              (s) => s.url == fileServer.url && 
+                     s.bucketName == fileServer.bucketName &&
+                     s.type == FileServerType.minio,
+            );
+            // Update existing
+            existing.accessKey = fileServer.accessKey;
+            existing.secretKey = fileServer.secretKey;
+            existing.bucketName = fileServer.bucketName;
+            existing.url = fileServer.url;
+            existing.name = fileServer.name;
+            existing.pathPrefix = fileServer.pathPrefix;
+            existing.region = fileServer.region;
+            existing.sessionToken = fileServer.sessionToken;
+            existing.expiration = fileServer.expiration;
+            await repo.create(existing);
+          } catch (_) {
+            // Create new
+            await repo.create(fileServer);
+          }
+        } catch (e) {
+          LogUtil.w(() => 'Failed to save S3 config from tenant info: $e');
+        }
+      }
       
       // Update UI
       await _updateUIWithTenantInfo(tenantInfo);

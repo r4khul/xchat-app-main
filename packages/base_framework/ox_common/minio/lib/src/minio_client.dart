@@ -152,6 +152,11 @@ class MinioClient {
       'x-amz-content-sha256': sha256sum,
     });
 
+    // Add session token header if present (required for STS temporary credentials)
+    if (minio.sessionToken != null) {
+      request.headers['x-amz-security-token'] = minio.sessionToken!;
+    }
+
     final authorization = signV4(minio, request, date, region);
     request.headers['authorization'] = authorization;
 

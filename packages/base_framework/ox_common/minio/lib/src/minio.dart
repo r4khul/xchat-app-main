@@ -276,6 +276,51 @@ class Minio {
     return json.decode(resp.body);
   }
 
+  /// Set tags for an object
+  /// 
+  /// [bucket] Bucket name
+  /// [object] Object name
+  /// [tags] Map of tag key-value pairs
+  Future<void> putObjectTagging(
+    String bucket,
+    String object,
+    Map<String, String> tags,
+  ) async {
+    MinioInvalidBucketNameError.check(bucket);
+    MinioInvalidObjectNameError.check(object);
+
+    if (tags.isEmpty) {
+      throw MinioInvalidArgumentError('Tags cannot be empty');
+    }
+
+    // Build XML request body
+    final builder = xml.XmlBuilder();
+    builder.element('Tagging', nest: () {
+      builder.element('TagSet', nest: () {
+        for (final entry in tags.entries) {
+          builder.element('Tag', nest: () {
+            builder.element('Key', nest: entry.key);
+            builder.element('Value', nest: entry.value);
+          });
+        }
+      });
+    });
+    final xmlBody = builder.buildDocument().toXmlString();
+
+    final resp = await _client.request(
+      method: 'PUT',
+      bucket: bucket,
+      object: object,
+      resource: 'tagging',
+      payload: xmlBody,
+      headers: {
+        'Content-Type': 'application/xml',
+      },
+    );
+
+    validate(resp, expect: 200);
+  }
+
   /// Gets the region of [bucket]. The region is cached for subsequent calls.
   Future<String> getBucketRegion(String bucket) async {
     MinioInvalidBucketNameError.check(bucket);

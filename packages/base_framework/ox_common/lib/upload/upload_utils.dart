@@ -80,6 +80,10 @@ class UploadUtils {
               accessKey: server.accessKey,
               secretKey: server.secretKey,
               bucketName: server.bucketName,
+              pathPrefix: server.pathPrefix,
+              region: server.region.isNotEmpty ? server.region : null,
+              sessionToken: server.sessionToken,
+              expiration: server.expiration,
             );
             url = await MinioUploader.instance.uploadFile(
               file: uploadFile,
