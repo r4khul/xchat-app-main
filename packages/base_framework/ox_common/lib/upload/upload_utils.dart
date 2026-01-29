@@ -11,7 +11,7 @@ import 'package:ox_common/upload/uploader.dart';
 import 'package:ox_common/utils/file_server_helper.dart';
 import 'package:ox_common/utils/string_utils.dart';
 import 'package:ox_common/widgets/common_loading.dart';
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
 import 'package:dio/dio.dart';
 import 'package:uuid/uuid.dart';
 
@@ -158,7 +158,7 @@ class UploadExceptionHandler {
 
   static UploadResult handleException(dynamic e, [dynamic s]) {
     LogUtil.e('Upload File Exception Handler: $e\r\n$s');
-    if (e is ClientException) {
+    if (e is http.ClientException) {
       return UploadResult.error(e.message);
     } else if (e is MinioError) {
       return UploadResult.error(e.message ?? errorMessage);
