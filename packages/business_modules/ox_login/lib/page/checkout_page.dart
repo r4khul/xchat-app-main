@@ -382,6 +382,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
             context,
             Localized.text('ox_login.already_purchased'),
           );
+        } else if (result.isSubscriptionExpired) {
+          CommonToast.instance.show(
+            context,
+            result.errorMessage ?? 'Subscription has expired. Please tap again to renew.',
+          );
         } else {
           CommonToast.instance.show(
             context,

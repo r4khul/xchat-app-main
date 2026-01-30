@@ -729,6 +729,12 @@ class _PrivateRelayUpgradePageState extends State<PrivateRelayUpgradePage> {
         } else if (result.isCanceled) {
           // Purchase canceled by user - no need to show error message
           // Just reset UI state (already done above)
+        } else if (result.isSubscriptionExpired) {
+          // Expired subscription was delivered; transaction finished so user can tap again to renew
+          CommonToast.instance.show(
+            context,
+            result.errorMessage ?? 'Subscription has expired. Please tap again to renew.',
+          );
         } else {
           // Purchase failed - show user-friendly error message
           final errorMessage = result.errorMessage ?? 'Purchase failed. Please try again.';
