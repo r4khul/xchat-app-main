@@ -64,8 +64,11 @@ class _ImageMessageState extends State<ImageMessage> {
         ).image;
       }
       else{
+        // Always use cacheManager to support s3:// URLs
+        final cacheManager = await CLCacheManager.getCircleCacheManager(CacheFileType.image);
         _image = CachedNetworkImageProvider(
           widget.message.uri,
+          cacheManager: cacheManager,
           headers: widget.imageHeaders,
         );
       }

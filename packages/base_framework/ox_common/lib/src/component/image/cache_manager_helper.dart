@@ -7,6 +7,7 @@ import 'package:ox_common/login/account_path_manager.dart';
 import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/utils/string_utils.dart';
 import 'cache_manager.dart';
+import 'enhanced_http_file_service.dart';
 
 /// Cache policy configuration for different file types
 class CachePolicy {
@@ -75,7 +76,7 @@ class CacheManagerHelper {
         circleId: circleId,
         fileType: fileType,
       ),
-      fileService: HttpFileService(),
+      fileService: EnhancedHttpFileService(),
     );
   }
 

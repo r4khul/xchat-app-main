@@ -954,8 +954,15 @@ extension ChatMessageSendUtileEx on ChatGeneralHandler {
     final file = File(filePath);
     final ext = filePath.getFileExtension();
     final fileName = '$messageId$ext';
+    // This method is used for chat file uploads (e.g., audio messages)
+    // Mark as chat file for lifecycle management (30-day expiration)
     return await UploadUtils.uploadFile(
-        fileType: fileType, file: file, filename: fileName, encryptedKey: encryptedKey, encryptedNonce: encryptedNonce);
+        fileType: fileType, 
+        file: file, 
+        filename: fileName, 
+        encryptedKey: encryptedKey, 
+        encryptedNonce: encryptedNonce,
+        isChatFile: true);
   }
 
   Future<types.Message?> tryPrepareSendFileMessage(
@@ -1027,6 +1034,17 @@ extension ChatMessageSendUtileEx on ChatGeneralHandler {
     try {
       uri = Uri.parse(originalUrl);
     } catch (_) {
+      return originalUrl;
+    }
+
+    // Check if this is a presigned URL (contains X-Amz-Signature)
+    // Presigned URLs have signatures that will break if we add parameters
+    final isPresignedUrl = uri.queryParameters.containsKey('X-Amz-Signature') ||
+        uri.queryParameters.containsKey('x-amz-signature');
+    
+    if (isPresignedUrl) {
+      // Don't modify presigned URLs as it will break the signature
+      // Return original URL without adding width/height parameters
       return originalUrl;
     }
 

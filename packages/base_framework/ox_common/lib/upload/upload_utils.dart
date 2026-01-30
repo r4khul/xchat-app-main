@@ -33,6 +33,7 @@ class UploadUtils {
     bool showLoading = false,
     bool autoStoreImage = true,
     Function(double progress)? onProgress,
+    bool isChatFile = false,
   }) async {
     final uploadFile = file;
     final candidates = fileServer != null
@@ -85,11 +86,18 @@ class UploadUtils {
               sessionToken: server.sessionToken,
               expiration: server.expiration,
             );
+            // Set tags based on isChatFile for S3 lifecycle management
+            // FileType=chat for 30-day expiration, FileType=avatar for permanent
+            Map<String, String>? tags;
+            if (isChatFile) {
+              tags = {'FileType': 'chat'};
+            }
             url = await MinioUploader.instance.uploadFile(
               file: uploadFile,
               filename: filename,
               fileType: fileType,
               onProgress: onProgress,
+              tags: tags,
             );
             break;
         }
@@ -223,6 +231,7 @@ class UploadManager {
     String? encryptedKey,
     String? encryptedNonce,
     bool autoStoreImage = true,
+    bool isChatFile = true, // Default to true since UploadManager is primarily used for chat file uploads
   }) async {
     final cacheKey = _cacheKey(uploadId, receivePubkey);
     final cacheResult = uploadResultMap[cacheKey];
@@ -235,6 +244,8 @@ class UploadManager {
     uploadResultMap.remove(cacheKey);
 
     final file = File(filePath);
+    // UploadManager is primarily used for chat file uploads
+    // Pass isChatFile parameter to UploadUtils for lifecycle management
     final result = await UploadUtils.uploadFile(
       file: file,
       filename: file.path.getFileName() ?? '${Uuid().v1()}.${filePath.getFileExtension()}',
@@ -242,6 +253,7 @@ class UploadManager {
       encryptedKey: encryptedKey,
       encryptedNonce: encryptedNonce,
       autoStoreImage: autoStoreImage,
+      isChatFile: isChatFile,
       onProgress: (progress) {
         streamController.add(progress);
       },

@@ -132,7 +132,8 @@ class CLEncryptedImageProvider extends ImageProvider<_CLEncryptedImageKey> {
 
   Future<File> _ensureCipherFile(String urlOrPath) async {
     final uri = Uri.parse(urlOrPath);
-    if (uri.isScheme('http') || uri.isScheme('https')) {
+    // Handle s3:// URLs and http/https URLs through cache manager
+    if (uri.isScheme('http') || uri.isScheme('https') || uri.isScheme('s3')) {
       final cacheManager = await CLCacheManager.getCircleCacheManager(CacheFileType.image);
       final file = await cacheManager.getSingleFile(uri.toString());
       return file;
