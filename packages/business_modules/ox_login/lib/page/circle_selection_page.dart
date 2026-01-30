@@ -10,6 +10,7 @@ import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import 'package:chatcore/chat-core.dart';
 import '../controller/onboarding_controller.dart';
+import '../utils/circle_entry_helper.dart';
 import 'private_cloud_overview_page.dart';
 
 enum CircleType { invite, private, custom }
@@ -486,7 +487,17 @@ class _CircleSelectionPageState extends State<CircleSelectionPage> {
   }
 
   Future<void> _onUsePrivateCircle() async {
-    // Navigate to private cloud overview page first
+    // Pre-check: if subscription slots are full, show toast and do not navigate
+    final groupId = await CircleEntryHelper.getCurrentInactiveGroupId();
+    if (!mounted) return;
+    if (groupId == null || groupId.isEmpty) {
+      CommonToast.instance.show(
+        context,
+        Localized.text('ox_login.subscription_limit_reached'),
+      );
+      return;
+    }
+    // Navigate to private cloud overview page
     OXNavigator.pushPage(
       context,
       (context) => const PrivateCloudOverviewPage(),

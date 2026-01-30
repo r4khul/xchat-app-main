@@ -7,6 +7,7 @@ import 'package:ox_common/login/account_models.dart';
 import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/login/login_models.dart';
 import 'package:ox_common/purchase/purchase_idempotency_manager.dart';
+import 'package:ox_common/purchase/subscription_registry.dart';
 
 /// Purchase processing result
 enum PurchaseProcessResult {
@@ -107,7 +108,10 @@ class PurchaseService {
 
       // Step 3: Delivery - join Circle (MUST happen before finish)
       // This ensures we only finish transactions that have been successfully delivered
-      final deliveryResponse = await _deliverPurchase(verificationResult);
+      final groupId = SubscriptionRegistry.instance
+          .groupForProductId(purchaseDetails.productID)
+          ?.id;
+      final deliveryResponse = await _deliverPurchase(verificationResult, groupId);
       if (deliveryResponse.result != PurchaseProcessResult.success) {
         // Delivery failed - don't finish, don't mark as processed
         // Let system retry later or user can restore purchases
@@ -151,7 +155,7 @@ class PurchaseService {
 
     // Check if subscription is still active (for subscriptions only)
     // If subscription has expired, allow reprocessing as a new purchase
-    final isSubscriptionExpired = _isSubscriptionExpired(purchaseDetails);
+    final isSubscriptionExpired = _isSubscriptionExpiredImpl(purchaseDetails);
     if (isSubscriptionExpired) {
       LogUtil.d(() => '''
         [PurchaseService] Transaction already processed but subscription expired, allowing reprocessing:
@@ -175,10 +179,14 @@ class PurchaseService {
     );
   }
 
-  /// Check if subscription has expired based on expiresDate in localVerificationData
-  /// 
-  /// Returns true if subscription has expired, false if still active or not a subscription
-  bool _isSubscriptionExpired(PurchaseDetails purchaseDetails) {
+  /// Check if subscription has expired based on expiresDate in localVerificationData.
+  /// Exposed for PurchaseManager to decide whether to treat out-of-window restored
+  /// events as "already owned" (active sub) or as new purchase (expired → verify + joinCircle).
+  bool isSubscriptionExpired(PurchaseDetails purchaseDetails) =>
+      _isSubscriptionExpiredImpl(purchaseDetails);
+
+  /// Internal implementation of subscription expiration check.
+  bool _isSubscriptionExpiredImpl(PurchaseDetails purchaseDetails) {
     try {
       final localVerificationData = purchaseDetails.verificationData.localVerificationData;
       if (localVerificationData.isEmpty) {
@@ -363,16 +371,19 @@ class PurchaseService {
   /// Returns [PurchaseProcessResponse] with success or failure result
   Future<PurchaseProcessResponse> _deliverPurchase(
     PaymentVerificationResult verificationResult,
+    String? groupId,
   ) async {
     LogUtil.d(() => '''
       [PurchaseService] Starting delivery (joinCircle):
       - relayUrl: ${verificationResult.relayUrl}
       - tenantId: ${verificationResult.tenantId}
+      - groupId: $groupId
     ''');
     
     final failure = await LoginManager.instance.joinCircle(
       verificationResult.relayUrl,
       type: CircleType.relay,
+      groupId: groupId,
     );
 
     if (failure != null) {
@@ -501,7 +512,14 @@ class PurchaseService {
       }
 
       // Step 3: Delivery - join Circle (MUST happen before finish)
-      final deliveryResponse = await _deliverRestoredPurchase(verificationResult, account);
+      final groupId = SubscriptionRegistry.instance
+          .groupForProductId(purchaseDetails.productID)
+          ?.id;
+      final deliveryResponse = await _deliverRestoredPurchase(
+        verificationResult,
+        account,
+        groupId,
+      );
       if (deliveryResponse.result != PurchaseProcessResult.success &&
           deliveryResponse.result != PurchaseProcessResult.alreadyRestored) {
         // Delivery failed - don't finish, don't mark as processed
@@ -530,26 +548,25 @@ class PurchaseService {
   Future<PurchaseProcessResponse> _deliverRestoredPurchase(
     PaymentVerificationResult verificationResult,
     AccountModel account,
+    String? groupId,
   ) async {
     LogUtil.d(() => '''
       [PurchaseService] Starting delivery for restored purchase (joinCircle):
       - relayUrl: ${verificationResult.relayUrl}
       - tenantId: ${verificationResult.tenantId}
+      - groupId: $groupId
     ''');
     
     // Check if circle with this relayUrl already exists before calling joinCircle
     // This avoids unnecessary joinCircle calls and potential duplicate circle creation
-    final existingCircle = account.circles.firstWhere(
+    final existingCircle = account.circles.where(
       (circle) => circle.type == CircleType.relay && circle.relayUrl == verificationResult.relayUrl,
-      orElse: () => Circle(id: '', name: '', relayUrl: ''),
     );
     
-    if (existingCircle.id.isNotEmpty) {
+    if (existingCircle.isNotEmpty) {
       LogUtil.d(() => '''
         [PurchaseService] Restored purchase - circle already exists, skipping joinCircle:
         - relayUrl: ${verificationResult.relayUrl}
-        - circleId: ${existingCircle.id}
-        - circleName: ${existingCircle.name}
       ''');
       // Circle already exists: no new delivery, but not an error.
       return PurchaseProcessResponse(
@@ -562,6 +579,7 @@ class PurchaseService {
     final failure = await LoginManager.instance.joinCircle(
       verificationResult.relayUrl,
       type: CircleType.relay,
+      groupId: groupId,
     );
 
     // For restored purchases, it's OK if circle already exists (though we checked above)

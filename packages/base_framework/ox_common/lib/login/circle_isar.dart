@@ -32,6 +32,10 @@ class CircleISAR {
   @enumValue
   late CircleCategory category;
 
+  /// Subscription group id (e.g. loc1) for paid circles owned by this account.
+  /// Null for custom circles or when unknown.
+  String? groupId;
+
   CircleISAR({
     required this.pubkey,
     required this.circleId,
@@ -39,9 +43,9 @@ class CircleISAR {
     required this.relayUrl,
     CircleType type = CircleType.relay,
     this.invitationCode,
-    CircleCategory category = CircleCategory.custom,
-  }) : typeValue = _typeToInt(type),
-       this.category = category;
+    this.category = CircleCategory.custom,
+    this.groupId,
+  }) : typeValue = _typeToInt(type);
 
   static int _typeToInt(CircleType type) {
     return type == CircleType.bitchat ? 1 : 0;

@@ -1,9 +1,8 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:chatcore/chat-core.dart';
 import 'package:ox_common/navigator/navigator.dart';
-import 'package:ox_common/purchase/subscription_group.dart';
 import 'package:ox_common/login/login_manager.dart';
+import 'package:ox_common/purchase/subscription_registry.dart';
 import 'package:ox_common/utils/account_credentials_utils.dart';
 import 'package:ox_common/widgets/common_loading.dart';
 import 'package:ox_login/controller/onboarding_controller.dart';
@@ -74,8 +73,31 @@ abstract class CircleEntryHelper {
   // ----- Subscription group (capacity entry) -----
 
   /// Current inactive subscription group id. Caller passes this into
-  /// [CapacitySelectionPage]. Temporary: always returns [SubscriptionGroupIds.loc1].
+  /// [CapacitySelectionPage]. Returns the first subscription group that is not
+  /// occupied by an owned circle (circle with pubkey == account.pubkey and matching
+  /// groupId counts as occupied). Returns null if all groups are occupied.
   static Future<String?> getCurrentInactiveGroupId() async {
-    return SubscriptionGroupIds.loc1;
+    final account = LoginManager.instance.currentState.account;
+    final groups = SubscriptionRegistry.instance.groups;
+    if (account == null || groups.isEmpty) {
+      return groups.isNotEmpty ? groups.first.id : null;
+    }
+    final accountPubkey = account.pubkey;
+    final circles = account.circles;
+    final occupiedGroupIds = circles
+        .where((c) =>
+            c.groupId != null &&
+            c.groupId!.isNotEmpty &&
+            c.ownerPubkey != null &&
+            c.ownerPubkey!.isNotEmpty &&
+            c.ownerPubkey == accountPubkey)
+        .map((c) => c.groupId!)
+        .toSet();
+    for (final group in groups) {
+      if (!occupiedGroupIds.contains(group.id)) {
+        return group.id;
+      }
+    }
+    return null;
   }
 }

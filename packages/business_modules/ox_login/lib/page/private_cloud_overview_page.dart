@@ -184,7 +184,7 @@ class PrivateCloudOverviewPage extends StatelessWidget {
     if (groupId == null || groupId.isEmpty) {
       CommonToast.instance.show(
         context,
-        'No subscription group available.',
+        Localized.text('ox_login.subscription_limit_reached'),
       );
       return;
     }

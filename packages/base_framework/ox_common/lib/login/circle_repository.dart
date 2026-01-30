@@ -63,7 +63,8 @@ class CircleRepository {
   static Future<bool> update(Isar accountDb, Circle circle) async {
     try {
       final existing = await getById(accountDb, circle.id);
-      if (existing == null) {
+      final existingId = existing?.id;
+      if (existingId == null) {
         LogUtil.w(() => 'Circle with id ${circle.id} not found');
         return false;
       }
@@ -74,16 +75,9 @@ class CircleRepository {
       final type = circle.type;
       final invitationCode = circle.invitationCode;
       final category = circle.category;
+      final groupId = circle.groupId;
+      final circleOwnerPubkey = circle.ownerPubkey ?? '';
 
-      // Update fields
-      existing.name = name;
-      existing.relayUrl = relayUrl;
-      existing.type = type;
-      existing.invitationCode = invitationCode;
-      existing.category = category;
-
-      // Store existing.id in a local variable to avoid capturing the Circle object
-      final existingId = existing.id;
       await accountDb.writeAsync((accountDb) {
         // Get the existing object again inside the closure to avoid capturing it
         final circleToUpdate = accountDb.circleISARs.get(existingId);
@@ -93,6 +87,8 @@ class CircleRepository {
           circleToUpdate.type = type;
           circleToUpdate.invitationCode = invitationCode;
           circleToUpdate.category = category;
+          circleToUpdate.groupId = groupId;
+          circleToUpdate.pubkey = circleOwnerPubkey;
           accountDb.circleISARs.put(circleToUpdate);
         }
       });

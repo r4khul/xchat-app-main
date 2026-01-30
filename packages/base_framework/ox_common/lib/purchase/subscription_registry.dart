@@ -66,21 +66,6 @@ class SubscriptionRegistry {
     'loc2|community|yearly': 'loc2.level3.yearly',
   };
 
-  // static const Map<String, String> _productIds = {
-  //   'loc1|lovers|monthly': 'level1.monthly',
-  //   'loc1|lovers|yearly': 'level1.yearly',
-  //   'loc1|family|monthly': 'level2.monthly',
-  //   'loc1|family|yearly': 'level2.yearly',
-  //   'loc1|community|monthly': 'level3.monthly',
-  //   'loc1|community|yearly': 'level3.yearly',
-  //   'loc2|lovers|monthly': 'level1.monthly',
-  //   'loc2|lovers|yearly': 'level1.yearly',
-  //   'loc2|family|monthly': 'level2.monthly',
-  //   'loc2|family|yearly': 'level2.yearly',
-  //   'loc2|community|monthly': 'level3.monthly',
-  //   'loc2|community|yearly': 'level3.yearly',
-  // };
-
   /// All subscription groups, ordered by sortOrder.
   List<SubscriptionGroup> get groups => List.unmodifiable(_groups);
 

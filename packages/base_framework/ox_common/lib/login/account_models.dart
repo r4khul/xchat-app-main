@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:nostr_core_dart/nostr.dart' hide Filter;
 import 'login_models.dart';
 import 'circle_isar.dart';
+import 'circle_repository.dart';
 import 'circle_service.dart';
 
 part 'account_models.g.dart';
@@ -270,6 +271,16 @@ class AccountHelper {
       List<Circle> circles = [];
       try {
         circles = await CircleService.getAllCircles(accountDb);
+        // Migration: circles with groupId but empty ownerPubkey were "owned" (purchase flow);
+        // set ownerPubkey so subscription slot check (ownerPubkey == account.pubkey) works.
+        for (final c in circles) {
+          if (c.groupId != null &&
+              c.groupId!.isNotEmpty &&
+              (c.ownerPubkey == null || c.ownerPubkey!.isEmpty)) {
+            c.ownerPubkey = pubkey;
+            await CircleRepository.update(accountDb, c);
+          }
+        }
       } catch (e) {
         debugPrint('Failed to load circles from CircleISAR: $e');
       }
@@ -331,13 +342,7 @@ class AccountHelper {
 
       // Migrate each circle to CircleISAR
       for (final circle in circles) {
-        final circleWithPubkey = Circle(
-          id: circle.id,
-          name: circle.name,
-          relayUrl: circle.relayUrl,
-          type: circle.type,
-        );
-        await CircleService.createCircle(accountDb, circleWithPubkey);
+        await CircleService.createCircle(accountDb, circle);
       }
 
       debugPrint('Successfully migrated ${circles.length} circles');

@@ -92,18 +92,23 @@ class Circle {
     required this.name,
     required this.relayUrl,
     this.type = CircleType.relay,
-    this.pubkey,
+    this.ownerPubkey,
     this.invitationCode,
     this.category = CircleCategory.custom,
+    this.groupId,
   }) : id = id ?? Uuid().v4();
 
   final String id;
   String name;
   String relayUrl;
   final CircleType type;
-  String? pubkey; // Account pubkey this circle belongs to
+  /// Pubkey of the account that owns this circle (e.g. purchaser). When equal to
+  /// current account pubkey, the circle is "owned"; used for subscription slot occupation.
+  String? ownerPubkey;
   String? invitationCode; // Invitation code for this circle
   CircleCategory category; // Circle category (custom or paid)
+  /// Subscription group id (e.g. loc1) for paid circles owned by this account.
+  String? groupId;
 
   /// Circle level configuration, loaded lazily after circle DB initialized.
   CircleConfigModel _config = CircleConfigModel();
@@ -117,22 +122,24 @@ class Circle {
       name: isar.name,
       relayUrl: isar.relayUrl,
       type: isar.type,
-      pubkey: isar.pubkey,
+      ownerPubkey: isar.pubkey.isEmpty ? null : isar.pubkey,
       invitationCode: isar.invitationCode,
       category: isar.category,
+      groupId: isar.groupId,
     );
   }
 
   /// Convert Circle to CircleISAR
   CircleISAR toISAR() {
     return CircleISAR(
-      pubkey: pubkey ?? '',
+      pubkey: ownerPubkey ?? '',
       circleId: id,
       name: name,
       relayUrl: relayUrl,
       type: type,
       invitationCode: invitationCode,
       category: category,
+      groupId: groupId,
     );
   }
 
@@ -141,6 +148,8 @@ class Circle {
     'name': name,
     'relayUrl': relayUrl,
     'type': type.value,
+    'groupId': groupId,
+    'ownerPubkey': ownerPubkey,
   };
 
   factory Circle.fromJson(Map<String, dynamic> json) => Circle(
@@ -148,18 +157,20 @@ class Circle {
     name: json['name'] as String,
     relayUrl: json['relayUrl'] as String,
     type: CircleTypeExtension.fromString(json['type'] as String? ?? 'relay'),
+    groupId: json['groupId'],
+    ownerPubkey: json['ownerPubkey'],
   );
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Circle && runtimeType == other.runtimeType && id == other.id && pubkey == other.pubkey;
+      other is Circle && runtimeType == other.runtimeType && id == other.id && ownerPubkey == other.ownerPubkey;
 
   @override
-  int get hashCode => Object.hash(id, pubkey);
+  int get hashCode => Object.hash(id, ownerPubkey);
 
   @override
-  String toString() => 'Circle(id: $id, name: $name, relayUrl: $relayUrl, type: ${type.value}, pubkey: ${pubkey ?? 'null'})';
+  String toString() => 'Circle(id: $id, name: $name, relayUrl: $relayUrl, type: ${type.value}, ownerPubkey: ${ownerPubkey ?? 'null'})';
 
   /// Internal use only. Called by LoginManager to initialize configuration.
   void initConfig(CircleConfigModel cfg) {

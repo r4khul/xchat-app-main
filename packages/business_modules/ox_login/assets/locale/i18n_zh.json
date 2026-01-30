@@ -89,6 +89,7 @@
   "pay": "支付",
   "recurring_billing": "定期计费，随时取消",
   "already_purchased": "您已经购买了该订阅。",
+  "subscription_limit_reached": "订阅的服务器已达到上限",
   
   "welcome_back": "欢迎回来",
   "found_circles_description": "我们找到了 {count} 个与您账户关联的圈子。选择您要在此设备上恢复的圈子。",

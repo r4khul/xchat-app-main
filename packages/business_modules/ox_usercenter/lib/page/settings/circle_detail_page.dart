@@ -86,7 +86,7 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
 
   void _checkIfOwner() {
     final currentPubkey = LoginManager.instance.currentPubkey;
-    _isOwner = widget.circle.pubkey == currentPubkey;
+    _isOwner = widget.circle.ownerPubkey == currentPubkey;
   }
 
   /// Check if this circle is a paid relay (based on relayUrl matching privateRelayApiBaseUrl)
@@ -133,7 +133,7 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
       _isOwner = tenantAdminPubkey.toLowerCase() == currentPubkey.toLowerCase();
     } else {
       // Fallback to circle pubkey check
-      _isOwner = widget.circle.pubkey == currentPubkey;
+      _isOwner = widget.circle.ownerPubkey == currentPubkey;
     }
 
     // Extract member count and limits
