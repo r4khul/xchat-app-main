@@ -161,14 +161,6 @@ class OxChatHome extends OXFlutterModule {
         builder: (context) => Center(child: CLProgressIndicator.circular()),
       );
 
-      // Create circle and join
-      final circle = Circle(
-        id: _generateCircleId(relayUrl),
-        name: _extractRelayName(relayUrl),
-        type: CircleType.relay,
-        relayUrl: relayUrl,
-      );
-
       // Join the circle
       final failure = await LoginManager.instance.joinCircle(relayUrl);
 

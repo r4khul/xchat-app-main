@@ -16,6 +16,8 @@ enum PurchaseProcessResult {
   alreadyRestored,
   serverVerificationFailed,
   deliveryFailed,
+  /// Subscription in receipt is expired; transaction was finished so user can renew.
+  subscriptionExpired,
   error,
 }
 
@@ -99,10 +101,17 @@ class PurchaseService {
       }
       final verificationResult = verificationResponse.verificationResult!;
 
-      // Step 2: Validate verification result
-      final validationResponse = _validateVerificationResult(verificationResult);
+      // Step 2: Validate verification result (incl. local expiry check if server wrongly says active)
+      final validationResponse = _validateVerificationResult(
+        verificationResult,
+        purchaseDetails: purchaseDetails,
+      );
       if (validationResponse != null) {
-        // Validation failed - don't finish, let system retry later
+        // Subscription expired: finish transaction so queue is cleared and user can tap to renew
+        if (validationResponse.result == PurchaseProcessResult.subscriptionExpired) {
+          await _completePurchase(purchaseDetails);
+          LogUtil.d(() => '[PurchaseService] Expired subscription transaction finished; user can renew');
+        }
         return validationResponse;
       }
 
@@ -168,12 +177,49 @@ class PurchaseService {
     }
 
     LogUtil.d(() => 'Purchase already processed, skipping: $transactionId');
-    
+
+    // Re-deliver if user deleted the circle locally: verify → check circle exists → joinCircle if missing
+    final account = LoginManager.instance.currentState.account;
+    if (account != null) {
+      final verificationResponse = await _verifyPaymentWithServer(purchaseDetails);
+      if (verificationResponse.result == PurchaseProcessResult.success &&
+          verificationResponse.verificationResult != null) {
+        final verificationResult = verificationResponse.verificationResult!;
+        final validationResponse = _validateVerificationResult(
+          verificationResult,
+          purchaseDetails: purchaseDetails,
+        );
+        if (validationResponse == null) {
+          final existingCircle = account.circles.where(
+            (c) => c.type == CircleType.relay && c.relayUrl == verificationResult.relayUrl,
+          );
+          if (existingCircle.isEmpty) {
+            LogUtil.d(() => '''
+              [PurchaseService] Already processed but circle missing locally, re-delivering:
+              - transactionId: $transactionId
+              - relayUrl: ${verificationResult.relayUrl}
+            ''');
+            final groupId = SubscriptionRegistry.instance
+                .groupForProductId(purchaseDetails.productID)
+                ?.id;
+            final deliveryResponse = await _deliverPurchase(verificationResult, groupId);
+            if (deliveryResponse.result == PurchaseProcessResult.success) {
+              LogUtil.d(() => '[PurchaseService] Re-delivery successful - circle re-joined');
+              return PurchaseProcessResponse(
+                result: PurchaseProcessResult.alreadyProcessed,
+                verificationResult: verificationResult,
+              );
+            }
+          }
+        }
+      }
+    }
+
     // Still need to complete the purchase to free up the queue
     if (purchaseDetails.pendingCompletePurchase) {
       await InAppPurchase.instance.completePurchase(purchaseDetails);
     }
-    
+
     return PurchaseProcessResponse(
       result: PurchaseProcessResult.alreadyProcessed,
     );
@@ -319,20 +365,33 @@ class PurchaseService {
 
   /// Validate verification result
   /// 
-  /// Returns null if valid, [PurchaseProcessResponse] with error otherwise
+  /// Returns null if valid, [PurchaseProcessResponse] with error otherwise.
+  /// When [purchaseDetails] is provided, also checks local expiresDate so we treat
+  /// as expired even if server wrongly returns "active".
   PurchaseProcessResponse? _validateVerificationResult(
-    PaymentVerificationResult verificationResult,
-  ) {
-    // Check subscription status
+    PaymentVerificationResult verificationResult, {
+    PurchaseDetails? purchaseDetails,
+  }) {
+    // Check subscription status from server
     if (verificationResult.subscriptionStatus != 'active') {
       LogUtil.w(() => 'Subscription status: ${verificationResult.subscriptionStatus}');
       if (verificationResult.subscriptionStatus == 'expired') {
         return PurchaseProcessResponse(
-          result: PurchaseProcessResult.serverVerificationFailed,
+          result: PurchaseProcessResult.subscriptionExpired,
           message: 'Subscription has expired. Please renew your subscription.',
           verificationResult: verificationResult,
         );
       }
+    }
+
+    // Defense: if server says "active" but local receipt is expired, treat as expired
+    if (purchaseDetails != null && _isSubscriptionExpiredImpl(purchaseDetails)) {
+      LogUtil.w(() => '[PurchaseService] Server returned active but local expiresDate is past; treating as expired');
+      return PurchaseProcessResponse(
+        result: PurchaseProcessResult.subscriptionExpired,
+        message: 'Subscription has expired. Please renew your subscription.',
+        verificationResult: verificationResult,
+      );
     }
 
     // Check relay URL
@@ -505,7 +564,10 @@ class PurchaseService {
       final verificationResult = verificationResponse.verificationResult!;
 
       // Step 2: Validate verification result
-      final validationResponse = _validateVerificationResult(verificationResult);
+      final validationResponse = _validateVerificationResult(
+        verificationResult,
+        purchaseDetails: purchaseDetails,
+      );
       if (validationResponse != null) {
         // Validation failed - don't finish, let system retry later
         return validationResponse;

@@ -19,6 +19,7 @@ class PurchaseResult {
     this.purchaseDetails,
     this.isCanceled = false,
     this.isAlreadyRestored = false,
+    this.isSubscriptionExpired = false,
   });
 
   /// Whether the purchase was successful (new delivery completed)
@@ -38,6 +39,9 @@ class PurchaseResult {
 
   /// Restore only: entitlement already present (circle exists), no new delivery. Not error.
   final bool isAlreadyRestored;
+
+  /// Subscription in receipt is expired; transaction was finished. UI should prompt "Tap to renew".
+  final bool isSubscriptionExpired;
 
   /// Create success result
   factory PurchaseResult.success({
@@ -77,6 +81,16 @@ class PurchaseResult {
       errorMessage: null,
       isCanceled: false,
       isAlreadyRestored: true,
+    );
+  }
+
+  /// Subscription in receipt is expired; transaction finished so user can renew. Not success, not error.
+  factory PurchaseResult.subscriptionExpired({String? message}) {
+    return PurchaseResult(
+      success: false,
+      errorMessage: message ?? 'Subscription has expired. Please renew your subscription.',
+      isCanceled: false,
+      isSubscriptionExpired: true,
     );
   }
 }
@@ -369,22 +383,26 @@ class PurchaseManager {
             final maxTime = DateTime.now().add(session.window);
             final isWithinWindow = !txTime.isBefore(minTime) && !txTime.isAfter(maxTime);
             if (!isWithinWindow) {
-              // Out-of-window (very likely an old restore)
+              // Out-of-window: either (1) active subscription re-sent, or (2) expired sub, user re-purchased.
+              // If subscription has expired, treat as new purchase: accept and route to verify + joinCircle.
+              final expired = PurchaseService.instance.isSubscriptionExpired(p);
+              if (expired) {
+                LogUtil.d(() => '''
+                  [PurchaseManager] Accepting out-of-window restored (subscription expired, new purchase flow):
+                  - productID: ${p.productID}
+                  - transactionDate: ${p.transactionDate}
+                  - transactionReason: $transactionReason
+                ''');
+                return true;
+              }
+
+              // Active subscription: user tapped purchase while already subscribed.
               LogUtil.d(() => '''
                 [PurchaseManager] Rejecting restored status (out of time window):
                 - productID: ${p.productID}
                 - transactionDate: ${p.transactionDate}
                 - transactionReason: $transactionReason
               ''');
-              
-              // Special handling for active subscriptions:
-              // If user manually initiates a purchase while they already have
-              // an active subscription, the store may send a "restored"
-              // renewal event with an older transactionDate.
-              //
-              // In this case, instead of making the UI wait for a timeout,
-              // we complete the purchase session immediately and tell the
-              // caller that the product is already owned.
               if (session.type == _SessionType.purchase) {
                 _completeAlreadyOwned(p, reason: 'restored out of time window (likely existing subscription)');
               }
@@ -585,9 +603,21 @@ class PurchaseManager {
         !session.completer!.isCompleted) {
       if (response.result == PurchaseProcessResult.success ||
           response.result == PurchaseProcessResult.alreadyProcessed) {
-        session.completer!.complete(PurchaseResult.success(
-          verificationResult: response.verificationResult!,
-          purchaseDetails: purchaseDetails,
+        if (response.verificationResult != null) {
+          session.completer!.complete(PurchaseResult.success(
+            verificationResult: response.verificationResult!,
+            purchaseDetails: purchaseDetails,
+          ));
+        } else {
+          session.completer!.complete(PurchaseResult(
+            success: true,
+            purchaseDetails: purchaseDetails,
+            isCanceled: false,
+          ));
+        }
+      } else if (response.result == PurchaseProcessResult.subscriptionExpired) {
+        session.completer!.complete(PurchaseResult.subscriptionExpired(
+          message: response.message,
         ));
       } else {
         session.completer!.complete(PurchaseResult.error(
@@ -669,20 +699,28 @@ class PurchaseManager {
               purchaseDetails: purchaseDetails,
             ));
           } else if (response.result == PurchaseProcessResult.alreadyProcessed) {
-            // Already processed - transaction was handled before
-            // For already processed transactions, we don't have verificationResult
-            // but we should still complete the completer as success since the transaction
-            // was successfully processed previously
+            // Already processed - or re-delivered (circle was missing locally and re-joined)
             LogUtil.d(() => '''
               [PurchaseManager] Purchase already processed, completing as success:
               - productID: ${purchaseDetails.productID}
               - transactionId: $transactionId
+              - hasVerificationResult: ${response.verificationResult != null}
             ''');
-            // Create success result without verificationResult (it's already processed)
-            session.completer!.complete(PurchaseResult(
-              success: true,
-              purchaseDetails: purchaseDetails,
-              isCanceled: false,
+            if (response.verificationResult != null) {
+              session.completer!.complete(PurchaseResult.success(
+                verificationResult: response.verificationResult!,
+                purchaseDetails: purchaseDetails,
+              ));
+            } else {
+              session.completer!.complete(PurchaseResult(
+                success: true,
+                purchaseDetails: purchaseDetails,
+                isCanceled: false,
+              ));
+            }
+          } else if (response.result == PurchaseProcessResult.subscriptionExpired) {
+            session.completer!.complete(PurchaseResult.subscriptionExpired(
+              message: response.message,
             ));
           } else {
             session.completer!.complete(PurchaseResult.error(

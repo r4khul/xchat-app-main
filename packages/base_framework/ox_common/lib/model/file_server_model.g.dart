@@ -46,6 +46,22 @@ const FileServerModelSchema = IsarGeneratedSchema(
         name: 'bucketName',
         type: IsarType.string,
       ),
+      IsarPropertySchema(
+        name: 'pathPrefix',
+        type: IsarType.string,
+      ),
+      IsarPropertySchema(
+        name: 'region',
+        type: IsarType.string,
+      ),
+      IsarPropertySchema(
+        name: 'sessionToken',
+        type: IsarType.string,
+      ),
+      IsarPropertySchema(
+        name: 'expiration',
+        type: IsarType.long,
+      ),
     ],
     indexes: [],
   ),
@@ -65,6 +81,24 @@ int serializeFileServerModel(IsarWriter writer, FileServerModel object) {
   IsarCore.writeString(writer, 4, object.accessKey);
   IsarCore.writeString(writer, 5, object.secretKey);
   IsarCore.writeString(writer, 6, object.bucketName);
+  {
+    final value = object.pathPrefix;
+    if (value == null) {
+      IsarCore.writeNull(writer, 7);
+    } else {
+      IsarCore.writeString(writer, 7, value);
+    }
+  }
+  IsarCore.writeString(writer, 8, object.region);
+  {
+    final value = object.sessionToken;
+    if (value == null) {
+      IsarCore.writeNull(writer, 9);
+    } else {
+      IsarCore.writeString(writer, 9, value);
+    }
+  }
+  IsarCore.writeLong(writer, 10, object.expiration ?? -9223372036854775808);
   return object.id;
 }
 
@@ -91,6 +125,21 @@ FileServerModel deserializeFileServerModel(IsarReader reader) {
   _secretKey = IsarCore.readString(reader, 5) ?? '';
   final String _bucketName;
   _bucketName = IsarCore.readString(reader, 6) ?? '';
+  final String? _pathPrefix;
+  _pathPrefix = IsarCore.readString(reader, 7);
+  final String _region;
+  _region = IsarCore.readString(reader, 8) ?? '';
+  final String? _sessionToken;
+  _sessionToken = IsarCore.readString(reader, 9);
+  final int? _expiration;
+  {
+    final value = IsarCore.readLong(reader, 10);
+    if (value == -9223372036854775808) {
+      _expiration = null;
+    } else {
+      _expiration = value;
+    }
+  }
   final object = FileServerModel(
     id: _id,
     type: _type,
@@ -99,6 +148,10 @@ FileServerModel deserializeFileServerModel(IsarReader reader) {
     accessKey: _accessKey,
     secretKey: _secretKey,
     bucketName: _bucketName,
+    pathPrefix: _pathPrefix,
+    region: _region,
+    sessionToken: _sessionToken,
+    expiration: _expiration,
   );
   return object;
 }
@@ -127,6 +180,21 @@ dynamic deserializeFileServerModelProp(IsarReader reader, int property) {
       return IsarCore.readString(reader, 5) ?? '';
     case 6:
       return IsarCore.readString(reader, 6) ?? '';
+    case 7:
+      return IsarCore.readString(reader, 7);
+    case 8:
+      return IsarCore.readString(reader, 8) ?? '';
+    case 9:
+      return IsarCore.readString(reader, 9);
+    case 10:
+      {
+        final value = IsarCore.readLong(reader, 10);
+        if (value == -9223372036854775808) {
+          return null;
+        } else {
+          return value;
+        }
+      }
     default:
       throw ArgumentError('Unknown property: $property');
   }
@@ -141,6 +209,10 @@ sealed class _FileServerModelUpdate {
     String? accessKey,
     String? secretKey,
     String? bucketName,
+    String? pathPrefix,
+    String? region,
+    String? sessionToken,
+    int? expiration,
   });
 }
 
@@ -158,6 +230,10 @@ class _FileServerModelUpdateImpl implements _FileServerModelUpdate {
     Object? accessKey = ignore,
     Object? secretKey = ignore,
     Object? bucketName = ignore,
+    Object? pathPrefix = ignore,
+    Object? region = ignore,
+    Object? sessionToken = ignore,
+    Object? expiration = ignore,
   }) {
     return collection.updateProperties([
           id
@@ -168,6 +244,10 @@ class _FileServerModelUpdateImpl implements _FileServerModelUpdate {
           if (accessKey != ignore) 4: accessKey as String?,
           if (secretKey != ignore) 5: secretKey as String?,
           if (bucketName != ignore) 6: bucketName as String?,
+          if (pathPrefix != ignore) 7: pathPrefix as String?,
+          if (region != ignore) 8: region as String?,
+          if (sessionToken != ignore) 9: sessionToken as String?,
+          if (expiration != ignore) 10: expiration as int?,
         }) >
         0;
   }
@@ -182,6 +262,10 @@ sealed class _FileServerModelUpdateAll {
     String? accessKey,
     String? secretKey,
     String? bucketName,
+    String? pathPrefix,
+    String? region,
+    String? sessionToken,
+    int? expiration,
   });
 }
 
@@ -199,6 +283,10 @@ class _FileServerModelUpdateAllImpl implements _FileServerModelUpdateAll {
     Object? accessKey = ignore,
     Object? secretKey = ignore,
     Object? bucketName = ignore,
+    Object? pathPrefix = ignore,
+    Object? region = ignore,
+    Object? sessionToken = ignore,
+    Object? expiration = ignore,
   }) {
     return collection.updateProperties(id, {
       if (type != ignore) 1: type as FileServerType?,
@@ -207,6 +295,10 @@ class _FileServerModelUpdateAllImpl implements _FileServerModelUpdateAll {
       if (accessKey != ignore) 4: accessKey as String?,
       if (secretKey != ignore) 5: secretKey as String?,
       if (bucketName != ignore) 6: bucketName as String?,
+      if (pathPrefix != ignore) 7: pathPrefix as String?,
+      if (region != ignore) 8: region as String?,
+      if (sessionToken != ignore) 9: sessionToken as String?,
+      if (expiration != ignore) 10: expiration as int?,
     });
   }
 }
@@ -226,6 +318,10 @@ sealed class _FileServerModelQueryUpdate {
     String? accessKey,
     String? secretKey,
     String? bucketName,
+    String? pathPrefix,
+    String? region,
+    String? sessionToken,
+    int? expiration,
   });
 }
 
@@ -243,6 +339,10 @@ class _FileServerModelQueryUpdateImpl implements _FileServerModelQueryUpdate {
     Object? accessKey = ignore,
     Object? secretKey = ignore,
     Object? bucketName = ignore,
+    Object? pathPrefix = ignore,
+    Object? region = ignore,
+    Object? sessionToken = ignore,
+    Object? expiration = ignore,
   }) {
     return query.updateProperties(limit: limit, {
       if (type != ignore) 1: type as FileServerType?,
@@ -251,6 +351,10 @@ class _FileServerModelQueryUpdateImpl implements _FileServerModelQueryUpdate {
       if (accessKey != ignore) 4: accessKey as String?,
       if (secretKey != ignore) 5: secretKey as String?,
       if (bucketName != ignore) 6: bucketName as String?,
+      if (pathPrefix != ignore) 7: pathPrefix as String?,
+      if (region != ignore) 8: region as String?,
+      if (sessionToken != ignore) 9: sessionToken as String?,
+      if (expiration != ignore) 10: expiration as int?,
     });
   }
 }
@@ -278,6 +382,10 @@ class _FileServerModelQueryBuilderUpdateImpl
     Object? accessKey = ignore,
     Object? secretKey = ignore,
     Object? bucketName = ignore,
+    Object? pathPrefix = ignore,
+    Object? region = ignore,
+    Object? sessionToken = ignore,
+    Object? expiration = ignore,
   }) {
     final q = query.build();
     try {
@@ -288,6 +396,10 @@ class _FileServerModelQueryBuilderUpdateImpl
         if (accessKey != ignore) 4: accessKey as String?,
         if (secretKey != ignore) 5: secretKey as String?,
         if (bucketName != ignore) 6: bucketName as String?,
+        if (pathPrefix != ignore) 7: pathPrefix as String?,
+        if (region != ignore) 8: region as String?,
+        if (sessionToken != ignore) 9: sessionToken as String?,
+        if (expiration != ignore) 10: expiration as int?,
       });
     } finally {
       q.close();
@@ -1383,6 +1495,674 @@ extension FileServerModelQueryFilter
       );
     });
   }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      pathPrefixIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 7));
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      pathPrefixIsNotNull() {
+    return QueryBuilder.apply(not(), (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 7));
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      pathPrefixEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 7,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      pathPrefixGreaterThan(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 7,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      pathPrefixGreaterThanOrEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 7,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      pathPrefixLessThan(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 7,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      pathPrefixLessThanOrEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 7,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      pathPrefixBetween(
+    String? lower,
+    String? upper, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 7,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      pathPrefixStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        StartsWithCondition(
+          property: 7,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      pathPrefixEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EndsWithCondition(
+          property: 7,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      pathPrefixContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        ContainsCondition(
+          property: 7,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      pathPrefixMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        MatchesCondition(
+          property: 7,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      pathPrefixIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const EqualCondition(
+          property: 7,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      pathPrefixIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const GreaterCondition(
+          property: 7,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      regionEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 8,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      regionGreaterThan(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 8,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      regionGreaterThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 8,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      regionLessThan(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 8,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      regionLessThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 8,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      regionBetween(
+    String lower,
+    String upper, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 8,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      regionStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        StartsWithCondition(
+          property: 8,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      regionEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EndsWithCondition(
+          property: 8,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      regionContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        ContainsCondition(
+          property: 8,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      regionMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        MatchesCondition(
+          property: 8,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      regionIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const EqualCondition(
+          property: 8,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      regionIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const GreaterCondition(
+          property: 8,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      sessionTokenIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 9));
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      sessionTokenIsNotNull() {
+    return QueryBuilder.apply(not(), (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 9));
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      sessionTokenEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 9,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      sessionTokenGreaterThan(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 9,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      sessionTokenGreaterThanOrEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 9,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      sessionTokenLessThan(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 9,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      sessionTokenLessThanOrEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 9,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      sessionTokenBetween(
+    String? lower,
+    String? upper, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 9,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      sessionTokenStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        StartsWithCondition(
+          property: 9,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      sessionTokenEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EndsWithCondition(
+          property: 9,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      sessionTokenContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        ContainsCondition(
+          property: 9,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      sessionTokenMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        MatchesCondition(
+          property: 9,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      sessionTokenIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const EqualCondition(
+          property: 9,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      sessionTokenIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const GreaterCondition(
+          property: 9,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      expirationIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 10));
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      expirationIsNotNull() {
+    return QueryBuilder.apply(not(), (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 10));
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      expirationEqualTo(
+    int? value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 10,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      expirationGreaterThan(
+    int? value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 10,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      expirationGreaterThanOrEqualTo(
+    int? value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 10,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      expirationLessThan(
+    int? value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 10,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      expirationLessThanOrEqualTo(
+    int? value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 10,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterFilterCondition>
+      expirationBetween(
+    int? lower,
+    int? upper,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 10,
+          lower: lower,
+          upper: upper,
+        ),
+      );
+    });
+  }
 }
 
 extension FileServerModelQueryObject
@@ -1519,6 +2299,83 @@ extension FileServerModelQuerySortBy
       );
     });
   }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterSortBy> sortByPathPrefix(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(
+        7,
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterSortBy>
+      sortByPathPrefixDesc({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(
+        7,
+        sort: Sort.desc,
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterSortBy> sortByRegion(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(
+        8,
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterSortBy> sortByRegionDesc(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(
+        8,
+        sort: Sort.desc,
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterSortBy>
+      sortBySessionToken({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(
+        9,
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterSortBy>
+      sortBySessionTokenDesc({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(
+        9,
+        sort: Sort.desc,
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterSortBy>
+      sortByExpiration() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(10);
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterSortBy>
+      sortByExpirationDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(10, sort: Sort.desc);
+    });
+  }
 }
 
 extension FileServerModelQuerySortThenBy
@@ -1617,6 +2474,62 @@ extension FileServerModelQuerySortThenBy
       return query.addSortBy(6, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterSortBy> thenByPathPrefix(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(7, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterSortBy>
+      thenByPathPrefixDesc({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(7, sort: Sort.desc, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterSortBy> thenByRegion(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(8, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterSortBy> thenByRegionDesc(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(8, sort: Sort.desc, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterSortBy>
+      thenBySessionToken({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(9, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterSortBy>
+      thenBySessionTokenDesc({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(9, sort: Sort.desc, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterSortBy>
+      thenByExpiration() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(10);
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterSortBy>
+      thenByExpirationDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(10, sort: Sort.desc);
+    });
+  }
 }
 
 extension FileServerModelQueryWhereDistinct
@@ -1662,6 +2575,34 @@ extension FileServerModelQueryWhereDistinct
       return query.addDistinctBy(6, caseSensitive: caseSensitive);
     });
   }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterDistinct>
+      distinctByPathPrefix({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(7, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterDistinct>
+      distinctByRegion({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(8, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterDistinct>
+      distinctBySessionToken({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(9, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<FileServerModel, FileServerModel, QAfterDistinct>
+      distinctByExpiration() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(10);
+    });
+  }
 }
 
 extension FileServerModelQueryProperty1
@@ -1705,6 +2646,31 @@ extension FileServerModelQueryProperty1
   QueryBuilder<FileServerModel, String, QAfterProperty> bucketNameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(6);
+    });
+  }
+
+  QueryBuilder<FileServerModel, String?, QAfterProperty> pathPrefixProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(7);
+    });
+  }
+
+  QueryBuilder<FileServerModel, String, QAfterProperty> regionProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(8);
+    });
+  }
+
+  QueryBuilder<FileServerModel, String?, QAfterProperty>
+      sessionTokenProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(9);
+    });
+  }
+
+  QueryBuilder<FileServerModel, int?, QAfterProperty> expirationProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(10);
     });
   }
 }
@@ -1756,6 +2722,33 @@ extension FileServerModelQueryProperty2<R>
       return query.addProperty(6);
     });
   }
+
+  QueryBuilder<FileServerModel, (R, String?), QAfterProperty>
+      pathPrefixProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(7);
+    });
+  }
+
+  QueryBuilder<FileServerModel, (R, String), QAfterProperty> regionProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(8);
+    });
+  }
+
+  QueryBuilder<FileServerModel, (R, String?), QAfterProperty>
+      sessionTokenProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(9);
+    });
+  }
+
+  QueryBuilder<FileServerModel, (R, int?), QAfterProperty>
+      expirationProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(10);
+    });
+  }
 }
 
 extension FileServerModelQueryProperty3<R1, R2>
@@ -1803,6 +2796,34 @@ extension FileServerModelQueryProperty3<R1, R2>
       bucketNameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(6);
+    });
+  }
+
+  QueryBuilder<FileServerModel, (R1, R2, String?), QOperations>
+      pathPrefixProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(7);
+    });
+  }
+
+  QueryBuilder<FileServerModel, (R1, R2, String), QOperations>
+      regionProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(8);
+    });
+  }
+
+  QueryBuilder<FileServerModel, (R1, R2, String?), QOperations>
+      sessionTokenProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(9);
+    });
+  }
+
+  QueryBuilder<FileServerModel, (R1, R2, int?), QOperations>
+      expirationProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(10);
     });
   }
 }
