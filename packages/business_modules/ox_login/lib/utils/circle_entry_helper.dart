@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:chatcore/chat-core.dart';
 import 'package:ox_common/navigator/navigator.dart';
 import 'package:ox_common/login/login_manager.dart';
+import 'package:ox_common/purchase/inactive_group_utils.dart';
 import 'package:ox_common/purchase/subscription_registry.dart';
 import 'package:ox_common/utils/account_credentials_utils.dart';
 import 'package:ox_common/widgets/common_loading.dart';
@@ -79,25 +80,10 @@ abstract class CircleEntryHelper {
   static Future<String?> getCurrentInactiveGroupId() async {
     final account = LoginManager.instance.currentState.account;
     final groups = SubscriptionRegistry.instance.groups;
-    if (account == null || groups.isEmpty) {
-      return groups.isNotEmpty ? groups.first.id : null;
-    }
-    final accountPubkey = account.pubkey;
-    final circles = account.circles;
-    final occupiedGroupIds = circles
-        .where((c) =>
-            c.groupId != null &&
-            c.groupId!.isNotEmpty &&
-            c.ownerPubkey != null &&
-            c.ownerPubkey!.isNotEmpty &&
-            c.ownerPubkey == accountPubkey)
-        .map((c) => c.groupId!)
-        .toSet();
-    for (final group in groups) {
-      if (!occupiedGroupIds.contains(group.id)) {
-        return group.id;
-      }
-    }
-    return null;
+    return InactiveGroupSelection.firstInactiveId(
+      account?.pubkey,
+      account?.circles ?? [],
+      groups,
+    );
   }
 }
