@@ -76,9 +76,11 @@ class EnhancedHttpFileService extends HttpFileService {
         region: s3Config.region,
         sessionToken: s3Config.sessionToken,
         expiration: s3Config.expiration,
+        circleId: circle.id, // Pass circleId for credential refresh and database update
       );
 
       // Generate presigned URL
+      // getPresignedUrl will automatically check and refresh credentials if needed
       // Use 7 days expiration (will be adjusted by _calculateMaxExpiration if needed)
       final presignedUrl = await MinioUploader.instance.getPresignedUrl(objectName);
 

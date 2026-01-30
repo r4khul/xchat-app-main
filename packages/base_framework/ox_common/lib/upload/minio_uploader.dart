@@ -25,6 +25,7 @@ class MinioUploader {
   // ignore: unused_field
   String? _secretKey;
   String? _region;
+  String? _circleId; // Circle ID for updating database after credential refresh
 
   factory MinioUploader() => _instance!;
 
@@ -46,6 +47,7 @@ class MinioUploader {
     int? expiration,
     int? port,
     bool? useSSL,
+    String? circleId,
   }) {
     _instance = MinioUploader._internal();
     final uri = Uri.parse(url);
@@ -70,6 +72,7 @@ class MinioUploader {
     _instance!._secretKey = secretKey;
     _instance!._region = region;
     _instance!._expiration = expiration;
+    _instance!._circleId = circleId;
     
     // Extract tenantId from pathPrefix if available
     // Format: "tenant-rb8QlKix/" -> "rb8QlKix"
@@ -154,7 +157,22 @@ class MinioUploader {
       _secretKey = newS3Config.secretAccessKey;
       _expiration = newS3Config.expiration;
       
-      print('S3 credentials refreshed successfully. New expiration: $_expiration');
+      // Update database with new credentials if circleId is available
+      if (_circleId != null) {
+        try {
+          await S3ConfigUtils.saveS3ConfigToCircleDB(
+            circleId: _circleId!,
+            s3Config: newS3Config,
+          );
+          print('S3 credentials refreshed and saved to database. New expiration: $_expiration');
+        } catch (e) {
+          // Log error but don't fail - credentials are already updated in memory
+          print('Warning: Failed to save refreshed S3 credentials to database: $e');
+        }
+      } else {
+        print('S3 credentials refreshed successfully. New expiration: $_expiration');
+      }
+      
       return true;
     } catch (e) {
       print('Warning: Failed to refresh S3 credentials: $e');
@@ -252,6 +270,7 @@ class MinioUploader {
     return await _minio.bucketExists(bucketName);
   }
 
+  /// Check if an object exists in the bucket
   /// 
   /// [objectName] The object name to check (without bucket name)
   /// Returns true if object exists, false otherwise
@@ -273,6 +292,9 @@ class MinioUploader {
   /// Note: We skip statObject check because it may fail due to ACL issues.
   /// The presigned URL will still work even if we don't check existence first.
   Future<String?> getPresignedUrl(String objectName, {int? expires}) async {
+    // Check and refresh credentials if needed before generating presigned URL
+    await _refreshCredentialsIfNeeded();
+    
     try {
       // Calculate max expiration based on sessionToken expiration if using temporary credentials
       final maxExpiresSeconds = _calculateMaxExpiration(expires);
@@ -304,6 +326,7 @@ class MinioUploader {
         return null;
       }
       
+      // getPresignedUrl will handle credential refresh internally
       return await getPresignedUrl(objectName, expires: expires);
     } catch (e) {
       return null;
