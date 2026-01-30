@@ -36,7 +36,7 @@ class _HomeScaffoldState extends State<HomeScaffold> {
   final ValueNotifier<bool> isShowExtendBody$ = ValueNotifier(false);
 
   HomeHeaderComponents? components;
-  late final RelayLatencyHandler _latencyHandler;
+  RelayLatencyHandler? _latencyHandler;
 
   Duration get extendBodyDuration => const Duration(milliseconds: 200);
 
@@ -47,14 +47,14 @@ class _HomeScaffoldState extends State<HomeScaffold> {
   @override
   void initState() {
     super.initState();
-    _latencyHandler = RelayLatencyHandler(isExpanded$: isShowExtendBody$);
+    // _latencyHandler = RelayLatencyHandler(isExpanded$: isShowExtendBody$);
     Connect.sharedInstance.addConnectStatusListener(_handleConnectStatusChanged);
   }
 
   @override
   void dispose() {
     Connect.sharedInstance.removeConnectStatusListener(_handleConnectStatusChanged);
-    _latencyHandler.dispose();
+    _latencyHandler?.dispose();
     super.dispose();
   }
 

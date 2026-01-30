@@ -39,7 +39,7 @@ class HomeHeaderComponents {
     this.paidOnTap,
     required this.isShowExtendBody$,
     required this.extendBodyDuration,
-    required RelayLatencyHandler latencyHandler,
+    required RelayLatencyHandler? latencyHandler,
   }) {
     _latencyHandler = latencyHandler;
     _setupLatency();
@@ -63,18 +63,18 @@ class HomeHeaderComponents {
   ValueNotifier<bool> isShowExtendBody$;
   Duration extendBodyDuration;
 
-  late final RelayLatencyHandler _latencyHandler;
+  RelayLatencyHandler? _latencyHandler;
 
   void _setupLatency() {
     selectedCircle$.addListener(selectedCircleChangedHandler);
 
     final initUrl = selectedCircle$.value?.relayUrl;
-    if (initUrl != null) _latencyHandler.switchRelay(initUrl);
+    if (initUrl != null) _latencyHandler?.switchRelay(initUrl);
   }
 
   void selectedCircleChangedHandler() {
     final url = selectedCircle$.value?.relayUrl;
-    if (url != null) _latencyHandler.switchRelay(url);
+    if (url != null) _latencyHandler?.switchRelay(url);
   }
 
   void dispose() {
@@ -237,7 +237,8 @@ class HomeHeaderComponents {
 
   ListViewItem _circleItemListTileMapper(CircleItem item, CircleItem? selectedCircle) {
     final selected = item.id == selectedCircle?.id;
-    final result$ = _latencyHandler.getPingResultNotifier(item.relayUrl);
+    final result$ = _latencyHandler?.getPingResultNotifier(item.relayUrl)
+        ?? ValueNotifier<PingResult>(PingResult.failure());
     final subtitle = _buildRelaySubtitle(
       item: item,
       selected: selected,
