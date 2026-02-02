@@ -104,7 +104,7 @@
   "owner": "مالک",
   "member": "عضو",
   "remove": "حذف",
-  "add_member": "افزودن عضو...",
+  "add_member": "دعوت برای پیوستن",
   "remove_member_title": "حذف عضو",
   "remove_member_content": "آیا مطمئنید که می‌خواهید {name} را از این دایره حذف کنید؟",
   "active": "فعال",

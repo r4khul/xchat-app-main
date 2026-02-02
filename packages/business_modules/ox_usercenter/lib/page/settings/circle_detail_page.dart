@@ -20,7 +20,7 @@ import 'package:ox_common/model/file_server_model.dart';
 import 'package:ox_module_service/ox_module_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:io';
-import 'package:ox_login/page/private_cloud_overview_page.dart';
+import 'package:ox_login/ox_login.dart';
 
 import 'file_server_page.dart';
 import 'profile_settings_page.dart';
@@ -408,7 +408,7 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
         backgroundColor: ColorToken.primaryContainer.of(context),
       ),
       body: CLSectionListView(
-        padding: EdgeInsets.zero,
+        padding: EdgeInsets.only(bottom: 40.px),
         items: [
           SectionListViewItem(
             headerWidget: _buildHeader(context),
@@ -760,17 +760,19 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
       }
     }
 
-    // Add "Add Member" option
-    memberItems.add(
-      LabelItemModel(
-        icon: ListViewIcon.data(Icons.person_add),
-        title: Localized.text('ox_usercenter.add_member'),
-        onTap: _addMember,
-      ),
-    );
+    // Add "Add Member" option only if not at max capacity
+    if (_currentMembers < _maxMembers) {
+      memberItems.add(
+        LabelItemModel(
+          icon: ListViewIcon.data(Icons.person_add),
+          title: Localized.text('ox_usercenter.add_member'),
+          onTap: _addMember,
+        ),
+      );
+    }
 
     return SectionListViewItem(
-      header: Localized.text('ox_usercenter.members'),
+      header: '${Localized.text('ox_usercenter.members')}(${_currentMembers}/${_maxMembers})',
       data: memberItems,
     );
   }

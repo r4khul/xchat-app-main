@@ -104,7 +104,7 @@
   "owner": "Propriétaire",
   "member": "Membre",
   "remove": "Supprimer",
-  "add_member": "Ajouter un membre...",
+  "add_member": "Inviter à rejoindre",
   "remove_member_title": "Supprimer un membre",
   "remove_member_content": "Êtes-vous sûr de vouloir supprimer {name} de ce cercle ?",
   "active": "Actif",

@@ -104,7 +104,7 @@
   "owner": "เจ้าของ",
   "member": "สมาชิก",
   "remove": "ลบ",
-  "add_member": "เพิ่มสมาชิก...",
+  "add_member": "เชิญเข้าร่วม",
   "remove_member_title": "ลบสมาชิก",
   "remove_member_content": "คุณแน่ใจหรือไม่ว่าต้องการลบ {name} จากวงกลมนี้?",
   "active": "ใช้งาน",

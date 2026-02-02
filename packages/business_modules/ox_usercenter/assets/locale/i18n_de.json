@@ -104,7 +104,7 @@
   "owner": "Eigentümer",
   "member": "Mitglied",
   "remove": "Entfernen",
-  "add_member": "Mitglied hinzufügen...",
+  "add_member": "Zum Beitreten einladen",
   "remove_member_title": "Mitglied entfernen",
   "remove_member_content": "Sind Sie sicher, dass Sie {name} aus diesem Kreis entfernen möchten?",
   "active": "Aktiv",

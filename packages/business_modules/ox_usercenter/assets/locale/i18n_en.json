@@ -107,7 +107,7 @@
   "owner": "Owner",
   "member": "Member",
   "remove": "Remove",
-  "add_member": "Add Member...",
+  "add_member": "Invite to Join",
   "remove_member_title": "Remove Member",
   "remove_member_content": "Are you sure you want to remove {name} from this circle?",
   "member_limit_reached": "Member limit reached",

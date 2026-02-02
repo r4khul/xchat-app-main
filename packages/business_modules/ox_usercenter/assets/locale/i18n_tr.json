@@ -104,7 +104,7 @@
   "owner": "Sahip",
   "member": "Üye",
   "remove": "Kaldır",
-  "add_member": "Üye ekle...",
+  "add_member": "Katılmaya davet et",
   "remove_member_title": "Üye kaldır",
   "remove_member_content": "Bu çemberden {name} kullanıcısını kaldırmak istediğinizden emin misiniz?",
   "active": "Aktif",

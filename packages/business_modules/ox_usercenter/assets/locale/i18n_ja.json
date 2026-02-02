@@ -104,7 +104,7 @@
   "owner": "所有者",
   "member": "メンバー",
   "remove": "削除",
-  "add_member": "メンバーを追加...",
+  "add_member": "参加に招待",
   "remove_member_title": "メンバーを削除",
   "remove_member_content": "このサークルから {name} を削除してもよろしいですか？",
   "active": "アクティブ",

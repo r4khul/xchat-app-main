@@ -107,7 +107,7 @@
   "owner": "所有者",
   "member": "成员",
   "remove": "移除",
-  "add_member": "添加成员...",
+  "add_member": "邀请加入",
   "remove_member_title": "移除成员",
   "remove_member_content": "您确定要从这个圈子中移除 {name} 吗？",
   "member_limit_reached": "成员数量已达上限",

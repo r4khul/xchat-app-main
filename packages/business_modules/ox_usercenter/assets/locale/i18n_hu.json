@@ -104,7 +104,7 @@
   "owner": "Tulajdonos",
   "member": "Tag",
   "remove": "Eltávolítás",
-  "add_member": "Tag hozzáadása...",
+  "add_member": "Meghívás csatlakozásra",
   "remove_member_title": "Tag eltávolítása",
   "remove_member_content": "Biztosan el szeretné távolítani {name} tagot ebből a körből?",
   "active": "Aktív",

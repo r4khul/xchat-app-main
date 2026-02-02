@@ -104,7 +104,7 @@
   "owner": "المالك",
   "member": "عضو",
   "remove": "إزالة",
-  "add_member": "إضافة عضو...",
+  "add_member": "دعوة للانضمام",
   "remove_member_title": "إزالة عضو",
   "remove_member_content": "هل أنت متأكد من أنك تريد إزالة {name} من هذه الدائرة؟",
   "active": "نشط",

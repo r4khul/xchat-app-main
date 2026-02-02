@@ -104,7 +104,7 @@
   "owner": "所有者",
   "member": "成員",
   "remove": "移除",
-  "add_member": "新增成員...",
+  "add_member": "邀請加入",
   "remove_member_title": "移除成員",
   "remove_member_content": "您確定要從這個圈子中移除 {name} 嗎？",
   "active": "活躍",

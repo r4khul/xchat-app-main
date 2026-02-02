@@ -104,7 +104,7 @@
   "owner": "Ägare",
   "member": "Medlem",
   "remove": "Ta bort",
-  "add_member": "Lägg till medlem...",
+  "add_member": "Bjud in att gå med",
   "remove_member_title": "Ta bort medlem",
   "remove_member_content": "Är du säker på att du vill ta bort {name} från denna cirkel?",
   "active": "Aktiv",

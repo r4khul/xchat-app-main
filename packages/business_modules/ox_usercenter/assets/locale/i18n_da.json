@@ -104,7 +104,7 @@
   "owner": "Ejer",
   "member": "Medlem",
   "remove": "Fjern",
-  "add_member": "Tilføj medlem...",
+  "add_member": "Inviter til at deltage",
   "remove_member_title": "Fjern medlem",
   "remove_member_content": "Er du sikker på, at du vil fjerne {name} fra denne cirkel?",
   "active": "Aktiv",
