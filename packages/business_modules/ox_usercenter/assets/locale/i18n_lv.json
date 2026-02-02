@@ -108,6 +108,7 @@
   "remove_member_title": "Noņemt biedru",
   "remove_member_content": "Vai tiešām vēlaties noņemt {name} no šī apļa?",
   "active": "Aktīvs",
+  "expired": "Beidzies",
   "cancel_subscription": "Atcelt abonementu",
   "cancel_subscription_title": "Atcelt abonementu",
   "cancel_subscription_content": "Vai tiešām vēlaties atcelt savu abonementu? Jūsu abonements paliks aktīvs līdz pašreizējā norēķinu perioda beigām.",

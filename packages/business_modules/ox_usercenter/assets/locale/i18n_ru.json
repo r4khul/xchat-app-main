@@ -108,6 +108,7 @@
   "remove_member_title": "Удалить участника",
   "remove_member_content": "Вы уверены, что хотите удалить {name} из этого круга?",
   "active": "Активна",
+  "expired": "Истекла",
   "cancel_subscription": "Отменить подписку",
   "cancel_subscription_title": "Отменить подписку",
   "cancel_subscription_content": "Вы уверены, что хотите отменить подписку? Ваша подписка останется активной до конца текущего расчетного периода.",

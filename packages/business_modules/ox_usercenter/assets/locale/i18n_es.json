@@ -108,6 +108,7 @@
   "remove_member_title": "Eliminar miembro",
   "remove_member_content": "¿Está seguro de que desea eliminar {name} de este círculo?",
   "active": "Activo",
+  "expired": "Expirado",
   "cancel_subscription": "Cancelar suscripción",
   "cancel_subscription_title": "Cancelar suscripción",
   "cancel_subscription_content": "¿Está seguro de que desea cancelar su suscripción? Su suscripción permanecerá activa hasta el final del período de facturación actual.",

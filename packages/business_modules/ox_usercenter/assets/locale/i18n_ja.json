@@ -108,6 +108,7 @@
   "remove_member_title": "メンバーを削除",
   "remove_member_content": "このサークルから {name} を削除してもよろしいですか？",
   "active": "アクティブ",
+  "expired": "期限切れ",
   "cancel_subscription": "サブスクリプションをキャンセル",
   "cancel_subscription_title": "サブスクリプションをキャンセル",
   "cancel_subscription_content": "サブスクリプションをキャンセルしてもよろしいですか？現在の請求期間の終了まで、サブスクリプションはアクティブのままです。",

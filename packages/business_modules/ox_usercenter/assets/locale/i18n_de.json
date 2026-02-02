@@ -108,6 +108,7 @@
   "remove_member_title": "Mitglied entfernen",
   "remove_member_content": "Sind Sie sicher, dass Sie {name} aus diesem Kreis entfernen möchten?",
   "active": "Aktiv",
+  "expired": "Abgelaufen",
   "cancel_subscription": "Abonnement kündigen",
   "cancel_subscription_title": "Abonnement kündigen",
   "cancel_subscription_content": "Sind Sie sicher, dass Sie Ihr Abonnement kündigen möchten? Ihr Abonnement bleibt bis zum Ende des aktuellen Abrechnungszeitraums aktiv.",

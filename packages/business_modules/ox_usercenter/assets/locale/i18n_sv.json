@@ -108,6 +108,7 @@
   "remove_member_title": "Ta bort medlem",
   "remove_member_content": "Är du säker på att du vill ta bort {name} från denna cirkel?",
   "active": "Aktiv",
+  "expired": "Utgången",
   "cancel_subscription": "Avbryt prenumeration",
   "cancel_subscription_title": "Avbryt prenumeration",
   "cancel_subscription_content": "Är du säker på att du vill avbryta din prenumeration? Din prenumeration förblir aktiv till slutet av den aktuella faktureringsperioden.",

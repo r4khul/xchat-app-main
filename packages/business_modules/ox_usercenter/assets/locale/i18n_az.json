@@ -108,6 +108,7 @@
   "remove_member_title": "Üzv sil",
   "remove_member_content": "Bu dairədən {name} silmək istədiyinizə əminsiniz?",
   "active": "Aktiv",
+  "expired": "Müddəti bitib",
   "cancel_subscription": "Abunəliyi ləğv et",
   "cancel_subscription_title": "Abunəliyi ləğv et",
   "cancel_subscription_content": "Abunəliyinizi ləğv etmək istədiyinizə əminsiniz? Abunəliyiniz cari hesablama dövrünün sonuna qədər aktiv qalacaq.",

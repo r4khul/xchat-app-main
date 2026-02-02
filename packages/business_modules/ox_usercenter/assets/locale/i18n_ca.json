@@ -108,6 +108,7 @@
   "remove_member_title": "Eliminar membre",
   "remove_member_content": "Esteu segurs que voleu eliminar {name} d'aquest cercle?",
   "active": "Actiu",
+  "expired": "Vençut",
   "cancel_subscription": "Cancel·lar subscripció",
   "cancel_subscription_title": "Cancel·lar subscripció",
   "cancel_subscription_content": "Esteu segurs que voleu cancel·lar la vostra subscripció? La vostra subscripció romandrà activa fins al final del període de facturació actual.",

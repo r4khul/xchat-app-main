@@ -17,15 +17,18 @@ import 'package:ox_common/utils/file_server_helper.dart';
 import 'package:ox_common/repository/file_server_repository.dart';
 import 'package:ox_common/log_util.dart';
 import 'package:ox_common/model/file_server_model.dart';
+import 'package:ox_module_service/ox_module_service.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'dart:io';
+import 'package:ox_login/page/private_cloud_overview_page.dart';
 
 import 'file_server_page.dart';
 import 'profile_settings_page.dart';
-import 'subscription_detail_page.dart';
 import 'qr_code_display_page.dart';
 import '../../utils/invite_link_manager.dart';
 
 enum _MenuAction { edit, delete }
-enum _PlanAction { changePlan, cancelSubscription }
+enum _PlanAction { changePlan, cancelSubscription, renewPlan }
 enum _StorageAction { clearAllStorage }
 
 class CircleDetailPage extends StatefulWidget {
@@ -53,6 +56,7 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
   bool _isOwner = false;
   late ValueNotifier<String> _planName$;
   late ValueNotifier<String> _renewDate$;
+  late ValueNotifier<String?> _subscriptionStatus$;
   int _currentMembers = 1;
   int _maxMembers = 6;
   late ValueNotifier<String> _storageUsed$;
@@ -66,6 +70,7 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
     _circleName = widget.circle.name;
     _planName$ = ValueNotifier<String>('Family');
     _renewDate$ = ValueNotifier<String>('Dec 31, 2025');
+    _subscriptionStatus$ = ValueNotifier<String?>(null);
     _storageUsed$ = ValueNotifier<String>('45.2 GB');
     _fileServerName$ = ValueNotifier<String>('');
     _checkIfOwner();
@@ -79,6 +84,7 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
   void dispose() {
     _planName$.dispose();
     _renewDate$.dispose();
+    _subscriptionStatus$.dispose();
     _storageUsed$.dispose();
     _fileServerName$.dispose();
     super.dispose();
@@ -174,6 +180,21 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
       }
     }
 
+    // Extract subscription status
+    String? subscriptionStatus = tenantInfo['subscription_status'] as String?;
+    // If subscription_status is not available, determine status from expires_at
+    if (subscriptionStatus == null || subscriptionStatus.isEmpty) {
+      if (expiresAt != null && expiresAt > 0) {
+        try {
+          final expiresDate = DateTime.fromMillisecondsSinceEpoch(expiresAt * 1000);
+          final now = DateTime.now();
+          subscriptionStatus = expiresDate.isBefore(now) ? 'expired' : 'active';
+        } catch (e) {
+          LogUtil.w(() => 'Failed to determine subscription status from expires_at: $e');
+        }
+      }
+    }
+
     // Extract tenant name if available
     final tenantName = tenantInfo['name'] as String?;
     if (tenantName != null && tenantName.isNotEmpty && tenantName != _circleName) {
@@ -187,6 +208,7 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
         _maxMembers = maxMembers;
         _members = membersList;
         _renewDate$.value = renewDateText;
+        _subscriptionStatus$.value = subscriptionStatus;
         _planName$.value = 'Family'; // TODO: Load actual plan name from API if available
         _storageUsed$.value = '45.2 GB'; // TODO: Load actual storage from API if available
       });
@@ -616,25 +638,57 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
       header: Localized.text('ox_usercenter.subscription_and_usage'),
       data: [
         // Plan
-        LabelItemModel(
+        CustomItemModel(
           icon: ListViewIcon.data(Icons.workspace_premium),
           title: Localized.text('ox_usercenter.plan'),
-          subtitle: Localized.text('ox_usercenter.renews_on').replaceAll('{date}', _renewDate$.value),
-          value$: _planName$,
+          subtitleWidget: ValueListenableBuilder<String?>(
+            valueListenable: _subscriptionStatus$,
+            builder: (context, status, _) {
+              return ValueListenableBuilder<String>(
+                valueListenable: _renewDate$,
+                builder: (context, renewDate, _) {
+                  if (status == 'active') {
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: CLText.bodySmall(
+                            Localized.text('ox_usercenter.renews_on').replaceAll('{date}', renewDate),
+                            colorToken: ColorToken.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    );
+                  } else if (status == 'expired') {
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: CLText.bodySmall(
+                            Localized.text('ox_usercenter.subscription_expired_on').replaceAll('{date}', renewDate),
+                            colorToken: ColorToken.error,
+                          ),
+                        ),
+                      ],
+                    );
+                  } else {
+                    // Default: show renew date only
+                    return CLText.bodySmall(
+                      Localized.text('ox_usercenter.renews_on').replaceAll('{date}', renewDate),
+                      colorToken: ColorToken.onSurfaceVariant,
+                    );
+                  }
+                },
+              );
+            },
+          ),
           onTap: () {
-            OXNavigator.pushPage(
-              context,
-              (context) => SubscriptionDetailPage(
-                previousPageTitle: widget.title,
-              ),
-            );
+            _showPlanOptions(context);
           },
         ),
         // Storage
         LabelItemModel(
           icon: ListViewIcon.data(Icons.storage),
           title: Localized.text('ox_usercenter.storage'),
-          value$: _storageUsed$,
+          // value$: _storageUsed$,
           onTap: () {
             _showStorageOptions(context);
           },
@@ -681,13 +735,26 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
                 ? member.pubKey.substring(0, 8) 
                 : member.pubKey);
         memberItems.add(
-          LabelItemModel(
+          CustomItemModel(
             icon: ListViewIcon.data(Icons.person),
             title: displayName,
             subtitle: Localized.text('ox_usercenter.member'),
-            value$: ValueNotifier<String>(Localized.text('ox_usercenter.remove')),
-            valueMapper: (value) => value,
-            onTap: () => _removeMember(member),
+            trailing: CLButton.text(
+              text: Localized.text('ox_usercenter.remove'),
+              color: ColorToken.error.of(context),
+              onTap: () => _removeMember(member),
+            ),
+            onTap: () {
+              // Navigate to user profile page
+              OXModuleService.pushPage(
+                context,
+                'ox_chat',
+                'ContactUserInfoPage',
+                {
+                  'pubkey': member.pubKey,
+                },
+              );
+            },
           ),
         );
       }
@@ -774,6 +841,75 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
   }
 
 
+  void _showPlanOptions(BuildContext context) async {
+    final status = _subscriptionStatus$.value;
+    final items = <CLPickerItem<_PlanAction>>[];
+
+    // Build options based on subscription status
+    if (status == 'active') {
+      // Active subscription: show change plan and cancel subscription
+      items.addAll([
+        CLPickerItem(
+          label: Localized.text('ox_usercenter.change_plan'),
+          value: _PlanAction.changePlan,
+        ),
+        CLPickerItem(
+          label: Localized.text('ox_usercenter.cancel_subscription'),
+          value: _PlanAction.cancelSubscription,
+          isDestructive: true,
+        ),
+      ]);
+    } else if (status == 'expired') {
+      // Expired subscription: show renew plan
+      items.addAll([
+        CLPickerItem(
+          label: Localized.text('ox_usercenter.change_plan'),
+          value: _PlanAction.changePlan,
+        ),
+        CLPickerItem(
+          label: Localized.text('ox_usercenter.renew'),
+          value: _PlanAction.renewPlan,
+        ),
+      ]);
+    } else {
+      // Default: show all options
+      items.addAll([
+        CLPickerItem(
+          label: Localized.text('ox_usercenter.change_plan'),
+          value: _PlanAction.changePlan,
+        ),
+        CLPickerItem(
+          label: Localized.text('ox_usercenter.renew'),
+          value: _PlanAction.renewPlan,
+        ),
+        CLPickerItem(
+          label: Localized.text('ox_usercenter.cancel_subscription'),
+          value: _PlanAction.cancelSubscription,
+          isDestructive: true,
+        ),
+      ]);
+    }
+
+    final action = await CLPicker.show<_PlanAction>(
+      context: context,
+      items: items,
+    );
+
+    if (action == null) return;
+
+    switch (action) {
+      case _PlanAction.changePlan:
+        _handleChangePlan(context);
+        break;
+      case _PlanAction.cancelSubscription:
+        _handleCancelSubscription(context);
+        break;
+      case _PlanAction.renewPlan:
+        _handleRenewPlan(context);
+        break;
+    }
+  }
+
   void _showStorageOptions(BuildContext context) async {
     final action = await CLPicker.show<_StorageAction>(
       context: context,
@@ -792,6 +928,48 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
       case _StorageAction.clearAllStorage:
         _showClearStorageDialog(context);
         break;
+    }
+  }
+
+  void _handleChangePlan(BuildContext context) {
+    OXNavigator.pushPage(
+      context,
+      (context) => const PrivateCloudOverviewPage(),
+      type: OXPushPageType.present,
+      fullscreenDialog: true,
+    );
+  }
+
+  Future<void> _handleCancelSubscription(BuildContext context) async {
+    await _openSubscriptionManagement(context);
+  }
+
+  Future<void> _handleRenewPlan(BuildContext context) async {
+    await _openSubscriptionManagement(context);
+  }
+
+  Future<void> _openSubscriptionManagement(BuildContext context) async {
+    String url;
+    if (Platform.isIOS) {
+      url = 'https://apps.apple.com/account/subscriptions';
+    } else if (Platform.isAndroid) {
+      url = 'https://play.google.com/store/account/subscriptions?package=com.oxchat.lite';
+    } else {
+      CommonToast.instance.show(
+        context,
+        Localized.text('ox_common.unsupported_platform'),
+      );
+      return;
+    }
+
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      CommonToast.instance.show(
+        context,
+        Localized.text('ox_common.failed_to_open_url'),
+      );
     }
   }
 

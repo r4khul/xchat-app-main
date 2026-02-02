@@ -108,6 +108,7 @@
   "remove_member_title": "Xóa thành viên",
   "remove_member_content": "Bạn có chắc chắn muốn xóa {name} khỏi vòng tròn này không?",
   "active": "Hoạt động",
+  "expired": "Đã hết hạn",
   "cancel_subscription": "Hủy đăng ký",
   "cancel_subscription_title": "Hủy đăng ký",
   "cancel_subscription_content": "Bạn có chắc chắn muốn hủy đăng ký không? Đăng ký của bạn sẽ vẫn hoạt động cho đến cuối chu kỳ thanh toán hiện tại.",

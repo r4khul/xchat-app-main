@@ -108,6 +108,7 @@
   "remove_member_title": "إزالة عضو",
   "remove_member_content": "هل أنت متأكد من أنك تريد إزالة {name} من هذه الدائرة؟",
   "active": "نشط",
+  "expired": "منتهي الصلاحية",
   "cancel_subscription": "إلغاء الاشتراك",
   "cancel_subscription_title": "إلغاء الاشتراك",
   "cancel_subscription_content": "هل أنت متأكد من أنك تريد إلغاء اشتراكك؟ سيبقى اشتراكك نشطاً حتى نهاية فترة الفوترة الحالية.",

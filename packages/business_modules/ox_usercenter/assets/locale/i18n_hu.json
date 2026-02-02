@@ -108,6 +108,7 @@
   "remove_member_title": "Tag eltávolítása",
   "remove_member_content": "Biztosan el szeretné távolítani {name} tagot ebből a körből?",
   "active": "Aktív",
+  "expired": "Lejárt",
   "cancel_subscription": "Előfizetés megszakítása",
   "cancel_subscription_title": "Előfizetés megszakítása",
   "cancel_subscription_content": "Biztosan megszakítja az előfizetését? Az előfizetése a jelenlegi számlázási időszak végéig aktív marad.",

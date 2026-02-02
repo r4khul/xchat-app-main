@@ -114,6 +114,8 @@
   "enter_pubkey_description": "Enter the member's public key (hex format) or npub (bech32 format)",
   "pubkey_or_npub": "Pubkey or npub",
   "active": "Active",
+  "expired": "Expired",
+  "change_plan": "Change Plan",
   "cancel_subscription": "Cancel Subscription",
   "cancel_subscription_title": "Cancel Subscription",
   "cancel_subscription_content": "Are you sure you want to cancel your subscription? Your subscription will remain active until the end of the current billing period.",

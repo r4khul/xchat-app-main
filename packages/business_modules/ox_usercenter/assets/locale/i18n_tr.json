@@ -108,6 +108,7 @@
   "remove_member_title": "Üye kaldır",
   "remove_member_content": "Bu çemberden {name} kullanıcısını kaldırmak istediğinizden emin misiniz?",
   "active": "Aktif",
+  "expired": "Süresi doldu",
   "cancel_subscription": "Aboneliği iptal et",
   "cancel_subscription_title": "Aboneliği iptal et",
   "cancel_subscription_content": "Aboneliğinizi iptal etmek istediğinizden emin misiniz? Aboneliğiniz mevcut fatura döneminin sonuna kadar aktif kalacaktır.",

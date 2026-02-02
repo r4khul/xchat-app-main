@@ -108,6 +108,7 @@
   "remove_member_title": "حذف عضو",
   "remove_member_content": "آیا مطمئنید که می‌خواهید {name} را از این دایره حذف کنید؟",
   "active": "فعال",
+  "expired": "منقضی شده",
   "cancel_subscription": "لغو اشتراک",
   "cancel_subscription_title": "لغو اشتراک",
   "cancel_subscription_content": "آیا مطمئنید که می‌خواهید اشتراک خود را لغو کنید؟ اشتراک شما تا پایان دوره صورتحساب فعلی فعال باقی می‌ماند.",

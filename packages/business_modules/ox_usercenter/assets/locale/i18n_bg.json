@@ -108,6 +108,7 @@
   "remove_member_title": "Премахни член",
   "remove_member_content": "Сигурни ли сте, че искате да премахнете {name} от този кръг?",
   "active": "Активен",
+  "expired": "Изтекъл",
   "cancel_subscription": "Отмени абонамент",
   "cancel_subscription_title": "Отмени абонамент",
   "cancel_subscription_content": "Сигурни ли сте, че искате да отмените абонамента си? Абонаментът ви ще остане активен до края на текущия билингов период.",

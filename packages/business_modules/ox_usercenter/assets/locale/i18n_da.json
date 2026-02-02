@@ -108,6 +108,7 @@
   "remove_member_title": "Fjern medlem",
   "remove_member_content": "Er du sikker på, at du vil fjerne {name} fra denne cirkel?",
   "active": "Aktiv",
+  "expired": "Udløbet",
   "cancel_subscription": "Annuller abonnement",
   "cancel_subscription_title": "Annuller abonnement",
   "cancel_subscription_content": "Er du sikker på, at du vil annullere dit abonnement? Dit abonnement forbliver aktivt indtil slutningen af den aktuelle faktureringsperiode.",

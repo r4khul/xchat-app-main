@@ -108,6 +108,7 @@
   "remove_member_title": "Odebrat člena",
   "remove_member_content": "Opravdu chcete odebrat {name} z tohoto kruhu?",
   "active": "Aktivní",
+  "expired": "Vypršelo",
   "cancel_subscription": "Zrušit předplatné",
   "cancel_subscription_title": "Zrušit předplatné",
   "cancel_subscription_content": "Opravdu chcete zrušit své předplatné? Vaše předplatné zůstane aktivní do konce aktuálního fakturačního období.",

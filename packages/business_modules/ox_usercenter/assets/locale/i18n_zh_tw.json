@@ -108,6 +108,7 @@
   "remove_member_title": "移除成員",
   "remove_member_content": "您確定要從這個圈子中移除 {name} 嗎？",
   "active": "活躍",
+  "expired": "過期",
   "cancel_subscription": "取消訂閱",
   "cancel_subscription_title": "取消訂閱",
   "cancel_subscription_content": "您確定要取消訂閱嗎？您的訂閱將在當前計費週期結束前保持活躍。",

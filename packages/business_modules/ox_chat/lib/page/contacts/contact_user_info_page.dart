@@ -82,18 +82,29 @@ class _ContactUserInfoPageState extends State<ContactUserInfoPage> {
                         _buildBioItem(user),
                       ],
                     ),
-                    if (!LoginManager.instance.isMe(user.pubKey))
-                      SectionListViewItem.button(
-                        text: _getBlockButtonText(user),
-                        onTap: () => _blockUserOnTap(user),
-                        type: _getBlockButtonType(user),
-                      )
                   ],
                 ),
               ),
               Visibility(
                 visible: widget.chatId == null,
-                child: _buildSendMsgButton(isCurrentUser),
+                child: SafeArea(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: CLLayout.horizontalPadding,
+                      right: CLLayout.horizontalPadding,
+                      bottom: 12.px,
+                    ),
+                    child: Column(
+                      children: [
+                        _buildSendMsgButton(isCurrentUser),
+                        if (!LoginManager.instance.isMe(user.pubKey)) ...[
+                          SizedBox(height: 8.px),
+                          _buildBlockButton(user),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ],
           );
@@ -188,22 +199,24 @@ class _ContactUserInfoPageState extends State<ContactUserInfoPage> {
     }
   }
 
+  Widget _buildBlockButton(UserDBISAR user) {
+    return CLButton.text(
+      color: _getBlockButtonType(user) == ButtonType.destructive
+          ? ColorToken.error.of(context)
+          : null,
+      text: _getBlockButtonText(user),
+      expanded: true,
+      onTap: () => _blockUserOnTap(user),
+    );
+  }
+
   Widget _buildSendMsgButton([bool isSelf = false]) {
-    return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.only(
-          left: CLLayout.horizontalPadding,
-          right: CLLayout.horizontalPadding,
-          bottom: 12.px,
-        ),
-        child: CLButton.filled(
-          text: isSelf 
-              ? Localized.text('ox_chat.file_transfer_assistant')
-              : Localized.text('ox_chat.send_message'),
-          expanded: true,
-          onTap: _sendMessage,
-        ),
-      ),
+    return CLButton.filled(
+      text: isSelf 
+          ? Localized.text('ox_chat.file_transfer_assistant')
+          : Localized.text('ox_chat.send_message'),
+      expanded: true,
+      onTap: _sendMessage,
     );
   }
 

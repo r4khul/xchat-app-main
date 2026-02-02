@@ -108,6 +108,7 @@
   "remove_member_title": "Rimuovi membro",
   "remove_member_content": "Sei sicuro di voler rimuovere {name} da questo cerchio?",
   "active": "Attivo",
+  "expired": "Scaduto",
   "cancel_subscription": "Annulla abbonamento",
   "cancel_subscription_title": "Annulla abbonamento",
   "cancel_subscription_content": "Sei sicuro di voler annullare il tuo abbonamento? Il tuo abbonamento rimarrà attivo fino alla fine del periodo di fatturazione corrente.",

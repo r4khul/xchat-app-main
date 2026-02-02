@@ -114,6 +114,8 @@
   "enter_pubkey_description": "输入成员的公钥（十六进制格式）或 npub（bech32 格式）",
   "pubkey_or_npub": "公钥或 npub",
   "active": "活跃",
+  "expired": "过期",
+  "change_plan": "更改计划",
   "cancel_subscription": "取消订阅",
   "cancel_subscription_title": "取消订阅",
   "cancel_subscription_content": "您确定要取消订阅吗？您的订阅将在当前计费周期结束前保持活跃。",

@@ -108,6 +108,7 @@
   "remove_member_title": "Eemalda liige",
   "remove_member_content": "Kas olete kindel, et soovite eemaldada {name} sellest ringist?",
   "active": "Aktiivne",
+  "expired": "Aegunud",
   "cancel_subscription": "Tühista tellimus",
   "cancel_subscription_title": "Tühista tellimus",
   "cancel_subscription_content": "Kas olete kindel, et soovite oma tellimuse tühistada? Teie tellimus jääb aktiivseks kuni praeguse arveldusperioodi lõpuni.",

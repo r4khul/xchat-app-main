@@ -108,6 +108,7 @@
   "remove_member_title": "Usuń członka",
   "remove_member_content": "Czy na pewno chcesz usunąć {name} z tego kręgu?",
   "active": "Aktywna",
+  "expired": "Wygasła",
   "cancel_subscription": "Anuluj subskrypcję",
   "cancel_subscription_title": "Anuluj subskrypcję",
   "cancel_subscription_content": "Czy na pewno chcesz anulować subskrypcję? Twoja subskrypcja pozostanie aktywna do końca bieżącego okresu rozliczeniowego.",

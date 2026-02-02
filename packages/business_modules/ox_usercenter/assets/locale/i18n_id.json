@@ -108,6 +108,7 @@
   "remove_member_title": "Hapus anggota",
   "remove_member_content": "Apakah Anda yakin ingin menghapus {name} dari lingkaran ini?",
   "active": "Aktif",
+  "expired": "Kedaluwarsa",
   "cancel_subscription": "Batalkan langganan",
   "cancel_subscription_title": "Batalkan langganan",
   "cancel_subscription_content": "Apakah Anda yakin ingin membatalkan langganan Anda? Langganan Anda akan tetap aktif hingga akhir periode penagihan saat ini.",

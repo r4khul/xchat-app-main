@@ -108,6 +108,7 @@
   "remove_member_title": "सदस्य हटाएं",
   "remove_member_content": "क्या आप वाकई इस सर्कल से {name} को हटाना चाहते हैं?",
   "active": "सक्रिय",
+  "expired": "समाप्त",
   "cancel_subscription": "सदस्यता रद्द करें",
   "cancel_subscription_title": "सदस्यता रद्द करें",
   "cancel_subscription_content": "क्या आप वाकई अपनी सदस्यता रद्द करना चाहते हैं? आपकी सदस्यता वर्तमान बिलिंग अवधि के अंत तक सक्रिय रहेगी।",
