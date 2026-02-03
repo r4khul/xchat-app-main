@@ -98,5 +98,6 @@
   "restore_circle": "恢复圈子",
   "admin": "管理员",
   "member": "成员",
-  "skip": "跳过"
+  "skip": "跳过",
+  "expired": "已过期"
 }

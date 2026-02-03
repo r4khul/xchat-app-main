@@ -11,7 +11,11 @@ import 'package:ox_localizable/ox_localizable.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class FindPeoplePage extends StatefulWidget {
-  const FindPeoplePage({super.key});
+  /// When true, page title shows "Join Circle" and is used for entering
+  /// circle invite link or scanning QR (e.g. from "I have an invite").
+  final bool joinCircleMode;
+
+  const FindPeoplePage({super.key, this.joinCircleMode = false});
 
   @override
   State<FindPeoplePage> createState() => _FindPeoplePageState();
@@ -36,11 +40,21 @@ class _FindPeoplePageState extends State<FindPeoplePage> {
     setState(() {});
   }
 
+  String get _pageTitle =>
+      widget.joinCircleMode
+          ? Localized.text('ox_chat.join_circle_title')
+          : Localized.text('ox_chat.add_friends_to_chat');
+
+  String get _privacyNotice =>
+      widget.joinCircleMode
+          ? Localized.text('ox_chat.find_people_join_circle_notice')
+          : Localized.text('ox_chat.find_people_privacy_notice');
+
   @override
   Widget build(BuildContext context) {
     return CLScaffold(
       appBar: CLAppBar(
-        title: Localized.text('ox_chat.add_friends_to_chat'),
+        title: _pageTitle,
         actions: [
           // Next button - disabled when username is invalid
           CupertinoButton(
@@ -74,7 +88,7 @@ class _FindPeoplePageState extends State<FindPeoplePage> {
               
               // Instruction text
               CLText.bodySmall(
-                Localized.text('ox_chat.find_people_privacy_notice'),
+                _privacyNotice,
                 colorToken: ColorToken.onSurfaceVariant,
               ),
               
