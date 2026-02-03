@@ -4,6 +4,7 @@ import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:ox_common/log_util.dart';
 import 'package:chatcore/chat-core.dart';
 import 'package:ox_common/login/account_models.dart';
+import 'package:ox_common/login/circle_repository.dart';
 import 'package:ox_common/login/login_manager.dart';
 import 'package:ox_common/login/login_models.dart';
 import 'package:ox_common/purchase/purchase_idempotency_manager.dart';
@@ -621,16 +622,35 @@ class PurchaseService {
     
     // Check if circle with this relayUrl already exists before calling joinCircle
     // This avoids unnecessary joinCircle calls and potential duplicate circle creation
-    final existingCircle = account.circles.where(
+    final existingCircles = account.circles.where(
       (circle) => circle.type == CircleType.relay && circle.relayUrl == verificationResult.relayUrl,
     );
     
-    if (existingCircle.isNotEmpty) {
+    if (existingCircles.isNotEmpty) {
       LogUtil.d(() => '''
         [PurchaseService] Restored purchase - circle already exists, skipping joinCircle:
         - relayUrl: ${verificationResult.relayUrl}
       ''');
-      // Circle already exists: no new delivery, but not an error.
+      // Ensure subscription group is recorded so entry display logic can work.
+      // Restored circles may have been created without groupId (e.g. migration or old flow).
+      if (groupId != null && groupId.isNotEmpty) {
+        final accountDb = account.db;
+        for (final circle in existingCircles) {
+          final needsUpdate = circle.groupId == null || circle.groupId!.isEmpty || circle.ownerPubkey != account.pubkey;
+          if (needsUpdate) {
+            circle.groupId = groupId;
+            circle.ownerPubkey = account.pubkey;
+            final updated = await CircleRepository.update(accountDb, circle);
+            if (updated) {
+              LogUtil.d(() => '''
+                [PurchaseService] Restored purchase - updated existing circle with subscription group:
+                - circleId: ${circle.id}
+                - groupId: $groupId
+              ''');
+            }
+          }
+        }
+      }
       return PurchaseProcessResponse(
         result: PurchaseProcessResult.alreadyRestored,
         verificationResult: verificationResult,

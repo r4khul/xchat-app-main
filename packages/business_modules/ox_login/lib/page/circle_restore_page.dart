@@ -103,24 +103,24 @@ class _CircleRestorePageState extends State<CircleRestorePage> {
     return CLScaffold(
       appBar: CLAppBar(),
       body: _buildBody(),
-      bottomWidget: _buildBottomActions(),
     );
   }
 
   Widget _buildBody() {
-    return SingleChildScrollView(
-      padding: EdgeInsets.only(
-        left: CLLayout.horizontalPadding,
-        right: CLLayout.horizontalPadding,
-        top: 24.px,
-        bottom: 100.px,
-      ),
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: CLLayout.horizontalPadding),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeader(),
-          SizedBox(height: 24.px),
-          _buildCirclesList(),
+          SizedBox(height: 12.px),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.only(top: 12.px),
+              child: _buildCirclesList(),
+            ),
+          ),
+          SizedBox(height: 12.px),
+          _buildBottomActions(),
         ],
       ),
     );
@@ -168,55 +168,115 @@ class _CircleRestorePageState extends State<CircleRestorePage> {
     );
   }
 
+  bool _isExpired(RelayAddressInfo relayInfo) {
+    if (relayInfo.subscriptionStatus == 'expired') return true;
+    final expiresAt = relayInfo.expiresAt;
+    if (expiresAt != null && expiresAt > 0) {
+      final nowSeconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      return expiresAt < nowSeconds;
+    }
+    return false;
+  }
+
+  Widget _buildCircleAvatar(String initials, Color color) {
+    return Container(
+      width: 48.px,
+      height: 48.px,
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+      child: Center(
+        child: CLText.titleMedium(initials, customColor: Colors.white),
+      ),
+    );
+  }
+
+  Widget? _buildStatusBadge(bool isCloud, bool isExpired) {
+    if (isExpired) {
+      return Container(
+        padding: EdgeInsets.symmetric(horizontal: 8.px, vertical: 4.px),
+        decoration: BoxDecoration(
+          color: ColorToken.error.of(context).withOpacity(0.12),
+          borderRadius: BorderRadius.circular(12.px),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.schedule_outlined, size: 12.px, color: ColorToken.error.of(context)),
+            SizedBox(width: 4.px),
+            CLText.labelSmall(
+              Localized.text('ox_login.expired').toUpperCase(),
+              colorToken: ColorToken.error,
+            ),
+          ],
+        ),
+      );
+    }
+    if (isCloud) {
+      return Container(
+        padding: EdgeInsets.symmetric(horizontal: 8.px, vertical: 4.px),
+        decoration: BoxDecoration(
+          color: ColorToken.onSurfaceVariant.of(context).withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12.px),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.shield_outlined, size: 12.px, color: ColorToken.onSurfaceVariant.of(context)),
+            SizedBox(width: 4.px),
+            CLText.labelSmall('CLOUD', colorToken: ColorToken.onSurfaceVariant),
+          ],
+        ),
+      );
+    }
+    return null;
+  }
+
+  Widget _buildSelectionCheckbox(bool isSelected) {
+    return Container(
+      width: 24.px,
+      height: 24.px,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: isSelected
+              ? ColorToken.primary.of(context)
+              : ColorToken.onSurfaceVariant.of(context).withOpacity(0.3),
+          width: 2,
+        ),
+        color: isSelected ? ColorToken.primary.of(context) : Colors.transparent,
+      ),
+      child: isSelected ? Icon(Icons.check, size: 16.px, color: Colors.white) : null,
+    );
+  }
+
   Widget _buildCircleItem(_CircleRestoreItem item) {
     final relayInfo = item.relayInfo;
-    final name = relayInfo.tenantName.isNotEmpty 
-        ? relayInfo.tenantName 
-        : relayInfo.tenantId;
-    final initials = _getInitials(name);
-    final color = _getColorForCircle(name);
+    final name = relayInfo.tenantName.isNotEmpty ? relayInfo.tenantName : relayInfo.tenantId;
     final isCloud = relayInfo.subscriptionStatus.isNotEmpty &&
         relayInfo.subscriptionStatus != 'inactive';
+    final isExpired = _isExpired(relayInfo);
+    final statusBadge = _buildStatusBadge(isCloud, isExpired);
 
-    return Container(
-      margin: EdgeInsets.only(bottom: 12.px),
-      decoration: BoxDecoration(
-        color: ColorToken.cardContainer.of(context),
-        borderRadius: BorderRadius.circular(16.px),
-      ),
-      child: Material(
-        color: Colors.transparent,
+    return Opacity(
+      opacity: isExpired ? 0.7 : 1.0,
+      child: Container(
+        margin: EdgeInsets.only(bottom: 12.px),
+        decoration: BoxDecoration(
+          color: ColorToken.cardContainer.of(context),
+          borderRadius: BorderRadius.circular(16.px),
+        ),
         child: InkWell(
-          onTap: () {
-            setState(() {
-              item.isSelected = !item.isSelected;
-            });
-          },
+          onTap: () => setState(() => item.isSelected = !item.isSelected),
           borderRadius: BorderRadius.circular(16.px),
           child: Padding(
             padding: EdgeInsets.all(16.px),
             child: Row(
               children: [
-                // Circle avatar
-                Container(
-                  width: 48.px,
-                  height: 48.px,
-                  decoration: BoxDecoration(
-                    color: color,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: CLText.titleMedium(
-                      initials,
-                      customColor: Colors.white,
-                    ),
-                  ),
-                ),
+                _buildCircleAvatar(_getInitials(name), _getColorForCircle(name)),
                 SizedBox(width: 12.px),
-                // Circle info
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Row(
                         children: [
@@ -228,69 +288,19 @@ class _CircleRestorePageState extends State<CircleRestorePage> {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          if (isCloud) ...[
-                            SizedBox(width: 8.px),
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 8.px,
-                                vertical: 4.px,
-                              ),
-                              decoration: BoxDecoration(
-                                color: ColorToken.onSurfaceVariant.of(context).withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(12.px),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.shield_outlined,
-                                    size: 12.px,
-                                    color: ColorToken.onSurfaceVariant.of(context),
-                                  ),
-                                  SizedBox(width: 4.px),
-                                  CLText.labelSmall(
-                                    'CLOUD',
-                                    colorToken: ColorToken.onSurfaceVariant,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                          if (statusBadge != null) ...[SizedBox(width: 8.px), statusBadge],
                         ],
                       ),
                       SizedBox(height: 4.px),
                       CLText.bodySmall(
-                        item.relayInfo.relayUrl,
+                        relayInfo.relayUrl,
                         colorToken: ColorToken.onSurfaceVariant,
                       ),
                     ],
                   ),
                 ),
                 SizedBox(width: 12.px),
-                // Checkbox
-                Container(
-                  width: 24.px,
-                  height: 24.px,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: item.isSelected
-                          ? ColorToken.primary.of(context)
-                          : ColorToken.onSurfaceVariant.of(context).withOpacity(0.3),
-                      width: 2,
-                    ),
-                    color: item.isSelected
-                        ? ColorToken.primary.of(context)
-                        : Colors.transparent,
-                  ),
-                  child: item.isSelected
-                      ? Icon(
-                          Icons.check,
-                          size: 16.px,
-                          color: Colors.white,
-                        )
-                      : null,
-                ),
+                _buildSelectionCheckbox(item.isSelected),
               ],
             ),
           ),
@@ -300,36 +310,27 @@ class _CircleRestorePageState extends State<CircleRestorePage> {
   }
 
   Widget _buildBottomActions() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Set up as new device link
-        Padding(
-          padding: EdgeInsets.symmetric(vertical: 8.px),
-          child: GestureDetector(
-            onTap: _onSetUpAsNewDevice,
-            child: CLText.bodyMedium(
-              Localized.text('ox_login.skip'),
-              colorToken: ColorToken.primary,
-            ),
-          ),
-        ),
-        // Restore button
-        Padding(
-          padding: EdgeInsets.symmetric(
-            vertical: 16.px,
-          ),
-          child: CLButton.filled(
+    return SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Restore button
+          CLButton.filled(
             text: _selectedCount > 0
                 ? Localized.text('ox_login.restore_circles')
-                    .replaceAll('{count}', '$_selectedCount')
+                .replaceAll('{count}', '$_selectedCount')
                 : Localized.text('ox_login.restore_circle'),
             onTap: _selectedCount > 0 && !_isRestoring ? _onRestore : null,
             expanded: true,
             height: 48.px,
           ),
-        ),
-      ],
+          // Set up as new device link
+          CLButton.text(
+            onTap: _onSetUpAsNewDevice,
+            text: Localized.text('ox_login.skip'),
+          ),
+        ],
+      ),
     );
   }
 
