@@ -11,8 +11,19 @@ class LogUtil {
 
   static void e(message) => _print('E', message, true);
 
-  static void _print(String level, message, [force = false]) =>
-      log(content: '[$level] $message', force: force);
+  static void _print(String level, message, [force = false]) {
+    String content;
+    if (message is Function) {
+      try {
+        content = message.call().toString();
+      } catch (e) {
+        content = 'Error executing log closure: $e';
+      }
+    } else {
+      content = message.toString();
+    }
+    log(content: '[$level] $content', force: force);
+  }
 
   static void log({
     String? key = 'OX Pro',

@@ -566,9 +566,35 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
         try {
           Loading.OXLoading.show();
           
+          final trimmedName = newName.trim();
+          
+          // If this is a paid relay, update tenant name on server first
+          if (_isPaidRelay()) {
+            try {
+              await CircleMemberService.sharedInstance.updateTenant(
+                name: trimmedName,
+              );
+              // After successful server update, reload tenant info to sync local cache
+              // This will update CircleDBISAR and UI
+              await _loadSubscriptionInfo();
+            } catch (e) {
+              Loading.OXLoading.dismiss();
+              LogUtil.e(() => 'Failed to update tenant name on server: $e');
+              final errorMessage = e.toString().replaceFirst('Exception: ', '');
+              CommonToast.instance.show(
+                context,
+                errorMessage.isNotEmpty 
+                    ? errorMessage 
+                    : Localized.text('ox_common.operation_failed'),
+              );
+              return false;
+            }
+          }
+          
+          // Update account-level Circle object in local database
           final updatedCircle = await CircleService.updateCircleName(
             widget.circle.id,
-            newName.trim(),
+            trimmedName,
           );
 
           if (updatedCircle == null) {
@@ -579,14 +605,17 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
 
           Loading.OXLoading.dismiss();
           
+          // Update UI state (for paid relays, _loadSubscriptionInfo already updated it, but we update again to ensure consistency)
           setState(() {
-            _circleName = newName.trim();
+            _circleName = trimmedName;
           });
 
           return true;
         } catch (e) {
           Loading.OXLoading.dismiss();
-          CommonToast.instance.show(context, e.toString());
+          // Show detailed error message
+          final errorMessage = e.toString().replaceFirst('Exception: ', '');
+          CommonToast.instance.show(context, errorMessage.isNotEmpty ? errorMessage : Localized.text('ox_common.operation_failed'));
           return false;
         }
       },
@@ -1009,12 +1038,75 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
           isDestructiveAction: true,
         ),
       ],
-    ).then((confirmed) {
+    ).then((confirmed) async {
       if (confirmed == true) {
-        // TODO: Implement clear all storage logic
-        CommonToast.instance.show(context, Localized.text('ox_common.operation_success'));
-        _storageUsed$.value = '0.0 GB';
+        await _handleClearAllStorage(context);
       }
     });
+  }
+
+  /// Handle clear all storage operation
+  Future<void> _handleClearAllStorage(BuildContext context) async {
+    // Only allow for paid relays
+    if (!_isPaidRelay()) {
+      CommonToast.instance.show(context, Localized.text('ox_common.operation_failed'));
+      return;
+    }
+
+    // Get account credentials
+    final pubkey = LoginManager.instance.currentPubkey;
+    final privkey = Account.sharedInstance.currentPrivkey;
+    
+    if (pubkey.isEmpty || privkey.isEmpty) {
+      CommonToast.instance.show(context, Localized.text('ox_common.operation_failed'));
+      return;
+    }
+
+    // Get tenantId from CircleDBISAR, fallback to circle.id if not available
+    String tenantId = widget.circle.id;
+    try {
+      final circleDB = await Account.sharedInstance.getCircleById(widget.circle.id);
+      if (circleDB?.tenantId != null && circleDB!.tenantId!.isNotEmpty) {
+        tenantId = circleDB.tenantId!;
+      }
+    } catch (e) {
+      LogUtil.w(() => 'Failed to get tenantId from CircleDBISAR: $e');
+      // Use circle.id as fallback
+    }
+
+    // Show loading
+    Loading.OXLoading.show();
+
+    try {
+      // Call API to delete tenant files
+      final result = await CircleApi.deleteTenantFiles(
+        pubkey: pubkey,
+        privkey: privkey,
+        tenantId: tenantId,
+      );
+
+      // Hide loading
+      Loading.OXLoading.dismiss();
+
+      // Show success message
+      CommonToast.instance.show(
+        context,
+        Localized.text('ox_common.operation_success'),
+      );
+
+      // Update storage display
+      _storageUsed$.value = '0.0 GB';
+
+      LogUtil.v(() => 'Successfully deleted ${result.deletedCount}/${result.totalCount} files for tenant $tenantId');
+    } catch (e) {
+      // Hide loading
+      Loading.OXLoading.dismiss();
+
+      // Show error message
+      final errorMessage = e.toString().replaceFirst('Exception: ', '');
+      CommonToast.instance.show(context, errorMessage);
+
+      LogUtil.e(() => 'Failed to delete tenant files: $e');
+    }
   }
 }

@@ -44,37 +44,59 @@ class CircleService {
       final account = loginManager.currentState.account;
       if (account == null) {
         LogUtil.w(() => 'Account is null, cannot update circle');
-        return null;
+        throw Exception('Account is null, cannot update circle');
       }
 
       // Get existing circle
       final existingCircles = account.circles;
-      final existingCircle = existingCircles.firstWhere(
-        (c) => c.id == circleId,
-        orElse: () => throw Exception('Circle not found'),
-      );
+      Circle existingCircle;
+      try {
+        existingCircle = existingCircles.firstWhere(
+          (c) => c.id == circleId,
+        );
+      } catch (e) {
+        LogUtil.e(() => 'Circle not found: $circleId');
+        throw Exception('Circle not found');
+      }
 
       // Validate name
       if (newName.isEmpty) {
         LogUtil.w(() => 'Circle name cannot be empty');
-        return null;
+        throw Exception('Circle name cannot be empty');
       }
 
+      // Check if name conflicts with other circles (case-insensitive)
+      try {
+        existingCircles.firstWhere(
+          (c) => c.id != circleId && c.name.toLowerCase() == newName.toLowerCase(),
+        );
+        // If we reach here, there's a conflict
+        LogUtil.w(() => 'Circle name "$newName" already exists');
+        throw Exception('Circle name "$newName" already exists');
+      } on StateError {
+        // No conflict, continue
+      }
+
+      // Update circle name
       existingCircle.name = newName;
 
       // Update in accountDB using CircleRepository
       final accountDb = account.db;
       final success = await CircleRepository.update(accountDb, existingCircle);
       if (!success) {
-        LogUtil.e(() => 'Failed to update circle in repository');
-        return null;
+        LogUtil.e(() => 'Failed to update circle in repository for circleId: $circleId, newName: $newName');
+        throw Exception('Failed to update circle in database. The circle may not exist in the database or the update operation failed.');
       }
 
       LogUtil.v(() => 'Circle name updated: $circleId -> ${newName}');
       return existingCircle;
     } catch (e) {
+      // Re-throw if it's already an Exception
+      if (e is Exception) {
+        rethrow;
+      }
       LogUtil.e(() => 'Failed to update circle name: $e');
-      return null;
+      throw Exception('Failed to update circle name: $e');
     }
   }
 

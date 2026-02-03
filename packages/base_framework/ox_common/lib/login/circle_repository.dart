@@ -61,42 +61,57 @@ class CircleRepository {
   }
 
   static Future<bool> update(Isar accountDb, Circle circle) async {
+    // Extract all values from Circle object FIRST to avoid capturing the Circle object
+    // (which contains Isar db that cannot be sent across isolates)
+    final circleId = circle.id;
+    final name = circle.name;
+    final relayUrl = circle.relayUrl;
+    final type = circle.type;
+    final invitationCode = circle.invitationCode;
+    final category = circle.category;
+    final groupId = circle.groupId;
+    final circleOwnerPubkey = circle.ownerPubkey ?? '';
+    
     try {
-      final existing = await getById(accountDb, circle.id);
+      final existing = await getById(accountDb, circleId);
       final existingId = existing?.id;
       if (existingId == null) {
-        LogUtil.w(() => 'Circle with id ${circle.id} not found');
+        LogUtil.e(() => 'Circle with id $circleId not found in database');
         return false;
       }
 
-      // Extract values from Circle object to avoid capturing the Circle object (which contains Isar db) in the closure
-      final name = circle.name;
-      final relayUrl = circle.relayUrl;
-      final type = circle.type;
-      final invitationCode = circle.invitationCode;
-      final category = circle.category;
-      final groupId = circle.groupId;
-      final circleOwnerPubkey = circle.ownerPubkey ?? '';
+      LogUtil.v(() => 'Updating circle $circleId with existingId: $existingId, name: $name');
 
       await accountDb.writeAsync((accountDb) {
         // Get the existing object again inside the closure to avoid capturing it
         final circleToUpdate = accountDb.circleISARs.get(existingId);
-        if (circleToUpdate != null) {
-          circleToUpdate.name = name;
-          circleToUpdate.relayUrl = relayUrl;
-          circleToUpdate.type = type;
-          circleToUpdate.invitationCode = invitationCode;
-          circleToUpdate.category = category;
-          circleToUpdate.groupId = groupId;
-          circleToUpdate.pubkey = circleOwnerPubkey;
-          accountDb.circleISARs.put(circleToUpdate);
+        if (circleToUpdate == null) {
+          // Don't use LogUtil here as it might capture variables from outer scope
+          throw Exception('Circle with id $existingId not found in writeAsync closure');
         }
+        
+        circleToUpdate.name = name;
+        circleToUpdate.relayUrl = relayUrl;
+        circleToUpdate.type = type;
+        circleToUpdate.invitationCode = invitationCode;
+        circleToUpdate.category = category;
+        circleToUpdate.groupId = groupId;
+        circleToUpdate.pubkey = circleOwnerPubkey;
+        accountDb.circleISARs.put(circleToUpdate);
       });
 
-      LogUtil.v(() => 'Circle updated: ${circle.id}');
+      // Verify the update was successful by reading back the value
+      final updated = await getById(accountDb, circleId);
+      if (updated == null || updated.name != name) {
+        LogUtil.e(() => 'Circle update verification failed: expected name "$name", got "${updated?.name ?? "null"}"');
+        return false;
+      }
+
+      LogUtil.v(() => 'Circle updated successfully: $circleId -> $name');
       return true;
-    } catch (e) {
+    } catch (e, stackTrace) {
       LogUtil.e(() => 'Failed to update circle: $e');
+      LogUtil.e(() => 'Stack trace: $stackTrace');
       return false;
     }
   }
