@@ -559,6 +559,10 @@ extension LoginManagerAccount on LoginManager {
     for (final observer in _observers) {
       observer.onLoginSuccess(currentState);
     }
+    // Asynchronously ensure keypackage is uploaded to paid relay
+    KeyPackageManager.ensurePermanentKeyPackageOnRelay().catchError((e) {
+      debugPrint('Failed to ensure keypackage on relay: $e');
+    });
   }
 
   /// Notify login failure
