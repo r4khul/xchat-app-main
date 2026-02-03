@@ -291,6 +291,8 @@ class SettingSliderState extends State<SettingSlider> {
                   CLText.bodyLarge(
                     circle.name,
                     isBold: true,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   if (circle.type != CircleType.bitchat)
                     CLText.bodyMedium(
