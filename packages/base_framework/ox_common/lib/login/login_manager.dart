@@ -630,6 +630,15 @@ extension LoginManagerCircle on LoginManager {
     // Add circle to account's circle list
     final originCircles = [...account.circles];
     final success = await updatedCircles([...originCircles, ...newCircles]);
+
+    // Fetch remote circle info on background
+    if (success && newCircles.isNotEmpty) {
+      Future.microtask(() async {
+        await CircleService.fetchRemoteCircleInfoAndUpdateLocal(List.from(newCircles));
+        _refreshState();
+      });
+    }
+
     return (success, originCircles);
   }
 
@@ -1291,15 +1300,18 @@ extension LoginManagerDatabase on LoginManager {
 }
 
 extension AccountUpdateMethod on LoginManager {
+  void _refreshState() {
+    _state$.value = currentState.copy();
+  }
+
   void updateStateAccount(AccountModel? account) {
     currentState.account = account;
-    _state$.value = currentState.copy();
+    _refreshState();
   }
 
   void updateStateCircle(Circle? circle) {
     currentState.currentCircle = circle;
-    _state$.value = currentState.copy();
-
+    _refreshState();
     updateLastLoginCircle(circle);
   }
 

@@ -1,5 +1,7 @@
 import 'package:isar/isar.dart';
+import 'package:chatcore/chat-core.dart';
 import 'package:ox_common/log_util.dart';
+import 'package:ox_common/utils/account_credentials_utils.dart';
 import 'login_models.dart';
 import 'circle_repository.dart';
 import 'login_manager.dart';
@@ -130,6 +132,56 @@ class CircleService {
     } catch (e) {
       LogUtil.e(() => 'Failed to update circle relay URL: $e');
       return null;
+    }
+  }
+
+  /// Fetches remote circle (relay address) info and updates local circles.
+  ///
+  /// Strongly bound to [RelayAddressInfo]: every persisted [Circle]/[CircleISAR]
+  /// field that has a corresponding value in the remote response is updated:
+  /// - [RelayAddressInfo.tenantName] → [Circle.name]
+  /// - [RelayAddressInfo.relayUrl] → [Circle.relayUrl]
+  /// - When a match is found, [Circle.category] is set to [CircleCategory.paid].
+  ///
+  /// Only circles that are paid relays (by [CircleApi.isPaidRelay]) are
+  /// considered; others are skipped. Caller may call [LoginManager.instance.refreshState()]
+  /// after this to refresh UI.
+  static Future<void> fetchRemoteCircleInfoAndUpdateLocal(List<Circle> circles) async {
+    if (circles.isEmpty) return;
+    final account = LoginManager.instance.currentState.account;
+    if (account == null) return;
+    final creds = await AccountCredentialsUtils.getCredentials();
+    if (creds == null) return;
+    final pubkey = creds['pubkey']!;
+    final privkey = creds['privkey']!;
+    if (privkey.isEmpty || privkey == 'androidSigner' || privkey == 'remoteSigner') return;
+
+    List<RelayAddressInfo> relays;
+    try {
+      relays = await CircleApi.getRelayAddresses(pubkey: pubkey, privkey: privkey);
+    } catch (e) {
+      LogUtil.w(() => 'fetchRemoteCircleInfoAndUpdateLocal: getRelayAddresses failed: $e');
+      return;
+    }
+
+    final accountDb = account.db;
+    for (final circle in circles) {
+      if (!CircleApi.isPaidRelay(circle.relayUrl)) continue;
+      final iter = relays.where((r) => r.relayUrl == circle.relayUrl);
+      if (iter.isEmpty) continue;
+      final info = iter.first;
+
+      // Update all persisted properties that remote returns (strong binding to RelayAddressInfo)
+      if (info.tenantName.isNotEmpty) {
+        circle.name = info.tenantName;
+      }
+      circle.relayUrl = info.relayUrl;
+      circle.category = CircleCategory.paid;
+
+      final ok = await CircleRepository.update(accountDb, circle);
+      if (!ok) {
+        LogUtil.w(() => 'fetchRemoteCircleInfoAndUpdateLocal: update failed for ${circle.id}');
+      }
     }
   }
 }
