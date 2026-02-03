@@ -13,11 +13,13 @@ import 'package:ox_localizable/ox_localizable.dart';
 import 'package:ox_usercenter/page/settings/about_xchat_page.dart';
 import 'package:ox_usercenter/page/settings/notification_settings_page.dart';
 import 'package:ox_usercenter/page/settings/advanced_settings_page.dart';
+import 'package:chatcore/chat-core.dart';
 
 import 'circle_detail_page.dart';
 import 'profile_settings_page.dart';
 import 'settings_detail_page.dart';
 import 'qr_code_display_page.dart';
+import '../../utils/invite_link_manager.dart';
 import 'package:ox_common/login/login_models.dart';
 import 'package:ox_login/page/circle_selection_page.dart' show CircleSelectionPage;
 import 'package:ox_login/utils/circle_entry_helper.dart';
@@ -36,6 +38,8 @@ class SettingSliderState extends State<SettingSlider> {
   bool get _hasCircle => LoginManager.instance.currentCircle != null;
 
   late LoginUserNotifier userNotifier;
+  bool _isPaidRelay = false;
+  bool _isAdmin = false;
 
   @override
   void initState() {
@@ -46,6 +50,52 @@ class SettingSliderState extends State<SettingSlider> {
 
   void prepareData() {
     userNotifier = LoginUserNotifier.instance;
+    _checkPaidRelayAndAdmin();
+  }
+
+  /// Check if current circle is paid relay and if current user is admin
+  Future<void> _checkPaidRelayAndAdmin() async {
+    try {
+      final circle = LoginManager.instance.currentCircle;
+      if (circle != null) {
+        _isPaidRelay = CircleApi.isPaidRelay(circle.relayUrl);
+        
+        if (_isPaidRelay) {
+          // Check admin status
+          final currentPubkey = LoginManager.instance.currentPubkey;
+          try {
+            final tenantInfoAdmin = await CircleMemberService.sharedInstance.getTenantInfoAdmin();
+            final tenantAdminPubkey = tenantInfoAdmin['tenant_admin_pubkey'] as String?;
+            if (tenantAdminPubkey != null && tenantAdminPubkey.isNotEmpty) {
+              _isAdmin = tenantAdminPubkey.toLowerCase() == currentPubkey.toLowerCase();
+            }
+          } catch (e) {
+            // If admin check fails, try member-visible info
+            try {
+              final tenantInfo = await CircleMemberService.sharedInstance.getTenantInfo();
+              final tenantAdminPubkey = tenantInfo['tenant_admin_pubkey'] as String?;
+              if (tenantAdminPubkey != null && tenantAdminPubkey.isNotEmpty) {
+                _isAdmin = tenantAdminPubkey.toLowerCase() == currentPubkey.toLowerCase();
+              }
+            } catch (e2) {
+              // Default to false on error
+              _isAdmin = false;
+            }
+          }
+        }
+      } else {
+        _isPaidRelay = false;
+        _isAdmin = false;
+      }
+      
+      if (mounted) {
+        setState(() {});
+      }
+    } catch (e) {
+      print('Error checking paid relay and admin status: $e');
+      _isPaidRelay = false;
+      _isAdmin = false;
+    }
   }
 
   List<SectionListViewItem> pageData() {
@@ -399,17 +449,20 @@ class SettingSliderState extends State<SettingSlider> {
                   ),
                 ),
                 // Trailing - QR code button
-                Padding(
-                  padding: const EdgeInsets.only(right: 14),
-                  child: GestureDetector(
-                    onTap: inviteItemOnTap,
-                    child: Icon(
-                      CupertinoIcons.qrcode,
-                      color: ColorToken.onSurfaceVariant.of(context),
-                      size: 24.px,
+                // For paid relay: only show if admin
+                // For regular relay: always show
+                if ((_isPaidRelay && _isAdmin) || !_isPaidRelay)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 14),
+                    child: GestureDetector(
+                      onTap: inviteItemOnTap,
+                      child: Icon(
+                        CupertinoIcons.qrcode,
+                        color: ColorToken.onSurfaceVariant.of(context),
+                        size: 24.px,
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
           ),
@@ -508,10 +561,23 @@ class SettingSliderState extends State<SettingSlider> {
       return;
     }
     
-    OXNavigator.pushPage(
-      context, 
-      (context) => QRCodeDisplayPage(previousPageTitle: title),
-    );
+    // For paid relay, show circle invite QR code
+    if (_isPaidRelay) {
+      OXNavigator.pushPage(
+        context, 
+        (context) => QRCodeDisplayPage(
+          previousPageTitle: title,
+          inviteType: InviteType.circle,
+          circle: circle,
+        ),
+      );
+    } else {
+      // For regular relay, show keypackage invite QR code
+      OXNavigator.pushPage(
+        context, 
+        (context) => QRCodeDisplayPage(previousPageTitle: title),
+      );
+    }
   }
 
   void settingsItemOnTap() {

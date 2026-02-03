@@ -9,7 +9,9 @@ import 'package:ox_common/utils/circle_join_utils.dart';
 import 'package:ox_localizable/ox_localizable.dart';
 import 'package:ox_chat/page/session/find_people_page.dart';
 import 'package:ox_usercenter/page/settings/qr_code_display_page.dart';
+import 'package:ox_usercenter/utils/invite_link_manager.dart';
 import 'package:ox_common/widgets/common_image.dart';
+import 'package:chatcore/chat-core.dart';
 
 import '../page/archived_chats_page.dart';
 import 'session_list_data_controller.dart';
@@ -32,11 +34,14 @@ class SessionListWidget extends StatefulWidget {
 
 class _SessionListWidgetState extends State<SessionListWidget> {
   SessionListDataController? controller;
+  bool _isPaidRelay = false;
+  bool _isAdmin = false;
 
   @override
   void initState() {
     super.initState();
     _initializeController();
+    _checkPaidRelayAndAdmin();
   }
 
   @override
@@ -61,6 +66,45 @@ class _SessionListWidgetState extends State<SessionListWidget> {
       if (mounted) {
         setState(() {});
       }
+    }
+  }
+
+  /// Check if current circle is paid relay and if current user is admin
+  Future<void> _checkPaidRelayAndAdmin() async {
+    try {
+      _isPaidRelay = CircleApi.isPaidRelay(widget.circle.relayUrl);
+      
+      if (_isPaidRelay) {
+        // Check admin status
+        final currentPubkey = LoginManager.instance.currentPubkey;
+        try {
+          final tenantInfoAdmin = await CircleMemberService.sharedInstance.getTenantInfoAdmin();
+          final tenantAdminPubkey = tenantInfoAdmin['tenant_admin_pubkey'] as String?;
+          if (tenantAdminPubkey != null && tenantAdminPubkey.isNotEmpty) {
+            _isAdmin = tenantAdminPubkey.toLowerCase() == currentPubkey.toLowerCase();
+          }
+        } catch (e) {
+          // If admin check fails, try member-visible info
+          try {
+            final tenantInfo = await CircleMemberService.sharedInstance.getTenantInfo();
+            final tenantAdminPubkey = tenantInfo['tenant_admin_pubkey'] as String?;
+            if (tenantAdminPubkey != null && tenantAdminPubkey.isNotEmpty) {
+              _isAdmin = tenantAdminPubkey.toLowerCase() == currentPubkey.toLowerCase();
+            }
+          } catch (e2) {
+            // Default to false on error
+            _isAdmin = false;
+          }
+        }
+      }
+      
+      if (mounted) {
+        setState(() {});
+      }
+    } catch (e) {
+      print('Error checking paid relay and admin status: $e');
+      _isPaidRelay = false;
+      _isAdmin = false;
     }
   }
 
@@ -159,41 +203,45 @@ class _SessionListWidgetState extends State<SessionListWidget> {
 
               SizedBox(height: 32.px),
 
-              // Find People to Chat button
-              CLButton.filled(
-                expanded: true,
-                onTap: () => _navigateToFindPeople(context),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      PlatformStyle.isUseMaterial
-                          ? Icons.person_add
-                          : CupertinoIcons.person_add,
-                      size: 20.px,
-                      color: ColorToken.white.of(context),
-                    ),
-                    SizedBox(width: 8.px),
-                    CLText.bodyMedium(
-                      Localized.text('ox_chat.add_friends_to_chat'),
-                      customColor: ColorToken.white.of(context),
-                    ),
-                  ],
+              // Find People to Chat button (only for non-paid relay)
+              if (!_isPaidRelay)
+                CLButton.filled(
+                  expanded: true,
+                  onTap: () => _navigateToFindPeople(context),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        PlatformStyle.isUseMaterial
+                            ? Icons.person_add
+                            : CupertinoIcons.person_add,
+                        size: 20.px,
+                        color: ColorToken.white.of(context),
+                      ),
+                      SizedBox(width: 8.px),
+                      CLText.bodyMedium(
+                        Localized.text('ox_chat.add_friends_to_chat'),
+                        customColor: ColorToken.white.of(context),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
 
               // SizedBox(height: 16.px),
 
               // Invite Friends link
-              CupertinoButton(
-                onPressed: () => _navigateToInviteFriends(context),
-                padding: EdgeInsets.zero,
-                child: CLText.bodyMedium(
-                  Localized.text('ox_chat.invite_friends_link'),
-                  colorToken: ColorToken.onSurfaceXChat,
+              // For paid relay: only show if admin
+              // For regular relay: always show
+              if ((_isPaidRelay && _isAdmin) || !_isPaidRelay)
+                CupertinoButton(
+                  onPressed: () => _navigateToInviteFriends(context),
+                  padding: EdgeInsets.zero,
+                  child: CLText.bodyMedium(
+                    Localized.text('ox_chat.invite_friends_link'),
+                    colorToken: ColorToken.onSurfaceXChat,
+                  ),
                 ),
-              ),
             ],
           ),
         ),
@@ -215,10 +263,22 @@ class _SessionListWidgetState extends State<SessionListWidget> {
       return;
     }
     
-    OXNavigator.pushPage(
-      context,
-      (context) => const QRCodeDisplayPage(),
-    );
+    // For paid relay, show circle invite QR code
+    if (_isPaidRelay) {
+      OXNavigator.pushPage(
+        context,
+        (context) => QRCodeDisplayPage(
+          inviteType: InviteType.circle,
+          circle: circle,
+        ),
+      );
+    } else {
+      // For regular relay, show keypackage invite QR code
+      OXNavigator.pushPage(
+        context,
+        (context) => const QRCodeDisplayPage(),
+      );
+    }
   }
 
   Widget _buildArchivedChatsFooter(BuildContext context) {

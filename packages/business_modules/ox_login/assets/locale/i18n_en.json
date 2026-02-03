@@ -170,5 +170,6 @@
   "restore_circles": "Restore {count} Circles",
   "restore_circle": "Restore Circle",
   "admin": "Admin",
-  "member": "Member"
+  "member": "Member",
+  "skip": "Skip"
 }

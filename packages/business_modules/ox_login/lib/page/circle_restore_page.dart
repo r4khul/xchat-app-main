@@ -309,7 +309,7 @@ class _CircleRestorePageState extends State<CircleRestorePage> {
           child: GestureDetector(
             onTap: _onSetUpAsNewDevice,
             child: CLText.bodyMedium(
-              Localized.text('ox_login.set_up_as_new_device'),
+              Localized.text('ox_login.skip'),
               colorToken: ColorToken.primary,
             ),
           ),

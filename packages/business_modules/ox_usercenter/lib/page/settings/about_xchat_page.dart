@@ -87,11 +87,11 @@ class _AboutXChatPageState extends State<AboutXChatPage> {
                 title: Localized.text('ox_login.privacy_policy'),
                 onTap: _privacyPolicyOnTap,
               ),
-              LabelItemModel(
-                icon: ListViewIcon.data(CupertinoIcons.book),
-                title: Localized.text('ox_usercenter.show_welcome_guide'),
-                onTap: _showWelcomeGuideOnTap,
-              ),
+              // LabelItemModel(
+              //   icon: ListViewIcon.data(CupertinoIcons.book),
+              //   title: Localized.text('ox_usercenter.show_welcome_guide'),
+              //   onTap: _showWelcomeGuideOnTap,
+              // ),
               LabelItemModel(
                 icon: ListViewIcon.data(CupertinoIcons.arrow_2_circlepath),
                 title: Localized.text('ox_usercenter.restore_purchases'),

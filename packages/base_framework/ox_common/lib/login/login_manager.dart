@@ -787,6 +787,62 @@ extension LoginManagerCircle on LoginManager {
       // Check if this is the current circle
       final isCurrentCircle = currentState.currentCircle?.id == circleId;
 
+      // Check if this is a paid relay and user is tenant admin
+      // If so, delete tenant before deleting local circle data
+      bool needToDeleteTenant = false;
+      bool wasSwitchedToTargetCircle = false;
+      Circle? circleToSwitchBack = null;
+
+      // Check if it's a paid relay
+      final isPaidRelay = CircleApi.isPaidRelay(circleToDelete.relayUrl);
+      if (isPaidRelay) {
+        // Get CircleDBISAR to check tenant admin
+        final circleDB = await Account.sharedInstance.getCircleById(circleId);
+        if (circleDB != null && circleDB.tenantAdminPubkey != null && circleDB.tenantAdminPubkey!.isNotEmpty) {
+          final userPubkey = currentPubkey;
+          final isTenantAdmin = circleDB.tenantAdminPubkey!.toLowerCase() == userPubkey.toLowerCase();
+          if (isTenantAdmin) {
+            needToDeleteTenant = true;
+            
+            // If not currently in target circle, switch to it first
+            if (!isCurrentCircle) {
+              // Save current circle to switch back later
+              circleToSwitchBack = currentState.currentCircle;
+              
+              // Switch to target circle to delete tenant
+              final switchResult = await switchToCircle(circleToDelete);
+              if (switchResult != null) {
+                // Failed to switch, log error but continue with deletion
+                LogUtils.w(() => 'Failed to switch to circle $circleId for tenant deletion: ${switchResult.message}');
+                needToDeleteTenant = false;
+              } else {
+                wasSwitchedToTargetCircle = true;
+              }
+            }
+            // If already in target circle, we can delete tenant directly without switching
+          }
+        }
+      }
+
+      // Delete tenant if needed
+      if (needToDeleteTenant) {
+        try {
+          await CircleMemberService.sharedInstance.deleteTenant();
+          LogUtils.v(() => 'Successfully deleted tenant for circle $circleId');
+        } catch (e) {
+          // Log error but don't block circle deletion
+          LogUtils.w(() => 'Failed to delete tenant for circle $circleId: $e');
+        }
+      }
+
+      // Switch back to original circle if we switched to target circle
+      if (wasSwitchedToTargetCircle && circleToSwitchBack != null) {
+        final switchResult = await switchToCircle(circleToSwitchBack);
+        if (switchResult != null) {
+          LogUtils.w(() => 'Failed to switch back to original circle: ${switchResult.message}');
+        }
+      }
+
       final remainingCircles = account.circles.where((c) => c.id != circleId).toList();
 
       final isSwitch = remainingCircles.isNotEmpty;

@@ -22,6 +22,7 @@ import 'package:ox_common/widgets/common_toast.dart';
 import 'package:ox_common/utils/session_helper.dart';
 import '../../utils/chat_session_utils.dart';
 import 'chat_message_page.dart';
+import 'package:ox_usercenter/utils/invite_link_manager.dart';
 
 class CLNewMessagePage extends StatefulWidget {
   const CLNewMessagePage({super.key});
@@ -44,6 +45,11 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
 
   // For tracking scroll-based background color changes
   final ValueNotifier<double> _scrollOffset = ValueNotifier(0.0);
+
+  // For paid relay: circle members and admin status
+  bool _isPaidRelay = false;
+  bool _isAdmin = false;
+  List<ValueNotifier<UserDBISAR>> _circleMembers = [];
 
   @override
   void initState() {
@@ -76,25 +82,198 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
 
   void _loadData() async {
     try {
-      // Get all users who have local keypackages
-      final pubkeysWithKeyPackages = await KeyPackageManager.getAllUsersWithLocalKeyPackages();
-      
-      // Convert pubkeys to ValueNotifier<UserDBISAR>
-      final usersWithKeyPackages = pubkeysWithKeyPackages
-          .map((pubkey) => Account.sharedInstance.getUserNotifier(pubkey))
-          .toList();
-      
-      // Initialize UserSearchManager with users who have keypackages
-      await _userSearchManager.initialize(
-        externalUsers: usersWithKeyPackages,
-      );
-      
-      _allUsers = _userSearchManager.allUsers;
-      _groupUsers();
+      final circle = LoginManager.instance.currentCircle;
+      if (circle != null) {
+        _isPaidRelay = CircleApi.isPaidRelay(circle.relayUrl);
+        
+        if (_isPaidRelay) {
+          // For paid relay: load circle members and check admin status
+          await _loadCircleMembersAndCheckAdmin(circle);
+        } else {
+          // For regular relay: get all users who have local keypackages
+          final pubkeysWithKeyPackages = await KeyPackageManager.getAllUsersWithLocalKeyPackages();
+          
+          // Convert pubkeys to ValueNotifier<UserDBISAR>
+          final usersWithKeyPackages = pubkeysWithKeyPackages
+              .map((pubkey) => Account.sharedInstance.getUserNotifier(pubkey))
+              .toList();
+          
+          // Initialize UserSearchManager with users who have keypackages
+          await _userSearchManager.initialize(
+            externalUsers: usersWithKeyPackages,
+          );
+          
+          _allUsers = _userSearchManager.allUsers;
+          _groupUsers();
+        }
+      } else {
+        // No circle: get all users who have local keypackages
+        final pubkeysWithKeyPackages = await KeyPackageManager.getAllUsersWithLocalKeyPackages();
+        
+        // Convert pubkeys to ValueNotifier<UserDBISAR>
+        final usersWithKeyPackages = pubkeysWithKeyPackages
+            .map((pubkey) => Account.sharedInstance.getUserNotifier(pubkey))
+            .toList();
+        
+        // Initialize UserSearchManager with users who have keypackages
+        await _userSearchManager.initialize(
+          externalUsers: usersWithKeyPackages,
+        );
+        
+        _allUsers = _userSearchManager.allUsers;
+        _groupUsers();
+      }
     } catch (e) {
       print('Error loading users: $e');
     } finally {
       setState(() {});
+    }
+  }
+
+  /// Load circle members and check if current user is admin (for paid relay only)
+  /// First loads from local cache, then requests network data to update
+  Future<void> _loadCircleMembersAndCheckAdmin(Circle circle) async {
+    try {
+      final currentPubkey = LoginManager.instance.currentPubkey;
+      
+      // Step 1: Load from local cache first
+      final cachedTenantInfo = await Account.sharedInstance.loadTenantInfoFromCircleDB(circle.id);
+      if (cachedTenantInfo != null) {
+        // Update admin status from cache
+        final tenantAdminPubkey = cachedTenantInfo['tenant_admin_pubkey'] as String?;
+        if (tenantAdminPubkey != null && tenantAdminPubkey.isNotEmpty) {
+          _isAdmin = tenantAdminPubkey.toLowerCase() == currentPubkey.toLowerCase();
+        }
+        
+        // Load members from cache
+        final membersData = cachedTenantInfo['members'] as List<dynamic>?;
+        if (membersData != null && membersData.isNotEmpty) {
+          _circleMembers = [];
+          
+          for (final memberData in membersData) {
+            final memberMap = memberData as Map<String, dynamic>;
+            final pubkey = memberMap['pubkey'] as String?;
+            if (pubkey != null && pubkey.isNotEmpty) {
+              final user = await Account.sharedInstance.getUserInfo(pubkey);
+              if (user != null) {
+                // Update display name if provided
+                final displayName = memberMap['display_name'] as String?;
+                if (displayName != null && displayName.isNotEmpty) {
+                  user.name = displayName;
+                }
+                _circleMembers.add(Account.sharedInstance.getUserNotifier(pubkey));
+              }
+            }
+          }
+          
+          // Initialize UserSearchManager with cached members
+          await _userSearchManager.initialize(
+            externalUsers: _circleMembers,
+          );
+          
+          _allUsers = _userSearchManager.allUsers;
+          _groupUsers();
+          
+          // Update UI immediately with cached data
+          if (mounted) {
+            setState(() {});
+          }
+        }
+      }
+      
+      // Step 2: Request network data in background to update
+      _loadCircleMembersFromNetwork(circle, currentPubkey);
+    } catch (e) {
+      print('Error in _loadCircleMembersAndCheckAdmin: $e');
+      _isAdmin = false;
+      _circleMembers = [];
+    }
+  }
+
+  /// Load circle members from network and update UI
+  Future<void> _loadCircleMembersFromNetwork(Circle circle, String currentPubkey) async {
+    try {
+      // Check admin status from network
+      try {
+        final tenantInfoAdmin = await CircleMemberService.sharedInstance.getTenantInfoAdmin();
+        final tenantAdminPubkey = tenantInfoAdmin['tenant_admin_pubkey'] as String?;
+        if (tenantAdminPubkey != null && tenantAdminPubkey.isNotEmpty) {
+          final isAdmin = tenantAdminPubkey.toLowerCase() == currentPubkey.toLowerCase();
+          if (_isAdmin != isAdmin && mounted) {
+            _isAdmin = isAdmin;
+            setState(() {});
+          }
+        }
+        
+        // Save tenant info to cache
+        await Account.sharedInstance.saveTenantInfoToCircleDB(
+          circleId: circle.id,
+          tenantInfo: tenantInfoAdmin,
+        );
+      } catch (e) {
+        // If admin check fails, try member-visible info
+        try {
+          final tenantInfo = await CircleMemberService.sharedInstance.getTenantInfo();
+          final tenantAdminPubkey = tenantInfo['tenant_admin_pubkey'] as String?;
+          if (tenantAdminPubkey != null && tenantAdminPubkey.isNotEmpty) {
+            final isAdmin = tenantAdminPubkey.toLowerCase() == currentPubkey.toLowerCase();
+            if (_isAdmin != isAdmin && mounted) {
+              _isAdmin = isAdmin;
+              setState(() {});
+            }
+          }
+          
+          // Save tenant info to cache
+          await Account.sharedInstance.saveTenantInfoToCircleDB(
+            circleId: circle.id,
+            tenantInfo: tenantInfo,
+          );
+        } catch (e2) {
+          print('Error checking admin status from network: $e2');
+        }
+      }
+
+      // Load circle members from network
+      try {
+        final membersList = await CircleMemberService.sharedInstance.listMembers();
+        final newCircleMembers = <ValueNotifier<UserDBISAR>>[];
+        
+        for (final memberData in membersList) {
+          final pubkey = memberData['pubkey'] as String?;
+          if (pubkey != null && pubkey.isNotEmpty) {
+            final user = await Account.sharedInstance.getUserInfo(pubkey);
+            if (user != null) {
+              // Update display name if provided
+              final displayName = memberData['display_name'] as String?;
+              if (displayName != null && displayName.isNotEmpty) {
+                user.name = displayName;
+              }
+              newCircleMembers.add(Account.sharedInstance.getUserNotifier(pubkey));
+            }
+          }
+        }
+        
+        // Update with network data
+        _circleMembers = newCircleMembers;
+        
+        // Initialize UserSearchManager with network members
+        await _userSearchManager.initialize(
+          externalUsers: _circleMembers,
+        );
+        
+        _allUsers = _userSearchManager.allUsers;
+        _groupUsers();
+        
+        // Update UI with network data
+        if (mounted) {
+          setState(() {});
+        }
+      } catch (e) {
+        print('Error loading circle members from network: $e');
+        // Keep cached data if network request fails
+      }
+    } catch (e) {
+      print('Error in _loadCircleMembersFromNetwork: $e');
     }
   }
 
@@ -133,7 +312,8 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
       appBar: CLAppBar(
         title: Localized.text('ox_chat.str_title_new_message'),
         actions: [
-          if (PlatformStyle.isUseMaterial)
+          // Only show add friends button for non-paid relay
+          if (PlatformStyle.isUseMaterial && !_isPaidRelay)
             CLButton.icon(
               icon: PlatformStyle.isUseMaterial
                   ? Icons.person_add
@@ -199,7 +379,8 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
     ];
 
     // On Android, add user button is already in the app bar, so don't show it in the list
-    if (!PlatformStyle.isUseMaterial) {
+    // Only show add friends for non-paid relay
+    if (!PlatformStyle.isUseMaterial && !_isPaidRelay) {
       menuItems.add(
         LabelItemModel(
           icon: ListViewIcon.data(
@@ -211,15 +392,30 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
       );
     }
 
-    menuItems.add(
-      LabelItemModel(
-        icon: ListViewIcon.data(
-          Icons.share,
+    // Only show invite friends for paid relay and admin, or for non-paid relay
+    if (_isPaidRelay) {
+      if (_isAdmin) {
+        menuItems.add(
+          LabelItemModel(
+            icon: ListViewIcon.data(
+              Icons.share,
+            ),
+            title: Localized.text('ox_usercenter.invite'),
+            onTap: _onInviteFriends,
+          ),
+        );
+      }
+    } else {
+      menuItems.add(
+        LabelItemModel(
+          icon: ListViewIcon.data(
+            Icons.share,
+          ),
+          title: Localized.text('ox_usercenter.invite'),
+          onTap: _onInviteFriends,
         ),
-        title: Localized.text('ox_usercenter.invite'),
-        onTap: _onInviteFriends,
-      ),
-    );
+      );
+    }
 
     return SectionListViewItem(
       data: menuItems,
@@ -526,10 +722,22 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
       return;
     }
     
-    OXNavigator.pushPage(
-      context, 
-      (context) => const QRCodeDisplayPage(),
-    );
+    // For paid relay, show circle invite QR code
+    if (_isPaidRelay) {
+      OXNavigator.pushPage(
+        context, 
+        (context) => QRCodeDisplayPage(
+          inviteType: InviteType.circle,
+          circle: circle,
+        ),
+      );
+    } else {
+      // For regular relay, show keypackage invite QR code
+      OXNavigator.pushPage(
+        context, 
+        (context) => const QRCodeDisplayPage(),
+      );
+    }
   }
 
   void _onUserTap(ValueNotifier<UserDBISAR> user$) async {
