@@ -75,7 +75,7 @@ class _CircleRestorePageState extends State<CircleRestorePage> {
           });
         }
       } catch (e) {
-        // If failed to get info, default to Member
+        if (!mounted) return;
         setState(() {
           item.role = Localized.text('ox_login.member');
         });
