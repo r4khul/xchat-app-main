@@ -135,6 +135,7 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
   Future<void> _loadCircleMembersAndCheckAdmin(Circle circle) async {
     try {
       final currentPubkey = LoginManager.instance.currentPubkey;
+      bool hasLoadedFromCache = false;
       
       // Step 1: Load from local cache first
       final cachedTenantInfo = await Account.sharedInstance.loadTenantInfoFromCircleDB(circle.id);
@@ -178,6 +179,69 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
           if (mounted) {
             setState(() {});
           }
+          hasLoadedFromCache = true;
+        }
+      }
+      
+      // Step 1.5: Fallback - Load from CircleDBISAR.memberPubkeys if cache is empty
+      if (!hasLoadedFromCache) {
+        try {
+          final circleDB = await Account.sharedInstance.getCircleById(circle.id);
+          if (circleDB != null && circleDB.memberPubkeys.isNotEmpty) {
+            _circleMembers = [];
+            
+            for (final pubkey in circleDB.memberPubkeys) {
+              if (pubkey.isNotEmpty) {
+                final user = await Account.sharedInstance.getUserInfo(pubkey);
+                if (user != null) {
+                  _circleMembers.add(Account.sharedInstance.getUserNotifier(pubkey));
+                }
+              }
+            }
+            
+            // Initialize UserSearchManager with members from CircleDBISAR
+            await _userSearchManager.initialize(
+              externalUsers: _circleMembers,
+            );
+            
+            _allUsers = _userSearchManager.allUsers;
+            _groupUsers();
+            
+            // Update UI immediately with fallback data
+            if (mounted) {
+              setState(() {});
+            }
+            hasLoadedFromCache = true;
+          }
+        } catch (e) {
+          print('Error loading members from CircleDBISAR fallback: $e');
+        }
+      }
+      
+      // Step 1.6: Last resort - Add current user (self) if still no data
+      if (!hasLoadedFromCache && _circleMembers.isEmpty) {
+        if (currentPubkey.isNotEmpty) {
+          try {
+            final user = await Account.sharedInstance.getUserInfo(currentPubkey);
+            if (user != null) {
+              _circleMembers.add(Account.sharedInstance.getUserNotifier(currentPubkey));
+              
+              // Initialize UserSearchManager with self only
+              await _userSearchManager.initialize(
+                externalUsers: _circleMembers,
+              );
+              
+              _allUsers = _userSearchManager.allUsers;
+              _groupUsers();
+              
+              // Update UI immediately with self
+              if (mounted) {
+                setState(() {});
+              }
+            }
+          } catch (e) {
+            print('Error adding current user as fallback: $e');
+          }
         }
       }
       
@@ -186,7 +250,7 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
     } catch (e) {
       print('Error in _loadCircleMembersAndCheckAdmin: $e');
       _isAdmin = false;
-      _circleMembers = [];
+      // Don't clear _circleMembers here, keep any data we might have loaded
     }
   }
 
@@ -195,8 +259,8 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
     try {
       // Check admin status from network
       try {
-        final tenantInfoAdmin = await CircleMemberService.sharedInstance.getTenantInfoAdmin();
-        final tenantAdminPubkey = tenantInfoAdmin['tenant_admin_pubkey'] as String?;
+        final tenantInfo = await CircleMemberService.sharedInstance.getTenantInfo();
+        final tenantAdminPubkey = tenantInfo['tenant_admin_pubkey'] as String?;
         if (tenantAdminPubkey != null && tenantAdminPubkey.isNotEmpty) {
           final isAdmin = tenantAdminPubkey.toLowerCase() == currentPubkey.toLowerCase();
           if (_isAdmin != isAdmin && mounted) {
@@ -208,29 +272,10 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
         // Save tenant info to cache
         await Account.sharedInstance.saveTenantInfoToCircleDB(
           circleId: circle.id,
-          tenantInfo: tenantInfoAdmin,
+          tenantInfo: tenantInfo,
         );
       } catch (e) {
-        // If admin check fails, try member-visible info
-        try {
-          final tenantInfo = await CircleMemberService.sharedInstance.getTenantInfo();
-          final tenantAdminPubkey = tenantInfo['tenant_admin_pubkey'] as String?;
-          if (tenantAdminPubkey != null && tenantAdminPubkey.isNotEmpty) {
-            final isAdmin = tenantAdminPubkey.toLowerCase() == currentPubkey.toLowerCase();
-            if (_isAdmin != isAdmin && mounted) {
-              _isAdmin = isAdmin;
-              setState(() {});
-            }
-          }
-          
-          // Save tenant info to cache
-          await Account.sharedInstance.saveTenantInfoToCircleDB(
-            circleId: circle.id,
-            tenantInfo: tenantInfo,
-          );
-        } catch (e2) {
-          print('Error checking admin status from network: $e2');
-        }
+        print('Error checking admin status from network: $e');
       }
 
       // Load circle members from network
@@ -253,27 +298,81 @@ class _CLNewMessagePageState extends State<CLNewMessagePage> {
           }
         }
         
-        // Update with network data
-        _circleMembers = newCircleMembers;
-        
-        // Initialize UserSearchManager with network members
-        await _userSearchManager.initialize(
-          externalUsers: _circleMembers,
-        );
-        
-        _allUsers = _userSearchManager.allUsers;
-        _groupUsers();
-        
-        // Update UI with network data
-        if (mounted) {
-          setState(() {});
+        // Update with network data only if we successfully got data
+        if (newCircleMembers.isNotEmpty) {
+          _circleMembers = newCircleMembers;
+          
+          // Initialize UserSearchManager with network members
+          await _userSearchManager.initialize(
+            externalUsers: _circleMembers,
+          );
+          
+          _allUsers = _userSearchManager.allUsers;
+          _groupUsers();
+          
+          // Update UI with network data
+          if (mounted) {
+            setState(() {});
+          }
         }
+        // If network request returns empty, keep existing local data
       } catch (e) {
         print('Error loading circle members from network: $e');
-        // Keep cached data if network request fails
+        // Keep existing local data if network request fails
+        // If we have no local data, try fallback one more time
+        if (_circleMembers.isEmpty) {
+          try {
+            final circleDB = await Account.sharedInstance.getCircleById(circle.id);
+            if (circleDB != null && circleDB.memberPubkeys.isNotEmpty) {
+              _circleMembers = [];
+              
+              for (final pubkey in circleDB.memberPubkeys) {
+                if (pubkey.isNotEmpty) {
+                  final user = await Account.sharedInstance.getUserInfo(pubkey);
+                  if (user != null) {
+                    _circleMembers.add(Account.sharedInstance.getUserNotifier(pubkey));
+                  }
+                }
+              }
+              
+              // Initialize UserSearchManager with fallback members
+              await _userSearchManager.initialize(
+                externalUsers: _circleMembers,
+              );
+              
+              _allUsers = _userSearchManager.allUsers;
+              _groupUsers();
+              
+              // Update UI with fallback data
+              if (mounted) {
+                setState(() {});
+              }
+            } else if (_circleMembers.isEmpty && currentPubkey.isNotEmpty) {
+              // Last resort: add current user (self)
+              final user = await Account.sharedInstance.getUserInfo(currentPubkey);
+              if (user != null) {
+                _circleMembers.add(Account.sharedInstance.getUserNotifier(currentPubkey));
+                
+                await _userSearchManager.initialize(
+                  externalUsers: _circleMembers,
+                );
+                
+                _allUsers = _userSearchManager.allUsers;
+                _groupUsers();
+                
+                if (mounted) {
+                  setState(() {});
+                }
+              }
+            }
+          } catch (e2) {
+            print('Error in network failure fallback: $e2');
+          }
+        }
       }
     } catch (e) {
       print('Error in _loadCircleMembersFromNetwork: $e');
+      // Keep existing local data if any error occurs
     }
   }
 

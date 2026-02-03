@@ -4,6 +4,7 @@ import 'package:ox_common/model/file_server_model.dart';
 import 'package:chatcore/chat-core.dart';
 import 'package:ox_common/repository/file_server_repository.dart';
 import 'package:ox_common/log_util.dart';
+import 'package:ox_common/utils/account_credentials_utils.dart';
 
 class FileServerHelper {
   FileServerHelper._();
@@ -43,24 +44,60 @@ class FileServerHelper {
     if (circle != null) {
       try {
         final circleDB = await Account.sharedInstance.getCircleById(circle.id);
+        S3Config? s3Config;
+        
+        // Try to load from local database first
         if (circleDB != null && circleDB.s3ConfigJson != null && circleDB.s3ConfigJson!.isNotEmpty) {
-          final s3Config = await S3ConfigUtils.loadS3ConfigFromCircleDB(circle.id);
-          if (s3Config != null) {
-            final url = S3ConfigUtils.getS3FileServerUrl(s3Config);
-            s3FileServer = FileServerModel(
-              id: 0, // Will be used as default server
-              type: FileServerType.minio,
-              name: circleDB.tenantName ?? circle.name,
-              url: url,
-              accessKey: s3Config.accessKeyId,
-              secretKey: s3Config.secretAccessKey,
-              bucketName: s3Config.bucket,
-              pathPrefix: s3Config.pathPrefix,
-              region: s3Config.region,
-              sessionToken: s3Config.sessionToken,
-              expiration: s3Config.expiration,
-            );
+          s3Config = await S3ConfigUtils.loadS3ConfigFromCircleDB(circle.id);
+        }
+        
+        // Check if S3 config is expired or near expiration
+        bool needsRefresh = false;
+        if (s3Config != null) {
+          needsRefresh = _isS3ConfigExpired(s3Config);
+        }
+        
+        // If no S3 config found or expired, and this is a paid relay, try to fetch from API
+        if ((s3Config == null || needsRefresh) && CircleApi.isPaidRelay(circle.relayUrl)) {
+          try {
+            final tenantId = circleDB?.tenantId;
+            if (tenantId != null && tenantId.isNotEmpty) {
+              final credentials = await AccountCredentialsUtils.getCredentials();
+              if (credentials != null) {
+                s3Config = await CircleApi.getS3Credentials(
+                  pubkey: credentials['pubkey'] as String,
+                  privkey: credentials['privkey'] as String,
+                  tenantId: tenantId,
+                );
+                
+                // Save to database
+                await S3ConfigUtils.saveS3ConfigToCircleDB(
+                  circleId: circle.id,
+                  s3Config: s3Config,
+                );
+              }
+            }
+          } catch (e) {
+            LogUtil.w(() => 'Failed to fetch S3 config from API: $e');
           }
+        }
+        
+        // Create FileServerModel if we have S3 config
+        if (s3Config != null) {
+          final url = S3ConfigUtils.getS3FileServerUrl(s3Config);
+          s3FileServer = FileServerModel(
+            id: 0, // Will be used as default server
+            type: FileServerType.minio,
+            name: circleDB?.tenantName ?? circle.name,
+            url: url,
+            accessKey: s3Config.accessKeyId,
+            secretKey: s3Config.secretAccessKey,
+            bucketName: s3Config.bucket,
+            pathPrefix: s3Config.pathPrefix,
+            region: s3Config.region,
+            sessionToken: s3Config.sessionToken,
+            expiration: s3Config.expiration,
+          );
         }
       } catch (e) {
         LogUtil.w(() => 'Failed to load S3 config for current circle: $e');
@@ -107,5 +144,23 @@ class FileServerHelper {
         VoidCallback? onGoToSettings,
       }) async {
     return (await currentUploadCandidates()).isNotEmpty;
+  }
+
+  /// Check if S3 config is expired or near expiration
+  /// 
+  /// [s3Config] S3 configuration to check
+  /// [bufferSeconds] Buffer time in seconds before expiration (default: 300 seconds = 5 minutes)
+  /// Returns true if credentials are expired or near expiration
+  static bool _isS3ConfigExpired(S3Config s3Config, {int bufferSeconds = 300}) {
+    // If no expiration, credentials are permanent
+    if (s3Config.expiration == null) {
+      return false;
+    }
+    
+    final now = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
+    final timeUntilExpiration = s3Config.expiration! - now;
+    
+    // Consider expired if within buffer time or already expired
+    return timeUntilExpiration <= bufferSeconds;
   }
 }

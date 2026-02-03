@@ -55,13 +55,13 @@ class _CircleRestorePageState extends State<CircleRestorePage> {
     
     for (final item in _circleItems) {
       try {
-        // Try to get admin info first
+        // Get tenant info
         try {
-          final tenantInfoAdmin = await CircleMemberService.sharedInstance.getTenantInfoAdmin();
+          final tenantInfo = await CircleMemberService.sharedInstance.getTenantInfo();
           
           setState(() {
-            item.memberCount = tenantInfoAdmin['current_members'] as int?;
-            final adminPubkey = tenantInfoAdmin['tenant_admin_pubkey'] as String?;
+            item.memberCount = tenantInfo['current_members'] as int?;
+            final adminPubkey = tenantInfo['tenant_admin_pubkey'] as String?;
             if (adminPubkey != null && adminPubkey.toLowerCase() == currentPubkey.toLowerCase()) {
               item.role = Localized.text('ox_login.admin');
             } else {
@@ -69,20 +69,10 @@ class _CircleRestorePageState extends State<CircleRestorePage> {
             }
           });
         } catch (e) {
-          // If admin check fails, try member-visible info
-          try {
-            final tenantInfo = await CircleMemberService.sharedInstance.getTenantInfo();
-            
-            setState(() {
-              item.memberCount = tenantInfo['current_members'] as int?;
-              item.role = Localized.text('ox_login.member');
-            });
-          } catch (e2) {
-            // If both fail, use defaults
-            setState(() {
-              item.role = Localized.text('ox_login.member');
-            });
-          }
+          // If request fails, use defaults
+          setState(() {
+            item.role = Localized.text('ox_login.member');
+          });
         }
       } catch (e) {
         // If failed to get info, default to Member

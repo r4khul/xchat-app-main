@@ -78,23 +78,14 @@ class _SessionListWidgetState extends State<SessionListWidget> {
         // Check admin status
         final currentPubkey = LoginManager.instance.currentPubkey;
         try {
-          final tenantInfoAdmin = await CircleMemberService.sharedInstance.getTenantInfoAdmin();
-          final tenantAdminPubkey = tenantInfoAdmin['tenant_admin_pubkey'] as String?;
+          final tenantInfo = await CircleMemberService.sharedInstance.getTenantInfo();
+          final tenantAdminPubkey = tenantInfo['tenant_admin_pubkey'] as String?;
           if (tenantAdminPubkey != null && tenantAdminPubkey.isNotEmpty) {
             _isAdmin = tenantAdminPubkey.toLowerCase() == currentPubkey.toLowerCase();
           }
         } catch (e) {
-          // If admin check fails, try member-visible info
-          try {
-            final tenantInfo = await CircleMemberService.sharedInstance.getTenantInfo();
-            final tenantAdminPubkey = tenantInfo['tenant_admin_pubkey'] as String?;
-            if (tenantAdminPubkey != null && tenantAdminPubkey.isNotEmpty) {
-              _isAdmin = tenantAdminPubkey.toLowerCase() == currentPubkey.toLowerCase();
-            }
-          } catch (e2) {
-            // Default to false on error
-            _isAdmin = false;
-          }
+          // Default to false on error
+          _isAdmin = false;
         }
       }
       
