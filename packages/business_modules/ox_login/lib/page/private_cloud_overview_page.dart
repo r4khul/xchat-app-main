@@ -8,7 +8,9 @@ import 'package:ox_localizable/ox_localizable.dart';
 import 'capacity_selection_page.dart';
 
 class PrivateCloudOverviewPage extends StatelessWidget {
-  const PrivateCloudOverviewPage({super.key});
+  const PrivateCloudOverviewPage({super.key, this.groupId});
+
+  final String? groupId;
 
   @override
   Widget build(BuildContext context) {
@@ -179,7 +181,7 @@ class PrivateCloudOverviewPage extends StatelessWidget {
   }
 
   Future<void> _onConfigurePlan(BuildContext context) async {
-    final groupId = await CircleEntryHelper.getCurrentInactiveGroupId();
+    final groupId = this.groupId ?? await CircleEntryHelper.getCurrentInactiveGroupId();
     if (!context.mounted) return;
     if (groupId == null || groupId.isEmpty) {
       CommonToast.instance.show(

@@ -908,7 +908,7 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
   void _handleChangePlan(BuildContext context) {
     OXNavigator.pushPage(
       context,
-      (context) => const PrivateCloudOverviewPage(),
+      (context) => PrivateCloudOverviewPage(groupId: widget.circle.groupId,),
       type: OXPushPageType.present,
       fullscreenDialog: true,
     );
