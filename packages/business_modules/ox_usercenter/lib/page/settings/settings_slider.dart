@@ -39,7 +39,6 @@ class SettingSliderState extends State<SettingSlider> {
 
   late LoginUserNotifier userNotifier;
   bool _isPaidRelay = false;
-  bool _isAdmin = false;
 
   @override
   void initState() {
@@ -53,39 +52,20 @@ class SettingSliderState extends State<SettingSlider> {
     _checkPaidRelayAndAdmin();
   }
 
-  /// Check if current circle is paid relay and if current user is admin
+  /// Check if current circle is paid relay
   Future<void> _checkPaidRelayAndAdmin() async {
     try {
       final circle = LoginManager.instance.currentCircle;
-      if (circle != null) {
-        _isPaidRelay = CircleApi.isPaidRelay(circle.relayUrl);
-        
-        if (_isPaidRelay) {
-          // Check admin status
-          final currentPubkey = LoginManager.instance.currentPubkey;
-          try {
-            final tenantInfo = await CircleMemberService.sharedInstance.getTenantInfo();
-            final tenantAdminPubkey = tenantInfo['tenant_admin_pubkey'] as String?;
-            if (tenantAdminPubkey != null && tenantAdminPubkey.isNotEmpty) {
-              _isAdmin = tenantAdminPubkey.toLowerCase() == currentPubkey.toLowerCase();
-            }
-          } catch (e) {
-            // Default to false on error
-            _isAdmin = false;
-          }
-        }
-      } else {
-        _isPaidRelay = false;
-        _isAdmin = false;
-      }
-      
+      _isPaidRelay = circle != null && CircleApi.isPaidRelay(circle.relayUrl);
       if (mounted) {
         setState(() {});
       }
     } catch (e) {
-      print('Error checking paid relay and admin status: $e');
+      print('Error checking paid relay: $e');
       _isPaidRelay = false;
-      _isAdmin = false;
+      if (mounted) {
+        setState(() {});
+      }
     }
   }
 
@@ -423,10 +403,11 @@ class SettingSliderState extends State<SettingSlider> {
                               return CLText.bodyLarge(name);
                             }
                           ),
+                          SizedBox(height: 4.px),
                           ValueListenableBuilder(
                             valueListenable: userNotifier.encodedPubkey$,
                             builder: (context, encodedPubkey, _) {
-                              return CLText.bodyMedium(encodedPubkey.truncate(20));
+                              return CLText.bodyMedium(encodedPubkey.truncate(25));
                             }
                           ),
                         ]
@@ -435,6 +416,7 @@ class SettingSliderState extends State<SettingSlider> {
                           CLText.bodyLarge(
                             Localized.text('ox_usercenter.profile'),
                           ),
+                          SizedBox(height: 4.px),
                           CLText.bodyMedium(
                             Localized.text('ox_home.join_or_create_circle_now'),
                           ),
@@ -442,9 +424,9 @@ class SettingSliderState extends State<SettingSlider> {
                   ),
                 ),
                 // Trailing - QR code button
-                // For paid relay: only show if admin
+                // For paid circle: do not show
                 // For regular relay: always show
-                if ((_isPaidRelay && _isAdmin) || !_isPaidRelay)
+                if (!_isPaidRelay)
                   Padding(
                     padding: const EdgeInsets.only(right: 14),
                     child: GestureDetector(
